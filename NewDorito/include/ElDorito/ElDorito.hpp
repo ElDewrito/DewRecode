@@ -1,12 +1,15 @@
 #pragma once
-#include "IConsole.hpp"
-#include "IPatchManager.hpp"
-
 #ifdef DORITO_EXPORTS
 #define DORITO_API extern "C" __declspec(dllexport)
+#define DORITO_CPP_API __declspec(dllexport)
 #else
 #define DORITO_API extern "C" __declspec(dllimport)
+#define DORITO_CPP_API __declspec(dllimport)
 #endif
+
+#include "IConsole.hpp"
+#include "IPatchManager.hpp"
+#include "ModuleBase.hpp"
 
 struct ElDoritoPluginInfo
 {

@@ -1,7 +1,8 @@
 #include <Windows.h>
-#include "../NewDorito/include/ElDorito/ElDorito.hpp"
 // TODO: add this to the additional include dirs so we can do
 // #include <ElDorito/ElDorito.hpp>
+#include "../NewDorito/include/ElDorito/ElDorito.hpp"
+#include "ModuleExample.hpp"
 
 #define PLUGIN_API extern "C" __declspec(dllexport)
 
@@ -19,6 +20,8 @@ ElDoritoPluginInfo ourPluginInfo =
 	"0.1"
 };
 
+Modules::ModuleExample test;
+
 PLUGIN_API ElDoritoPluginInfo* __cdecl GetPluginInfo()
 {
 	return &ourPluginInfo;
@@ -31,11 +34,9 @@ PLUGIN_API bool __cdecl InitializePlugin()
 	IConsole001* console001 = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &version));
 	console001->ExecuteCommand("Command001-plugin");
 
-	IConsole002* console002 = reinterpret_cast<IConsole002*>(CreateInterface(CONSOLE_INTERFACE_VERSION002, &version));
-	console002->ExecuteCommands("Command002-plugin");
-
 	IPatchManager001* patches001 = reinterpret_cast<IPatchManager001*>(CreateInterface(PATCHMANAGER_INTERFACE_VERSION001, &version));
 
+	auto ret = console001->ExecuteCommand("Help");
 	return true;
 }
 

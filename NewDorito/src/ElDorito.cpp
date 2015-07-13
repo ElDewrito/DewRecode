@@ -16,7 +16,7 @@ void* ElDorito::CreateInterface(std::string name, int *returnCode)
 {
 	*returnCode = 0;
 
-	if (!name.compare(CONSOLE_INTERFACE_VERSION001) || !name.compare(CONSOLE_INTERFACE_VERSION002))
+	if (!name.compare(CONSOLE_INTERFACE_VERSION001))
 		return &this->Console;
 
 	if (!name.compare(PATCHMANAGER_INTERFACE_VERSION001))
@@ -31,10 +31,11 @@ void ElDorito::Initialize()
 	if (this->inited)
 		return;
 
-
 	std::cout << "Inited!" << std::endl;
 
 	loadPlugins();
+
+	std::string ret = Console.ExecuteCommand("Example.Test");
 
 	this->inited = true;
 }

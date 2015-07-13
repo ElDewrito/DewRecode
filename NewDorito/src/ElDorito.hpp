@@ -4,12 +4,14 @@
 
 #include "GameConsole.hpp"
 #include "PatchManager.hpp"
+#include "Modules/ModuleMain.hpp"
 
 class ElDorito
 {
 public:
 	GameConsole Console;
 	PatchManager Patches;
+	Modules::ModuleMain Modules;
 
 	void* CreateInterface(std::string name, int *returnCode);
 	void Initialize();

@@ -81,15 +81,21 @@
     <ClCompile Include="src\GameConsole.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\ElDorito.cpp" />
+    <ClCompile Include="src\Modules\ModuleBase.cpp" />
+    <ClCompile Include="src\Modules\ModuleGame.cpp" />
+    <ClCompile Include="src\Modules\ModuleMain.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ElDorito\ElDorito.hpp" />
     <ClInclude Include="include\ElDorito\IConsole.hpp" />
     <ClInclude Include="include\ElDorito\IPatchManager.hpp" />
+    <ClInclude Include="include\ElDorito\ModuleBase.hpp" />
     <ClInclude Include="include\ElDorito\Pointer.hpp" />
     <ClInclude Include="src\GameConsole.hpp" />
     <ClInclude Include="src\ElDorito.hpp" />
+    <ClInclude Include="src\Modules\ModuleGame.hpp" />
+    <ClInclude Include="src\Modules\ModuleMain.hpp" />
     <ClInclude Include="src\PatchManager.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
