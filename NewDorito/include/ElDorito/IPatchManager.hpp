@@ -48,6 +48,11 @@ typedef std::initializer_list<unsigned char> PatchInitializerListType;
 typedef std::initializer_list<Patch> PatchSetInitializerListType;
 typedef std::initializer_list<Hook> PatchSetHookInitializerListType;
 
+/*
+if you want to make changes to this interface create a new IPatchManager002 class and make them there, then edit PatchManager class to inherit from the new class + this older one
+for backwards compatibility (with plugins compiled against an older ED SDK) we can't remove any methods, only add new ones to a new interface version
+*/
+
 class IPatchManager001
 {
 public:

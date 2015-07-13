@@ -73,6 +73,11 @@ struct Command
 	// modifiers might be added to the name later, so you can do things like "parameter_1:o" to signify the parameter is optional
 };
 
+/*
+if you want to make changes to this interface create a new IConsole002 class and make them there, then edit GameConsole class to inherit from the new class + this older one
+for backwards compatibility (with plugins compiled against an older ED SDK) we can't remove any methods, only add new ones to a new interface version
+*/
+
 class IConsole001
 {
 public:
