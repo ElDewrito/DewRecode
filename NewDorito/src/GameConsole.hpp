@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/ElDorito/ElDorito.hpp"
+#include <ElDorito/ElDorito.hpp>
 
 class GameConsole : public IConsole002, public IConsole001
 {

@@ -3,11 +3,13 @@
 #include <Windows.h>
 
 #include "GameConsole.hpp"
+#include "PatchManager.hpp"
 
 class ElDorito
 {
 public:
 	GameConsole Console;
+	PatchManager Patches;
 
 	void* CreateInterface(std::string name, int *returnCode);
 	void Initialize();

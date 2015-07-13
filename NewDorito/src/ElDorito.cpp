@@ -14,11 +14,13 @@ ElDorito::~ElDorito()
 
 void* ElDorito::CreateInterface(std::string name, int *returnCode)
 {
+	*returnCode = 0;
+
 	if (!name.compare(CONSOLE_INTERFACE_VERSION001) || !name.compare(CONSOLE_INTERFACE_VERSION002))
-	{
-		*returnCode = 0;
 		return &this->Console;
-	}
+
+	if (!name.compare(PATCHMANAGER_INTERFACE_VERSION001))
+		return &this->Patches;
 
 	*returnCode = 1;
 	return 0;

@@ -1,5 +1,6 @@
 #pragma once
 #include "IConsole.hpp"
+#include "IPatchManager.hpp"
 
 #ifdef DORITO_EXPORTS
 #define DORITO_API extern "C" __declspec(dllexport)
