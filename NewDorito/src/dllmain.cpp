@@ -16,6 +16,12 @@ bool ExitInstance()
 	return true;
 }
 
+// for compatibility with older-ED patched exes
+DORITO_API int GetAdaptersInfo()
+{
+	return 1337;
+}
+
 DORITO_API int GetEDVersion()
 {
 	return 1337;
@@ -39,4 +45,3 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved)
 
 	return false;
 }
-

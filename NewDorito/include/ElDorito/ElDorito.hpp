@@ -7,10 +7,6 @@
 #define DORITO_CPP_API __declspec(dllimport)
 #endif
 
-#include "IConsole.hpp"
-#include "IPatchManager.hpp"
-#include "ModuleBase.hpp"
-
 struct ElDoritoPluginInfo
 {
 	char* Name;
@@ -27,3 +23,7 @@ typedef bool(__cdecl* InitializePluginFunc)();
 /* exports from eldorito */
 DORITO_API int GetEDVersion();
 DORITO_API void* CreateInterface(const char *name, int *returnCode);
+
+#include "IConsole.hpp"
+#include "IPatchManager.hpp"
+#include "ModuleBase.hpp"

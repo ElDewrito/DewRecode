@@ -27,9 +27,6 @@
     <ClCompile Include="src\PatchManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Modules\ModuleBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Modules\ModuleGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

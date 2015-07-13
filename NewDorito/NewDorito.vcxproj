@@ -81,7 +81,6 @@
     <ClCompile Include="src\GameConsole.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\ElDorito.cpp" />
-    <ClCompile Include="src\Modules\ModuleBase.cpp" />
     <ClCompile Include="src\Modules\ModuleGame.cpp" />
     <ClCompile Include="src\Modules\ModuleMain.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
