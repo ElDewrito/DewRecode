@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\GameConsole.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\ElDorito.cpp" />
@@ -88,9 +89,11 @@
   <ItemGroup>
     <ClInclude Include="include\ElDorito\ElDorito.hpp" />
     <ClInclude Include="include\ElDorito\IConsole.hpp" />
+    <ClInclude Include="include\ElDorito\IEngine.hpp" />
     <ClInclude Include="include\ElDorito\IPatchManager.hpp" />
     <ClInclude Include="include\ElDorito\ModuleBase.hpp" />
     <ClInclude Include="include\ElDorito\Pointer.hpp" />
+    <ClInclude Include="src\Engine.hpp" />
     <ClInclude Include="src\GameConsole.hpp" />
     <ClInclude Include="src\ElDorito.hpp" />
     <ClInclude Include="src\Modules\ModuleGame.hpp" />

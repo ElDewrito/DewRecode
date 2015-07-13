@@ -26,4 +26,5 @@ DORITO_API void* CreateInterface(const char *name, int *returnCode);
 
 #include "IConsole.hpp"
 #include "IPatchManager.hpp"
+#include "IEngine.hpp"
 #include "ModuleBase.hpp"

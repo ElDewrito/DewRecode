@@ -22,6 +22,9 @@ void* ElDorito::CreateInterface(std::string name, int *returnCode)
 	if (!name.compare(PATCHMANAGER_INTERFACE_VERSION001))
 		return &this->Patches;
 
+	if (!name.compare(ENGINE_INTERFACE_VERSION001))
+		return &this->Engine;
+
 	*returnCode = 1;
 	return 0;
 }
