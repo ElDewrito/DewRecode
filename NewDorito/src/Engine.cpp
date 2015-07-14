@@ -15,16 +15,16 @@ namespace
 		GameTick(frames, deltaTimeInfo);
 	}
 
-	void TagsLoadedHook()
+	void TagsLoadedHookImpl()
 	{
 		ElDorito::Instance().Engine.TagsLoaded();
 	}
 
-	__declspec(naked) void TagsLoadedHookAsm()
+	__declspec(naked) void TagsLoadedHook()
 	{
 		__asm
 		{
-			call TagsLoadedHook
+			call TagsLoadedHookImpl
 			push 0x6D617467
 			push 0x5030EF
 			ret
@@ -39,7 +39,7 @@ Engine::Engine()
 	patches.TogglePatchSet(patches.AddPatchSet("Engine", {},
 	{
 		Hook("GameTick", 0x505E64, GameTickHook, HookType::Call),
-		Hook("TagsLoaded", 0x5030EA, TagsLoadedHookAsm, HookType::Jmp)
+		Hook("TagsLoaded", 0x5030EA, TagsLoadedHook, HookType::Jmp)
 	}));
 }
 
