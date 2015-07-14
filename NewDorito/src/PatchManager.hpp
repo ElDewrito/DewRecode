@@ -7,7 +7,7 @@ class PatchManager : public IPatchManager001
 {
 public:
 	Patch* AddPatch(std::string name, size_t address, const PatchInitializerListType& data);
-	Hook* AddHook(std::string name, size_t address, void* destFunc, HookFlags flags);
+	Hook* AddHook(std::string name, size_t address, void* destFunc, HookType type);
 	PatchSet* AddPatchSet(std::string name, const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks = {});
 
 	Patch* FindPatch(std::string name);

@@ -11,12 +11,12 @@ struct Patch
 	bool Enabled;
 };
 
-enum class HookFlags : int
+enum class HookType : int
 {
 	None = 0,
-	IsCall = 1,
-	IsJmpIfEqual = 2,
-	IsJmpIfNotEqual = 4 // unimplemented
+	Call = 1,
+	JmpIfEqual = 2,
+	JmpIfNotEqual = 4 // unimplemented
 };
 
 struct Hook
@@ -24,7 +24,7 @@ struct Hook
 	std::string Name;
 	size_t Address;
 	void* DestFunc;
-	HookFlags Flags;
+	HookType Type;
 	std::vector<unsigned char> Orig;
 	bool Enabled;
 };
@@ -57,7 +57,7 @@ class IPatchManager001
 {
 public:
 	virtual Patch* AddPatch(std::string name, size_t address, const PatchInitializerListType& data) = 0;
-	virtual Hook* AddHook(std::string name, size_t address, void* destFunc, HookFlags flags) = 0;
+	virtual Hook* AddHook(std::string name, size_t address, void* destFunc, HookType type) = 0;
 	virtual PatchSet* AddPatchSet(std::string name, const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks = {}) = 0;
 
 	virtual Patch* FindPatch(std::string name) = 0;

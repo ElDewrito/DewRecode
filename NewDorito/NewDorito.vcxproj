@@ -85,6 +85,7 @@
     <ClCompile Include="src\ElDorito.cpp" />
     <ClCompile Include="src\Modules\ModuleGame.cpp" />
     <ClCompile Include="src\Modules\ModuleMain.cpp" />
+    <ClCompile Include="src\Modules\Patches\PatchModuleCore.cpp" />
     <ClCompile Include="src\Modules\Patches\PatchModuleNetwork.cpp" />
     <ClCompile Include="src\Modules\Patches\PatchModuleUI.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
@@ -103,6 +104,7 @@
     <ClInclude Include="src\ElDorito.hpp" />
     <ClInclude Include="src\Modules\ModuleGame.hpp" />
     <ClInclude Include="src\Modules\ModuleMain.hpp" />
+    <ClInclude Include="src\Modules\Patches\PatchModuleCore.hpp" />
     <ClInclude Include="src\Modules\Patches\PatchModuleNetwork.hpp" />
     <ClInclude Include="src\Modules\Patches\PatchModuleUI.hpp" />
     <ClInclude Include="src\PatchManager.hpp" />

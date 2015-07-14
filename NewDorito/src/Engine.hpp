@@ -17,6 +17,8 @@ public:
 	{
 		return mainMenuHasShown;
 	}
+
+	Engine();
 private:
 	bool mainMenuHasShown = false;
 	std::vector<TickCallbackFunc> tickCallbacks;

@@ -47,7 +47,7 @@ namespace Modules
 		// add our patches
 		patches->TogglePatchSet(patches->AddPatchSet("Patches.UI", {}, 
 		{
-			{ "MenuUpdate", 0xADFB73, UI_MenuUpdateHook, HookFlags::IsCall, {}, false }
+			{ "MenuUpdate", 0xADFB73, UI_MenuUpdateHook, HookType::Call, {}, false }
 		}));
 	}
 

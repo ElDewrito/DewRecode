@@ -6,22 +6,22 @@ std::vector<unsigned char> GetHookBytes(Hook* hook)
 	uint8_t tempJMP[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 };
 	uint8_t tempJE[6] = { 0x0F, 0x84, 0x90, 0x90, 0x90, 0x90 };
 
-	if (hook->Flags == HookFlags::IsCall)
+	if (hook->Type == HookType::Call)
 		tempJMP[0] = 0xE8; // change it to call instruction
 
-	uint32_t patchSize = (hook->Flags == HookFlags::IsJmpIfEqual) ? 6 : 5;
+	uint32_t patchSize = (hook->Type == HookType::JmpIfEqual) ? 6 : 5;
 	uint32_t JMPSize = ((uint32_t)hook->DestFunc - (uint32_t)hook->Address - patchSize);
 
-	if (hook->Flags == HookFlags::IsJmpIfEqual)
+	if (hook->Type == HookType::JmpIfEqual)
 	{
 		memcpy(&tempJE[2], &JMPSize, 4);
 		return std::vector<unsigned char>(tempJE, tempJE + 6);
 	}
-	else if (hook->Flags == HookFlags::IsJmpIfNotEqual)
+	else if (hook->Type == HookType::JmpIfNotEqual)
 	{
 		// TODO
 	}
-	else //(hook->Flags == HookFlags::None || hook->Flags == HookFlags::IsCall)
+	else //(hook->Type == HookType::None || hook->Type == HookType::Call)
 	{
 		memcpy(&tempJMP[1], &JMPSize, 4);
 		return std::vector<unsigned char>(tempJMP, tempJMP + 5);
@@ -40,9 +40,9 @@ Patch* PatchManager::AddPatch(std::string name, size_t address, const PatchIniti
 	return &patches.back();
 }
 
-Hook* PatchManager::AddHook(std::string name, size_t address, void* destFunc, HookFlags flags)
+Hook* PatchManager::AddHook(std::string name, size_t address, void* destFunc, HookType type)
 {
-	Hook hook = { name, address, destFunc, flags, {}, false };
+	Hook hook = { name, address, destFunc, type, {}, false };
 
 	auto patchData = GetHookBytes(&hook);
 	hook.Orig.resize(patchData.size());

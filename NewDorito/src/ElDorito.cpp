@@ -46,7 +46,7 @@ void ElDorito::Initialize()
 	Console.ExecuteCommand("Execute dewrito_prefs.cfg");
 	Console.ExecuteCommand("Execute autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
-	// add and toggle(enable) the language patch
+	// add and toggle(enable) the language patch, can't be done in a module since we have to patch this after cfg files are read
 	Patches.TogglePatch(Patches.AddPatch("GameLanguage", 0x6333FD, { (unsigned char)Modules.Game.VarLanguageID->ValueInt }));
 
 	// Parse command-line commands

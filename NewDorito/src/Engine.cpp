@@ -1,4 +1,30 @@
 #include "Engine.hpp"
+#include "ElDorito.hpp"
+
+namespace
+{
+	void GameTickHook(int frames, float *deltaTimeInfo)
+	{
+		// Tick ElDorito
+		float deltaTime = *deltaTimeInfo;
+		ElDorito::Instance().Engine.Tick(std::chrono::duration<double>(deltaTime));
+
+		// Tick the game
+		typedef void(*GameTickFunc)(int frames, float *deltaTimeInfo);
+		auto GameTick = reinterpret_cast<GameTickFunc>(0x5336F0);
+		GameTick(frames, deltaTimeInfo);
+	}
+}
+
+Engine::Engine()
+{
+	auto& patches = ElDorito::Instance().Patches;
+
+	patches.TogglePatchSet(patches.AddPatchSet("Engine", {},
+	{
+		{ "GameTick", 0x505E64, GameTickHook, HookType::Call, {}, false }
+	}));
+}
 
 bool Engine::OnTick(TickCallbackFunc callback)
 {
