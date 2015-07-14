@@ -90,6 +90,7 @@
     <ClCompile Include="src\Modules\ModuleMain.cpp" />
     <ClCompile Include="src\Modules\ModulePlayer.cpp" />
     <ClCompile Include="src\Modules\Patches\PatchModuleArmor.cpp" />
+    <ClCompile Include="src\Modules\Patches\PatchModuleContentItems.cpp" />
     <ClCompile Include="src\Modules\Patches\PatchModuleCore.cpp" />
     <ClCompile Include="src\Modules\Patches\PatchModuleNetwork.cpp" />
     <ClCompile Include="src\Modules\Patches\PatchModuleUI.cpp" />
@@ -120,6 +121,7 @@
     <ClInclude Include="src\Modules\ModuleMain.hpp" />
     <ClInclude Include="src\Modules\ModulePlayer.hpp" />
     <ClInclude Include="src\Modules\Patches\PatchModuleArmor.hpp" />
+    <ClInclude Include="src\Modules\Patches\PatchModuleContentItems.hpp" />
     <ClInclude Include="src\Modules\Patches\PatchModuleCore.hpp" />
     <ClInclude Include="src\Modules\Patches\PatchModuleNetwork.hpp" />
     <ClInclude Include="src\Modules\Patches\PatchModuleUI.hpp" />

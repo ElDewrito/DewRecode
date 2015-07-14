@@ -14,6 +14,12 @@ ElDorito::~ElDorito()
 
 }
 
+/// <summary>
+/// Creates an interface to an exported class.
+/// </summary>
+/// <param name="name">The name of the interface.</param>
+/// <param name="returnCode">If 0 the interface was found successfully, otherwise the error code.</param>
+/// <returns>The requested interface, if found.</returns>
 void* ElDorito::CreateInterface(std::string name, int *returnCode)
 {
 	*returnCode = 0;
@@ -34,6 +40,9 @@ void* ElDorito::CreateInterface(std::string name, int *returnCode)
 	return 0;
 }
 
+/// <summary>
+/// Initializes this instance.
+/// </summary>
 void ElDorito::Initialize()
 {
 	if (this->inited)
@@ -102,6 +111,9 @@ void ElDorito::Initialize()
 	this->inited = true;
 }
 
+/// <summary>
+/// Loads and initializes plugins from the mods/plugins folder.
+/// </summary>
 void ElDorito::loadPlugins()
 {
 	auto pluginPath = std::tr2::sys::current_path<std::tr2::sys::path>();

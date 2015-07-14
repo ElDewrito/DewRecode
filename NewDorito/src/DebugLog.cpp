@@ -7,12 +7,13 @@
 
 #include "ElDorito.hpp"
 
-DebugLog::DebugLog()
-{
-
-	// todo: create/delete log file here
-}
-
+/// <summary>
+/// Logs a line to the log file.
+/// </summary>
+/// <param name="level">The severity of the message.</param>
+/// <param name="module">The module the message originated from.</param>
+/// <param name="format">The format of the message.</param>
+/// <param name="">Additional formatting.</param>
 void DebugLog::Log(LogLevel level, std::string module, std::string format, ...)
 {
 	// TODO: LogLevel

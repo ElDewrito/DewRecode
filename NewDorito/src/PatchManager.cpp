@@ -1,6 +1,11 @@
 #include "PatchManager.hpp"
 #include "../include/ElDorito/Pointer.hpp"
 
+/// <summary>
+/// Generates a byte array for the specified hook.
+/// </summary>
+/// <param name="hook">The hook.</param>
+/// <returns>A vector of each byte for the hook.</returns>
 std::vector<unsigned char> GetHookBytes(Hook* hook)
 {
 	uint8_t tempJMP[5] = { 0xE9, 0x90, 0x90, 0x90, 0x90 };
@@ -29,6 +34,13 @@ std::vector<unsigned char> GetHookBytes(Hook* hook)
 	return{};
 }
 
+/// <summary>
+/// Adds a patch to the manager.
+/// </summary>
+/// <param name="name">The patches name.</param>
+/// <param name="address">The address to patch.</param>
+/// <param name="data">The data to write.</param>
+/// <returns>The created <see cref="Patch"/>.</returns>
 Patch* PatchManager::AddPatch(std::string name, size_t address, const PatchInitializerListType& data)
 {
 	Patch patch(name, address, data);
@@ -40,6 +52,14 @@ Patch* PatchManager::AddPatch(std::string name, size_t address, const PatchIniti
 	return &patches.back();
 }
 
+/// <summary>
+/// Adds a hook to the manager.
+/// </summary>
+/// <param name="name">The hooks name.</param>
+/// <param name="address">The address to hook.</param>
+/// <param name="destFunc">The dest function.</param>
+/// <param name="type">The type of hook.</param>
+/// <returns>The created <see cref="Hook"/>.</returns>
 Hook* PatchManager::AddHook(std::string name, size_t address, void* destFunc, HookType type)
 {
 	Hook hook(name, address, destFunc, type);
@@ -52,6 +72,13 @@ Hook* PatchManager::AddHook(std::string name, size_t address, void* destFunc, Ho
 	return &hooks.back();
 }
 
+/// <summary>
+/// Adds a set of patches/hooks to the manager.
+/// </summary>
+/// <param name="name">The name of the patchset.</param>
+/// <param name="patches">The patches to include in the patchset.</param>
+/// <param name="hooks">The hooks to include in the patchset.</param>
+/// <returns>The created <see cref="PatchSet"/>.</returns>
 PatchSet* PatchManager::AddPatchSet(std::string name, const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks)
 {
 	PatchSet patchSet(name, patches, hooks);
@@ -73,6 +100,11 @@ PatchSet* PatchManager::AddPatchSet(std::string name, const PatchSetInitializerL
 	return &patchSets.back();
 }
 
+/// <summary>
+/// Looks up a patch based on its name.
+/// </summary>
+/// <param name="name">The name of the patch.</param>
+/// <returns>A pointer to the patch, if found.</returns>
 Patch* PatchManager::FindPatch(std::string name)
 {
 	for (auto it = patches.begin(); it != patches.end(); ++it)
@@ -83,6 +115,11 @@ Patch* PatchManager::FindPatch(std::string name)
 	return nullptr;
 }
 
+/// <summary>
+/// Looks up a hooj based on its name.
+/// </summary>
+/// <param name="name">The name of the hook.</param>
+/// <returns>A pointer to the hook, if found.</returns>
 Hook* PatchManager::FindHook(std::string name)
 {
 	for (auto it = hooks.begin(); it != hooks.end(); ++it)
@@ -93,6 +130,11 @@ Hook* PatchManager::FindHook(std::string name)
 	return nullptr;
 }
 
+/// <summary>
+/// Looks up a patch set based on its name.
+/// </summary>
+/// <param name="name">The name of the patch set.</param>
+/// <returns>A pointer to the patch set, if found.</returns>
 PatchSet* PatchManager::FindPatchSet(std::string name)
 {
 	for (auto it = patchSets.begin(); it != patchSets.end(); ++it)
@@ -103,6 +145,11 @@ PatchSet* PatchManager::FindPatchSet(std::string name)
 	return nullptr;
 }
 
+/// <summary>
+/// Toggles a patch based on its name.
+/// </summary>
+/// <param name="name">The name of the patch.</param>
+/// <returns>PatchStatus enum</returns>
 PatchStatus PatchManager::TogglePatch(std::string name)
 {
 	Patch* patch = FindPatch(name);
@@ -112,6 +159,11 @@ PatchStatus PatchManager::TogglePatch(std::string name)
 	return TogglePatch(patch) ? PatchStatus::Enabled : PatchStatus::Disabled;
 }
 
+/// <summary>
+/// Toggles a hook based on its name.
+/// </summary>
+/// <param name="name">The name of the hook.</param>
+/// <returns>PatchStatus enum</returns>
 PatchStatus PatchManager::ToggleHook(std::string name)
 {
 	Hook* hook = FindHook(name);
@@ -121,6 +173,11 @@ PatchStatus PatchManager::ToggleHook(std::string name)
 	return ToggleHook(hook) ? PatchStatus::Enabled : PatchStatus::Disabled;
 }
 
+/// <summary>
+/// Toggles a patch set (and all children patches/hooks) based on its name.
+/// </summary>
+/// <param name="name">The name of the patch set.</param>
+/// <returns>PatchStatus enum</returns>
 PatchStatus PatchManager::TogglePatchSet(std::string name)
 {
 	PatchSet* patchSet = FindPatchSet(name);
@@ -130,6 +187,11 @@ PatchStatus PatchManager::TogglePatchSet(std::string name)
 	return TogglePatchSet(patchSet) ? PatchStatus::Enabled : PatchStatus::Disabled;
 }
 
+/// <summary>
+/// Toggles a patch.
+/// </summary>
+/// <param name="patch">The patch to toggle.</param>
+/// <returns>true if the patch is active, false if not.</returns>
 bool PatchManager::TogglePatch(Patch* patch)
 {
 	if (patch->Enabled)
@@ -141,6 +203,11 @@ bool PatchManager::TogglePatch(Patch* patch)
 	return patch->Enabled;
 }
 
+/// <summary>
+/// Toggles a hook.
+/// </summary>
+/// <param name="hook">The hook to toggle.</param>
+/// <returns>true if the hook is active, false if not.</returns>
 bool PatchManager::ToggleHook(Hook* hook)
 {
 	if (hook->Enabled)
@@ -155,6 +222,11 @@ bool PatchManager::ToggleHook(Hook* hook)
 	return hook->Enabled;
 }
 
+/// <summary>
+/// Toggles a patch set (and all children patches/hooks).
+/// </summary>
+/// <param name="patchSet">The patch set to toggle.</param>
+/// <returns>true if the hook is active, false if not.</returns>
 bool PatchManager::TogglePatchSet(PatchSet* patchSet)
 {
 	for (auto it = patchSet->Patches.begin(); it != patchSet->Patches.end(); ++it)

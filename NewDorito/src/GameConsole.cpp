@@ -2,6 +2,11 @@
 #include <algorithm>
 #include <sstream>
 
+/// <summary>
+/// Finds a command based on its name.
+/// </summary>
+/// <param name="name">The name of the command.</param>
+/// <returns>A pointer to the command, if found.</returns>
 Command* GameConsole::FindCommand(const std::string& name)
 {
 	for (auto it = Commands.begin(); it < Commands.end(); it++)
@@ -11,6 +16,11 @@ Command* GameConsole::FindCommand(const std::string& name)
 	return nullptr;
 }
 
+/// <summary>
+/// Adds a command to the console commands list.
+/// </summary>
+/// <param name="command">The command to add.</param>
+/// <returns>A pointer to the command, if added successfully.</returns>
 Command* GameConsole::AddCommand(Command command)
 {
 	if (FindCommand(command.Name) || FindCommand(command.ShortName))
@@ -21,6 +31,9 @@ Command* GameConsole::AddCommand(Command command)
 	return &this->Commands.back();
 }
 
+/// <summary>
+/// Finalizes adding all commands: calls the update event for each command, ensuring default values are applied.
+/// </summary>
 void GameConsole::FinishAddCommands()
 {
 	for (auto command : Commands)
@@ -31,6 +44,12 @@ void GameConsole::FinishAddCommands()
 	}
 }
 
+/// <summary>
+/// Executes a command string (vector splits spaces?)
+/// </summary>
+/// <param name="command">The command string.</param>
+/// <param name="isUserInput">Whether the command came from the user or internally.</param>
+/// <returns>The output of the executed command.</returns>
 std::string GameConsole::ExecuteCommand(std::vector<std::string> command, bool isUserInput)
 {
 	std::string commandStr = "";
@@ -40,6 +59,12 @@ std::string GameConsole::ExecuteCommand(std::vector<std::string> command, bool i
 	return ExecuteCommand(commandStr, isUserInput);
 }
 
+/// <summary>
+/// Executes a command string, returning a bool indicating success.
+/// </summary>
+/// <param name="command">The command string.</param>
+/// <param name="isUserInput">Whether the command came from the user or internally.</param>
+/// <returns>Whether the command executed successfully.</returns>
 bool GameConsole::ExecuteCommandWithStatus(std::string command, bool isUserInput)
 {
 	int numArgs = 0;
@@ -85,6 +110,12 @@ bool GameConsole::ExecuteCommandWithStatus(std::string command, bool isUserInput
 	return false;
 }
 
+/// <summary>
+/// Executes a command string
+/// </summary>
+/// <param name="command">The command string.</param>
+/// <param name="isUserInput">Whether the command came from the user or internally.</param>
+/// <returns>The output of the executed command.</returns>
 std::string GameConsole::ExecuteCommand(std::string command, bool isUserInput)
 {
 	int numArgs = 0;
@@ -160,6 +191,12 @@ std::string GameConsole::ExecuteCommand(std::string command, bool isUserInput)
 	return retVal;
 }
 
+/// <summary>
+/// Gets the value of an int variable.
+/// </summary>
+/// <param name="name">The name of the variable.</param>
+/// <param name="value">Returns the value of the variable.</param>
+/// <returns>true if the value argument was updated, false if the variable isn't found or is the wrong type.</returns>
 bool GameConsole::GetVariableInt(const std::string& name, unsigned long& value)
 {
 	auto command = FindCommand(name);
@@ -170,6 +207,12 @@ bool GameConsole::GetVariableInt(const std::string& name, unsigned long& value)
 	return true;
 }
 
+/// <summary>
+/// Gets the value of an int64 variable.
+/// </summary>
+/// <param name="name">The name of the variable.</param>
+/// <param name="value">Returns the value of the variable.</param>
+/// <returns>true if the value argument was updated, false if the variable isn't found or is the wrong type.</returns>
 bool GameConsole::GetVariableInt64(const std::string& name, unsigned long long& value)
 {
 	auto command = FindCommand(name);
@@ -180,6 +223,12 @@ bool GameConsole::GetVariableInt64(const std::string& name, unsigned long long& 
 	return true;
 }
 
+/// <summary>
+/// Gets the value of a float variable.
+/// </summary>
+/// <param name="name">The name of the variable.</param>
+/// <param name="value">Returns the value of the variable.</param>
+/// <returns>true if the value argument was updated, false if the variable isn't found or is the wrong type.</returns>
 bool GameConsole::GetVariableFloat(const std::string& name, float& value)
 {
 	auto command = FindCommand(name);
@@ -190,6 +239,12 @@ bool GameConsole::GetVariableFloat(const std::string& name, float& value)
 	return true;
 }
 
+/// <summary>
+/// Gets the value of a string variable.
+/// </summary>
+/// <param name="name">The name of the variable.</param>
+/// <param name="value">Returns the value of the variable.</param>
+/// <returns>true if the value argument was updated, false if the variable isn't found or is the wrong type.</returns>
 bool GameConsole::GetVariableString(const std::string& name, std::string& value)
 {
 	auto command = FindCommand(name);
@@ -200,6 +255,13 @@ bool GameConsole::GetVariableString(const std::string& name, std::string& value)
 	return true;
 }
 
+/// <summary>
+/// Sets a variable from a string, string is converted to the proper variable type.
+/// </summary>
+/// <param name="name">The name of the variable.</param>
+/// <param name="value">The value to set.</param>
+/// <param name="previousValue">The previous value of the variable.</param>
+/// <returns>VariableSetReturnValue</returns>
 VariableSetReturnValue GameConsole::SetVariable(const std::string& name, std::string& value, std::string& previousValue)
 {
 	auto command = FindCommand(name);
@@ -209,6 +271,13 @@ VariableSetReturnValue GameConsole::SetVariable(const std::string& name, std::st
 	return SetVariable(command, value, previousValue);
 }
 
+/// <summary>
+/// Sets a variable from a string, string is converted to the proper variable type.
+/// </summary>
+/// <param name="command">The variable to update.</param>
+/// <param name="value">The value to set.</param>
+/// <param name="previousValue">The previous value of the variable.</param>
+/// <returns>VariableSetReturnValue</returns>
 VariableSetReturnValue GameConsole::SetVariable(Command* command, std::string& value, std::string& previousValue)
 {
 	try {
@@ -274,6 +343,11 @@ bool compare_commands(const Command& lhs, const Command& rhs)
 	return lhs.Name < rhs.Name;
 }
 
+/// <summary>
+/// Generates help text.
+/// </summary>
+/// <param name="moduleFilter">If set, only commands/variables belonging to this module will be printed.</param>
+/// <returns>Help text.</returns>
 std::string GameConsole::GenerateHelpText(std::string moduleFilter)
 {
 	std::deque<Command> tempCommands(Commands);
@@ -306,6 +380,10 @@ std::string GameConsole::GenerateHelpText(std::string moduleFilter)
 	return ss.str();
 }
 
+/// <summary>
+/// Writes each variables name and value to a string.
+/// </summary>
+/// <returns>Each variables name and value.</returns>
 std::string GameConsole::SaveVariables()
 {
 	std::stringstream ss;
@@ -319,6 +397,12 @@ std::string GameConsole::SaveVariables()
 	return ss.str();
 }
 
+/// <summary>
+/// Executes a list of commands, seperated by new lines
+/// </summary>
+/// <param name="commands">The command string.</param>
+/// <param name="isUserInput">Whether the command came from the user or internally.</param>
+/// <returns>Whether the command executed successfully.</returns>
 std::string GameConsole::ExecuteCommands(std::string& commands, bool isUserInput)
 {
 	std::istringstream stream(commands);
@@ -336,6 +420,10 @@ std::string GameConsole::ExecuteCommands(std::string& commands, bool isUserInput
 	return ss.str();
 }
 
+/// <summary>
+/// Executes the command queue.
+/// </summary>
+/// <returns>Results of the executed commands.</returns>
 std::string GameConsole::ExecuteQueue()
 {
 	std::stringstream ss;
