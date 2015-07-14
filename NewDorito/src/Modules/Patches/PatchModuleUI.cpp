@@ -27,9 +27,9 @@ namespace
 	}
 
 	// TODO: make this use a lambda func instead once VC supports converting lambdas to funcptrs
-	bool UIPatches_TickCallback(const std::chrono::duration<double>& deltaTime)
+	void UIPatches_TickCallback(const std::chrono::duration<double>& deltaTime)
 	{
-		return ElDorito::Instance().Modules.UIPatches.Tick(deltaTime);
+		ElDorito::Instance().Modules.UIPatches.Tick(deltaTime);
 	}
 }
 
@@ -43,11 +43,11 @@ namespace Modules
 		// add our patches
 		patches->TogglePatchSet(patches->AddPatchSet("Patches.UI", {}, 
 		{
-			{ "MenuUpdate", 0xADFB73, UI_MenuUpdateHook, HookType::Call, {}, false }
+			Hook("MenuUpdate", 0xADFB73, UI_MenuUpdateHook, HookType::Call)
 		}));
 	}
 
-	bool PatchModuleUI::Tick(const std::chrono::duration<double>& deltaTime)
+	void PatchModuleUI::Tick(const std::chrono::duration<double>& deltaTime)
 	{
 		if (DialogShow)
 		{
@@ -70,7 +70,5 @@ namespace Modules
 
 			DialogShow = false;
 		}
-
-		return true;
 	}
 }

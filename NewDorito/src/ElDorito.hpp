@@ -8,6 +8,9 @@
 #include "DebugLog.hpp"
 #include "Modules/ModuleMain.hpp"
 
+#include "Utils/Utils.hpp"
+#include <ElDorito/Pointer.hpp>
+
 class ElDorito
 {
 public:

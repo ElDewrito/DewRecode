@@ -3,12 +3,33 @@
 #include <string>
 #include <deque>
 
+
+typedef std::initializer_list<unsigned char> PatchInitializerListType;
+
 struct Patch
 {
 	std::string Name;
 	size_t Address;
 	std::vector<unsigned char> Data, Orig;
 	bool Enabled;
+	Patch(std::string name, size_t address, PatchInitializerListType data)
+	{
+		Name = name;
+		Address = address;
+		Data = data;
+		Orig = {};
+		Enabled = false;
+	}
+
+	Patch(std::string name, size_t address, bool nopFill, size_t numNops)
+	{
+		Name = name;
+		Address = address;
+		Data.resize(numNops);
+		memset(Data.data(), 0x90, numNops);
+		Orig = {};
+		Enabled = false;
+	}
 };
 
 enum class HookType : int
@@ -27,14 +48,34 @@ struct Hook
 	HookType Type;
 	std::vector<unsigned char> Orig;
 	bool Enabled;
+
+	Hook(std::string name, size_t address, void* destFunc, HookType type)
+	{
+		Name = name;
+		Address = address;
+		DestFunc = destFunc;
+		Type = type;
+		Orig = {};
+		Enabled = false;
+	}
 };
 
+typedef std::initializer_list<Patch> PatchSetInitializerListType;
+typedef std::initializer_list<Hook> PatchSetHookInitializerListType;
 struct PatchSet
 {
 	std::string Name;
 	std::deque<Patch> Patches;
 	std::deque<Hook> Hooks;
 	bool Enabled;
+
+	PatchSet(std::string name, PatchSetInitializerListType patches, PatchSetHookInitializerListType hooks)
+	{
+		Name = name;
+		Patches = patches;
+		Hooks = hooks;
+		Enabled = false;
+	}
 };
 
 enum class PatchStatus
@@ -43,10 +84,6 @@ enum class PatchStatus
 	Enabled,
 	Disabled
 };
-
-typedef std::initializer_list<unsigned char> PatchInitializerListType;
-typedef std::initializer_list<Patch> PatchSetInitializerListType;
-typedef std::initializer_list<Hook> PatchSetHookInitializerListType;
 
 /*
 if you want to make changes to this interface create a new IPatchManager002 class and make them there, then edit PatchManager class to inherit from the new class + this older one

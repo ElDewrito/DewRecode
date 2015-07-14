@@ -104,7 +104,7 @@ public:
 		{
 			std::stringstream ss;
 			ss << "Failed to set protection on memory address " << std::hex << _Pointer;
-			OutputDebugString(ss.str().c_str());
+			OutputDebugStringA(ss.str().c_str());
 			return;
 		}
 		*((T*)_Pointer) = value;

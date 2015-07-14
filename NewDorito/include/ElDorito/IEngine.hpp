@@ -6,8 +6,8 @@ if you want to make changes to this interface create a new IEngine002 class and 
 for backwards compatibility (with plugins compiled against an older ED SDK) we can't remove any methods, only add new ones to a new interface version
 */
 
-typedef bool(__cdecl* TickCallbackFunc)(const std::chrono::duration<double>& deltaTime);
-typedef bool(__cdecl* EngineCallbackFunc)();
+typedef void(__cdecl* TickCallbackFunc)(const std::chrono::duration<double>& deltaTime);
+typedef void(__cdecl* EngineCallbackFunc)();
 
 class IEngine001
 {

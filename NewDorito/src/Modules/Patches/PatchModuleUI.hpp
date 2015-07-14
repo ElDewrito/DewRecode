@@ -15,6 +15,6 @@ namespace Modules
 
 		PatchModuleUI();
 
-		bool Tick(const std::chrono::duration<double>& deltaTime);
+		void Tick(const std::chrono::duration<double>& deltaTime);
 	};
 }

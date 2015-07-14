@@ -38,8 +38,8 @@ Engine::Engine()
 
 	patches.TogglePatchSet(patches.AddPatchSet("Engine", {},
 	{
-		{ "GameTick", 0x505E64, GameTickHook, HookType::Call, {}, false },
-		{ "TagsLoaded", 0x5030EA, TagsLoadedHookAsm, HookType::Jmp, {}, false }
+		Hook("GameTick", 0x505E64, GameTickHook, HookType::Call),
+		Hook("TagsLoaded", 0x5030EA, TagsLoadedHookAsm, HookType::Jmp)
 	}));
 }
 

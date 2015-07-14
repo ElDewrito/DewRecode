@@ -31,7 +31,7 @@ std::vector<unsigned char> GetHookBytes(Hook* hook)
 
 Patch* PatchManager::AddPatch(std::string name, size_t address, const PatchInitializerListType& data)
 {
-	Patch patch = { name, address, data, {}, false };
+	Patch patch(name, address, data);
 
 	patch.Orig.resize(data.size());
 	Pointer(address).Read(patch.Orig.data(), patch.Orig.size());
@@ -42,7 +42,7 @@ Patch* PatchManager::AddPatch(std::string name, size_t address, const PatchIniti
 
 Hook* PatchManager::AddHook(std::string name, size_t address, void* destFunc, HookType type)
 {
-	Hook hook = { name, address, destFunc, type, {}, false };
+	Hook hook(name, address, destFunc, type);
 
 	auto patchData = GetHookBytes(&hook);
 	hook.Orig.resize(patchData.size());
@@ -54,7 +54,7 @@ Hook* PatchManager::AddHook(std::string name, size_t address, void* destFunc, Ho
 
 PatchSet* PatchManager::AddPatchSet(std::string name, const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks)
 {
-	PatchSet patchSet = { name, patches, hooks, false };
+	PatchSet patchSet(name, patches, hooks);
 
 	for (auto patch : patchSet.Patches)
 	{
