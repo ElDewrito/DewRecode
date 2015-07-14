@@ -5,6 +5,7 @@
 #include "GameConsole.hpp"
 #include "PatchManager.hpp"
 #include "Engine.hpp"
+#include "DebugLog.hpp"
 #include "Modules/ModuleMain.hpp"
 
 class ElDorito
@@ -13,6 +14,7 @@ public:
 	GameConsole Console;
 	PatchManager Patches;
 	Engine Engine;
+	DebugLog Logger;
 	Modules::ModuleMain Modules;
 
 	void* CreateInterface(std::string name, int *returnCode);

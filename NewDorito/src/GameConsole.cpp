@@ -347,88 +347,91 @@ std::string GameConsole::ExecuteQueue()
 	return ss.str();
 }
 
-char** CommandLineToArgvA(char* CmdLine, int* _argc)
+namespace
 {
-	char** argv;
-	char*  _argv;
-	unsigned long len;
-	unsigned long argc;
-	char   a;
-	unsigned long i, j;
+	char** CommandLineToArgvA(char* CmdLine, int* _argc)
+	{
+		char** argv;
+		char*  _argv;
+		unsigned long len;
+		unsigned long argc;
+		char   a;
+		unsigned long i, j;
 
-	bool in_QM;
-	bool in_TEXT;
-	bool in_SPACE;
+		bool in_QM;
+		bool in_TEXT;
+		bool in_SPACE;
 
-	len = strlen(CmdLine);
-	i = ((len + 2) / 2)*sizeof(void*) + sizeof(void*);
+		len = strlen(CmdLine);
+		i = ((len + 2) / 2)*sizeof(void*) + sizeof(void*);
 
-	argv = (char**)malloc(i + (len + 2)*sizeof(char));
-	//argv = (char**)GlobalAlloc(GMEM_FIXED,
-	//	i + (len + 2)*sizeof(char));
+		argv = (char**)malloc(i + (len + 2)*sizeof(char));
+		//argv = (char**)GlobalAlloc(GMEM_FIXED,
+		//	i + (len + 2)*sizeof(char));
 
-	if (!argv)
-		return 0;
+		if (!argv)
+			return 0;
 
-	_argv = (char*)(((unsigned char*)argv) + i);
+		_argv = (char*)(((unsigned char*)argv) + i);
 
-	argc = 0;
-	argv[argc] = _argv;
-	in_QM = false;
-	in_TEXT = false;
-	in_SPACE = true;
-	i = 0;
-	j = 0;
+		argc = 0;
+		argv[argc] = _argv;
+		in_QM = false;
+		in_TEXT = false;
+		in_SPACE = true;
+		i = 0;
+		j = 0;
 
-	while (a = CmdLine[i]) {
-		if (in_QM) {
-			if (a == '\"') {
-				in_QM = false;
-			}
-			else {
-				_argv[j] = a;
-				j++;
-			}
-		}
-		else {
-			switch (a) {
-			case '\"':
-				in_QM = true;
-				in_TEXT = true;
-				if (in_SPACE) {
-					argv[argc] = _argv + j;
-					argc++;
+		while (a = CmdLine[i]) {
+			if (in_QM) {
+				if (a == '\"') {
+					in_QM = false;
 				}
-				in_SPACE = false;
-				break;
-			case ' ':
-			case '\t':
-			case '\n':
-			case '\r':
-				if (in_TEXT) {
-					_argv[j] = '\0';
+				else {
+					_argv[j] = a;
 					j++;
 				}
-				in_TEXT = false;
-				in_SPACE = true;
-				break;
-			default:
-				in_TEXT = true;
-				if (in_SPACE) {
-					argv[argc] = _argv + j;
-					argc++;
-				}
-				_argv[j] = a;
-				j++;
-				in_SPACE = false;
-				break;
 			}
+			else {
+				switch (a) {
+				case '\"':
+					in_QM = true;
+					in_TEXT = true;
+					if (in_SPACE) {
+						argv[argc] = _argv + j;
+						argc++;
+					}
+					in_SPACE = false;
+					break;
+				case ' ':
+				case '\t':
+				case '\n':
+				case '\r':
+					if (in_TEXT) {
+						_argv[j] = '\0';
+						j++;
+					}
+					in_TEXT = false;
+					in_SPACE = true;
+					break;
+				default:
+					in_TEXT = true;
+					if (in_SPACE) {
+						argv[argc] = _argv + j;
+						argc++;
+					}
+					_argv[j] = a;
+					j++;
+					in_SPACE = false;
+					break;
+				}
+			}
+			i++;
 		}
-		i++;
-	}
-	_argv[j] = '\0';
-	argv[argc] = NULL;
+		_argv[j] = '\0';
+		argv[argc] = NULL;
 
-	(*_argc) = argc;
-	return argv;
+		(*_argc) = argc;
+		return argv;
+	}
 }

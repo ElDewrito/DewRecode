@@ -6,6 +6,9 @@ namespace Modules
 	class ModuleGame : public ModuleBase
 	{
 	public:
+		Command* VarLanguageID;
+		Command* VarSkipLauncher;
+
 		ModuleGame();
 	};
 }

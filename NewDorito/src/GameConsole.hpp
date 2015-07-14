@@ -1,7 +1,10 @@
 #pragma once
 #include <ElDorito/ElDorito.hpp>
 
-char** CommandLineToArgvA(char* CmdLine, int* _argc);
+namespace
+{
+	char** CommandLineToArgvA(char* CmdLine, int* _argc);
+}
 
 class GameConsole : public IConsole001
 {

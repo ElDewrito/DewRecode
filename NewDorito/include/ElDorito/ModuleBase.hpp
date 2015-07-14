@@ -10,30 +10,35 @@ namespace Modules
 		ModuleBase(std::string moduleName)
 		{
 			this->moduleName = moduleName;
+			int retCode = 0;
+			console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
+			engine = reinterpret_cast<IEngine001*>(CreateInterface(ENGINE_INTERFACE_VERSION001, &retCode));
+			patches = reinterpret_cast<IPatchManager001*>(CreateInterface(PATCHMANAGER_INTERFACE_VERSION001, &retCode));
+			logger = reinterpret_cast<IDebugLog001*>(CreateInterface(DEBUGLOG_INTERFACE_VERSION001, &retCode));
+			// TODO: check retCode and output to debug log if it's not 0
 		}
 
 		bool GetVariableInt(const std::string& name, unsigned long& value)
 		{
-			int retCode = 0;
-			IConsole001* console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
-			return retCode == 0 && console->GetVariableInt(moduleName + "." + name, value);
+			return console->GetVariableInt(moduleName + "." + name, value);
 		}
 
 		bool GetVariableFloat(const std::string& name, float& value)
 		{
-			int retCode = 0;
-			IConsole001* console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
-			return retCode == 0 && console->GetVariableFloat(moduleName + "." + name, value);
+			return console->GetVariableFloat(moduleName + "." + name, value);
 		}
 
 		bool GetVariableString(const std::string& name, std::string& value)
 		{
-			int retCode = 0;
-			IConsole001* console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
-			return retCode == 0 && console->GetVariableString(moduleName + "." + name, value);
+			return console->GetVariableString(moduleName + "." + name, value);
 		}
 
 	protected:
+		IConsole001* console;
+		IEngine001* engine;
+		IPatchManager001* patches;
+		IDebugLog001* logger;
+
 		Command* AddCommand(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, CommandUpdateFunc updateEvent, std::initializer_list<std::string> arguments = {})
 		{
 			Command command;
@@ -52,9 +57,7 @@ namespace Modules
 			command.Type = CommandType::Command;
 			command.UpdateEvent = updateEvent;
 
-			int retCode = 0;
-			IConsole001* console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
-			return retCode != 0 ? 0 : console->AddCommand(command);
+			return console->AddCommand(command);
 		}
 
 		Command* AddVariableInt(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, unsigned long defaultValue = 0, CommandUpdateFunc updateEvent = 0)
@@ -75,9 +78,7 @@ namespace Modules
 			command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
 			command.UpdateEvent = updateEvent;
 
-			int retCode = 0;
-			IConsole001* console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
-			return retCode != 0 ? 0 : console->AddCommand(command);
+			return console->AddCommand(command);
 		}
 
 		Command* AddVariableInt64(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, unsigned long long defaultValue = 0, CommandUpdateFunc updateEvent = 0)
@@ -98,9 +99,7 @@ namespace Modules
 			command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
 			command.UpdateEvent = updateEvent;
 
-			int retCode = 0;
-			IConsole001* console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
-			return retCode != 0 ? 0 : console->AddCommand(command);
+			return console->AddCommand(command);
 		}
 
 		Command* AddVariableFloat(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, float defaultValue = 0, CommandUpdateFunc updateEvent = 0)
@@ -121,9 +120,7 @@ namespace Modules
 			command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
 			command.UpdateEvent = updateEvent;
 
-			int retCode = 0;
-			IConsole001* console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
-			return retCode != 0 ? 0 : console->AddCommand(command);
+			return console->AddCommand(command);
 		}
 
 		Command* AddVariableString(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, std::string defaultValue = "", CommandUpdateFunc updateEvent = 0)
@@ -143,9 +140,7 @@ namespace Modules
 			command.ValueString = defaultValue;
 			command.UpdateEvent = updateEvent;
 
-			int retCode = 0;
-			IConsole001* console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
-			return retCode != 0 ? 0 : console->AddCommand(command);
+			return console->AddCommand(command);
 		}
 
 	private:

@@ -1,15 +1,92 @@
 #include "ModuleMain.hpp"
+#include <sstream>
+#include <iostream>
+#include <fstream>
 
-bool CommandHelp(const std::vector<std::string>& Arguments, std::string& returnInfo)
+#include "../ElDorito.hpp"
+
+namespace
 {
-	returnInfo = "Help command";
-	return true;
+	bool CommandHelp(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		auto& console = ElDorito::Instance().Console;
+		if (Arguments.size() > 0)
+		{
+			auto cmdName = Arguments[0];
+			auto* cmd = console.FindCommand(cmdName);
+			if (!cmd)
+			{
+				// try searching for it as a module
+				bool isModule = false;
+				for (auto it = console.Commands.begin(); it < console.Commands.end(); it++)
+					if (it->ModuleName.length() > 0 && !_stricmp(it->ModuleName.c_str(), cmdName.c_str()))
+					{
+						isModule = true;
+						break;
+					}
+
+				if (isModule)
+					returnInfo = console.GenerateHelpText(cmdName);
+				else
+					returnInfo = "Command/Variable not found";
+
+				return isModule;
+			}
+			// TODO: returnInfo = cmd->GenerateHelpText();
+			return true;
+		}
+		returnInfo = console.GenerateHelpText();
+		return true;
+	}
+
+	bool CommandExecute(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		if (Arguments.size() <= 0)
+		{
+			returnInfo = "Usage: Execute <filename>";
+			return false;
+		}
+		std::ifstream in(Arguments[0], std::ios::in | std::ios::binary);
+		if (in && in.is_open())
+		{
+			std::string contents;
+			in.seekg(0, std::ios::end);
+			contents.resize((unsigned int)in.tellg());
+			in.seekg(0, std::ios::beg);
+			in.read(&contents[0], contents.size());
+			in.close();
+			returnInfo = ElDorito::Instance().Console.ExecuteCommands(contents, true);
+			return true;
+		}
+		returnInfo = "Unable to open file " + Arguments[0] + " for reading.";
+		return false;
+	}
+
+	bool CommandWriteConfig(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		std::string prefsName = "dewrito_prefs.cfg";
+		if (Arguments.size() > 0)
+			prefsName = Arguments[0];
+
+		std::ofstream outFile(prefsName, std::ios::trunc);
+		if (outFile.fail())
+		{
+			returnInfo = "Failed to write config to " + prefsName + "!";
+			return false;
+		}
+		outFile << ElDorito::Instance().Console.SaveVariables();
+
+		returnInfo = "Wrote config to " + prefsName;
+		return true;
+	}
 }
 
 namespace Modules
 {
 	ModuleMain::ModuleMain() : ModuleBase("")
 	{
-		AddCommand("Help", "", "Displays some help text", eCommandFlagsNone, CommandHelp);
+		AddCommand("Help", "help", "Displays this help text", eCommandFlagsNone, CommandHelp);
+		AddCommand("Execute", "exec", "Executes a list of commands", eCommandFlagsNone, CommandExecute, { "filename(string) The list of commands to execute" });
+		AddCommand("WriteConfig", "config_write", "Writes the ElDewrito config file", eCommandFlagsNone, CommandWriteConfig, { "filename(string) Optional, the filename to write the config to" });
 	}
 }
