@@ -49,6 +49,12 @@ bool Engine::OnTick(TickCallbackFunc callback)
 	return true; // todo: check if this callback is already registered
 }
 
+bool Engine::OnFirstTick(EngineCallbackFunc callback)
+{
+	firstTickCallbacks.push_back(callback);
+	return true; // todo: check if this callback is already registered
+}
+
 bool Engine::OnMainMenuShown(EngineCallbackFunc callback)
 {
 	mainMenuShownCallbacks.push_back(callback);
@@ -63,6 +69,13 @@ bool Engine::OnTagsLoaded(EngineCallbackFunc callback)
 
 void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 {
+	if (!hasFirstTickTocked)
+	{
+		for (auto callback : firstTickCallbacks)
+			callback();
+
+		hasFirstTickTocked = true;
+	}
 	for (auto callback : tickCallbacks)
 		callback(deltaTime);
 }

@@ -235,6 +235,8 @@ namespace Modules
 			// Fix for XnAddrToInAddr to try checking syslink-menu data for XnAddr->InAddr mapping before consulting XNet
 			Hook("XnAddrToInAddr", 0x430B6C, Network_XnAddrToInAddrHook, HookType::Call),
 			Hook("InAddrToXnAddr", 0x430F51, Network_InAddrToXnAddrHook, HookType::Call),
+
+			// Player-properties packet hooks
 			Hook("PlayerProperties1", 0x45DD20, PeerRequestPlayerDesiredPropertiesUpdateHook, HookType::Jmp),
 			Hook("PlayerProperties2", 0x4DAF4F, ApplyPlayerPropertiesExtended, HookType::Call),
 			Hook("PlayerProperties3", 0x4DFF7E, RegisterPlayerPropertiesPacketHook, HookType::Call),

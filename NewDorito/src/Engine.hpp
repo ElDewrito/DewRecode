@@ -7,6 +7,7 @@ class Engine : public IEngine001
 public:
 	// used to register callbacks for these events
 	bool OnTick(TickCallbackFunc callback);
+	bool OnFirstTick(EngineCallbackFunc callback);
 	bool OnMainMenuShown(EngineCallbackFunc callback);
 	bool OnTagsLoaded(EngineCallbackFunc callback);
 
@@ -23,7 +24,9 @@ public:
 	Engine();
 private:
 	bool mainMenuHasShown = false;
+	bool hasFirstTickTocked = false;
 	std::vector<TickCallbackFunc> tickCallbacks;
+	std::vector<EngineCallbackFunc> firstTickCallbacks;
 	std::vector<EngineCallbackFunc> mainMenuShownCallbacks;
 	std::vector<EngineCallbackFunc> tagsLoadedCallbacks;
 };

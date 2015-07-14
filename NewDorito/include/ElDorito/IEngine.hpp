@@ -13,6 +13,7 @@ class IEngine001
 {
 public:
 	virtual bool OnTick(TickCallbackFunc callback) = 0;
+	virtual bool OnFirstTick(EngineCallbackFunc callback) = 0;
 	virtual bool OnMainMenuShown(EngineCallbackFunc callback) = 0;
 	virtual bool OnTagsLoaded(EngineCallbackFunc callback) = 0;
 
