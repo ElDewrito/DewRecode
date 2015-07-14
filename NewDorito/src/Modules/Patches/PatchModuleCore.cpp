@@ -19,5 +19,10 @@ namespace Modules
 			Patch("VariantOverride1", 0x5A315F, { 0xEB }),
 			Patch("VariantOverride2", 0x5A31A4, { 0xEB }),
 		}));
+
+		/*
+		// Level load patch
+		Patch::NopFill(Pointer::Base(0x2D26DF), 5);
+		*/
 	}
 }

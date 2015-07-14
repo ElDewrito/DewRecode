@@ -8,6 +8,12 @@ namespace Modules
 	public:
 		Command* VarLanguageID;
 		Command* VarSkipLauncher;
+		Command* VarLogName;
+
+		int DebugFlags;
+		std::vector<std::string> MapList;
+		std::vector<std::string> FiltersExclude;
+		std::vector<std::string> FiltersInclude;
 
 		ModuleGame();
 	};

@@ -71,6 +71,8 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 {
 	if (!hasFirstTickTocked)
 	{
+		ElDorito::Instance().Logger.Log(LogLevel::Debug, "Engine", "First tick just tocked!");
+
 		for (auto callback : firstTickCallbacks)
 			callback();
 
@@ -85,6 +87,8 @@ void Engine::MainMenuShown()
 	if (this->mainMenuHasShown)
 		return; // this event should only occur once during the lifecycle of the game
 
+	ElDorito::Instance().Logger.Log(LogLevel::Debug, "Engine", "Mainmenu shown!");
+
 	this->mainMenuHasShown = true;
 
 	for (auto callback : mainMenuShownCallbacks)
@@ -93,6 +97,8 @@ void Engine::MainMenuShown()
 
 void Engine::TagsLoaded()
 {
+	ElDorito::Instance().Logger.Log(LogLevel::Debug, "Engine", "Tags loaded!");
+
 	for (auto callback : tagsLoadedCallbacks)
 		callback();
 }
