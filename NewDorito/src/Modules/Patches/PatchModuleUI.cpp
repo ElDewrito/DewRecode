@@ -110,7 +110,7 @@ namespace
 		strcpy_s(destBuf, 0x40, windowTitle.c_str());
 	}
 
-	void UIPatches_ApplyMapNameFixes()
+	void UIPatches_ApplyMapNameFixes(void* param)
 	{
 		uint32_t levelsGlobalPtr = Pointer(0x189E2E0).Read<uint32_t>();
 		if (!levelsGlobalPtr)
@@ -167,7 +167,7 @@ namespace Modules
 	{
 		// register our tick callbacks
 		engine->OnTick(UIPatches_TickCallback);
-		engine->OnFirstTick(UIPatches_ApplyMapNameFixes);
+		engine->OnEvent(EngineEvent::FirstTick, UIPatches_ApplyMapNameFixes);
 
 		// add our patches
 		patches->TogglePatchSet(patches->AddPatchSet("Patches.UI",

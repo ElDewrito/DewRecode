@@ -17,7 +17,7 @@ namespace
 
 	void TagsLoadedHookImpl()
 	{
-		ElDorito::Instance().Engine.TagsLoaded();
+		ElDorito::Instance().Engine.Event(EngineEvent::TagsLoaded);
 	}
 
 	__declspec(naked) void TagsLoadedHook()
@@ -49,21 +49,9 @@ bool Engine::OnTick(TickCallbackFunc callback)
 	return true; // todo: check if this callback is already registered
 }
 
-bool Engine::OnFirstTick(EngineCallbackFunc callback)
+bool Engine::OnEvent(EngineEvent evt, EventCallbackFunc callback)
 {
-	firstTickCallbacks.push_back(callback);
-	return true; // todo: check if this callback is already registered
-}
-
-bool Engine::OnMainMenuShown(EngineCallbackFunc callback)
-{
-	mainMenuShownCallbacks.push_back(callback);
-	return true; // todo: check if this callback is already registered
-}
-
-bool Engine::OnTagsLoaded(EngineCallbackFunc callback)
-{
-	tagsLoadedCallbacks.push_back(callback);
+	eventCallbacks.insert(std::pair<EventCallbackFunc, EngineEvent>(callback, evt));
 	return true; // todo: check if this callback is already registered
 }
 
@@ -71,12 +59,8 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 {
 	if (!hasFirstTickTocked)
 	{
-		ElDorito::Instance().Logger.Log(LogLevel::Debug, "Engine", "First tick just tocked!");
-
-		for (auto callback : firstTickCallbacks)
-			callback();
-
 		hasFirstTickTocked = true;
+		this->Event(EngineEvent::FirstTick);
 	}
 	for (auto callback : tickCallbacks)
 		callback(deltaTime);
@@ -87,18 +71,18 @@ void Engine::MainMenuShown()
 	if (this->mainMenuHasShown)
 		return; // this event should only occur once during the lifecycle of the game
 
-	ElDorito::Instance().Logger.Log(LogLevel::Debug, "Engine", "Mainmenu shown!");
-
 	this->mainMenuHasShown = true;
-
-	for (auto callback : mainMenuShownCallbacks)
-		callback();
+	this->Event(EngineEvent::MainMenuShown);
 }
 
-void Engine::TagsLoaded()
+void Engine::Event(EngineEvent evt, void* param)
 {
-	ElDorito::Instance().Logger.Log(LogLevel::Debug, "Engine", "Tags loaded!");
+	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%d", evt);
 
-	for (auto callback : tagsLoadedCallbacks)
-		callback();
+	for (auto kvp : eventCallbacks)
+	{
+		if (kvp.second != evt)
+			continue;
+		kvp.first(param);
+	}
 }

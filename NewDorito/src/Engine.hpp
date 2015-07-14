@@ -1,5 +1,6 @@
 #pragma once
 #include <ElDorito/ElDorito.hpp>
+#include <map>
 
 // handles game events and callbacks for different modules/plugins
 class Engine : public IEngine001
@@ -7,14 +8,12 @@ class Engine : public IEngine001
 public:
 	// used to register callbacks for these events
 	bool OnTick(TickCallbackFunc callback);
-	bool OnFirstTick(EngineCallbackFunc callback);
-	bool OnMainMenuShown(EngineCallbackFunc callback);
-	bool OnTagsLoaded(EngineCallbackFunc callback);
+	bool OnEvent(EngineEvent evt, EventCallbackFunc callback);
 
 	// called when an event occurs, calls each registered callback for the event
 	void Tick(const std::chrono::duration<double>& deltaTime);
 	void MainMenuShown();
-	void TagsLoaded();
+	void Event(EngineEvent evt, void* param = 0);
 
 	bool HasMainMenuShown()
 	{
@@ -26,7 +25,5 @@ private:
 	bool mainMenuHasShown = false;
 	bool hasFirstTickTocked = false;
 	std::vector<TickCallbackFunc> tickCallbacks;
-	std::vector<EngineCallbackFunc> firstTickCallbacks;
-	std::vector<EngineCallbackFunc> mainMenuShownCallbacks;
-	std::vector<EngineCallbackFunc> tagsLoadedCallbacks;
+	std::map<EventCallbackFunc, EngineEvent> eventCallbacks;
 };

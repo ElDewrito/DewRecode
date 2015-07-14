@@ -390,7 +390,7 @@ namespace
 		{ "tankmode_human", 4 },
 	};
 
-	void UI_RefreshPlayerArmor()
+	void UI_RefreshPlayerArmor(void* param)
 	{
 		updateUiPlayerArmor = true;
 	}
@@ -416,7 +416,7 @@ namespace Modules
 			Hook("MainMenuModel", 0x60086D, UiPlayerModelArmorHook, HookType::Call)
 		}));
 
-		engine->OnTagsLoaded(UI_RefreshPlayerArmor);
+		engine->OnEvent(EngineEvent::TagsLoaded, UI_RefreshPlayerArmor);
 	}
 
 	void PatchModuleArmor::RefreshUiPlayer()
