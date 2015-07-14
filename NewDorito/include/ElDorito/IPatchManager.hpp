@@ -13,10 +13,10 @@ struct Patch
 
 enum class HookType : int
 {
-	None = 0,
-	Call = 1,
-	JmpIfEqual = 2,
-	JmpIfNotEqual = 4 // unimplemented
+	Call,
+	Jmp,
+	JmpIfEqual,
+	JmpIfNotEqual, // unimplemented
 };
 
 struct Hook

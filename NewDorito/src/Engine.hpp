@@ -7,11 +7,13 @@ class Engine : public IEngine001
 public:
 	// used to register callbacks for these events
 	bool OnTick(TickCallbackFunc callback);
-	bool OnMainMenuShown(MainMenuShownCallbackFunc callback);
+	bool OnMainMenuShown(EngineCallbackFunc callback);
+	bool OnTagsLoaded(EngineCallbackFunc callback);
 
 	// called when an event occurs, calls each registered callback for the event
 	void Tick(const std::chrono::duration<double>& deltaTime);
 	void MainMenuShown();
+	void TagsLoaded();
 
 	bool HasMainMenuShown()
 	{
@@ -22,5 +24,6 @@ public:
 private:
 	bool mainMenuHasShown = false;
 	std::vector<TickCallbackFunc> tickCallbacks;
-	std::vector<MainMenuShownCallbackFunc> mainMenuShownCallbacks;
+	std::vector<EngineCallbackFunc> mainMenuShownCallbacks;
+	std::vector<EngineCallbackFunc> tagsLoadedCallbacks;
 };

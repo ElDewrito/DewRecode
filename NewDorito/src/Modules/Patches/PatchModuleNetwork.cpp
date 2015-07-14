@@ -55,7 +55,7 @@ namespace
 		}
 
 		typedef char(*Network_XnAddrToInAddrFunc)(void* pxna, void* pxnkid, void* in_addr);
-		Network_XnAddrToInAddrFunc XnAddrToInAddr = (Network_XnAddrToInAddrFunc)0x52D840;
+		auto XnAddrToInAddr = reinterpret_cast<Network_XnAddrToInAddrFunc>(0x52D840);
 		return XnAddrToInAddr(pxna, pxnkid, in_addr);
 	}
 
@@ -87,7 +87,7 @@ namespace
 		}
 
 		typedef char(*Network_InAddrToXnAddrFunc)(void* ina, void * pxna, void * pxnkid);
-		Network_InAddrToXnAddrFunc InAddrToXnAddr = (Network_InAddrToXnAddrFunc)0x52D840;
+		auto InAddrToXnAddr = reinterpret_cast<Network_InAddrToXnAddrFunc>(0x52D840);
 		return InAddrToXnAddr(ina, pxna, pxnkid);
 	}
 }
@@ -99,7 +99,7 @@ namespace Modules
 		patches->TogglePatchSet(patches->AddPatchSet("Patches.Network", {},
 		{
 			// Fix network debug strings having (null) instead of an IP address
-			{ "IPStringFromInAddr", 0x43F6F0, Network_GetIPStringFromInAddr, HookType::None, {}, false },
+			{ "IPStringFromInAddr", 0x43F6F0, Network_GetIPStringFromInAddr, HookType::Jmp, {}, false },
 
 			// Fix for XnAddrToInAddr to try checking syslink-menu data for XnAddr->InAddr mapping before consulting XNet
 			{ "XnAddrToInAddr", 0x430B6C, Network_XnAddrToInAddrHook, HookType::Call, {}, false },

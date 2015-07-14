@@ -1,8 +1,6 @@
 #include "PatchModuleUI.hpp"
 #include "../../ElDorito.hpp"
 
-Modules::PatchModuleUI* uiPatches;
-
 namespace
 {
 	void __fastcall UI_MenuUpdateHook(void* a1, int unused, int menuIdToLoad)
@@ -19,18 +17,19 @@ namespace
 
 		if (shouldUpdate)
 		{
-			uiPatches->DialogStringId = menuIdToLoad;
-			uiPatches->DialogArg1 = 0xFF;
-			uiPatches->DialogFlags = 4;
-			uiPatches->DialogParentStringId = 0x1000D;
-			uiPatches->DialogShow = true;
+			auto& uiPatches = ElDorito::Instance().Modules.UIPatches;
+			uiPatches.DialogStringId = menuIdToLoad;
+			uiPatches.DialogArg1 = 0xFF;
+			uiPatches.DialogFlags = 4;
+			uiPatches.DialogParentStringId = 0x1000D;
+			uiPatches.DialogShow = true;
 		}
 	}
 
 	// TODO: make this use a lambda func instead once VC supports converting lambdas to funcptrs
 	bool UIPatches_TickCallback(const std::chrono::duration<double>& deltaTime)
 	{
-		return uiPatches->Tick(deltaTime);
+		return ElDorito::Instance().Modules.UIPatches.Tick(deltaTime);
 	}
 }
 
@@ -38,9 +37,6 @@ namespace Modules
 {
 	PatchModuleUI::PatchModuleUI() : ModuleBase("Patches.UI")
 	{
-		// shim so that the callback can call our tick func
-		uiPatches = this;
-
 		// register our tick callback
 		engine->OnTick(UIPatches_TickCallback);
 

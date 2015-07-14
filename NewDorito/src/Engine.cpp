@@ -14,6 +14,22 @@ namespace
 		auto GameTick = reinterpret_cast<GameTickFunc>(0x5336F0);
 		GameTick(frames, deltaTimeInfo);
 	}
+
+	void TagsLoadedHook()
+	{
+		ElDorito::Instance().Engine.TagsLoaded();
+	}
+
+	__declspec(naked) void TagsLoadedHookAsm()
+	{
+		__asm
+		{
+			call TagsLoadedHook
+			push 0x6D617467
+			push 0x5030EF
+			ret
+		}
+	}
 }
 
 Engine::Engine()
@@ -22,7 +38,8 @@ Engine::Engine()
 
 	patches.TogglePatchSet(patches.AddPatchSet("Engine", {},
 	{
-		{ "GameTick", 0x505E64, GameTickHook, HookType::Call, {}, false }
+		{ "GameTick", 0x505E64, GameTickHook, HookType::Call, {}, false },
+		{ "TagsLoaded", 0x5030EA, TagsLoadedHookAsm, HookType::Jmp, {}, false }
 	}));
 }
 
@@ -32,9 +49,15 @@ bool Engine::OnTick(TickCallbackFunc callback)
 	return true; // todo: check if this callback is already registered
 }
 
-bool Engine::OnMainMenuShown(MainMenuShownCallbackFunc callback)
+bool Engine::OnMainMenuShown(EngineCallbackFunc callback)
 {
 	mainMenuShownCallbacks.push_back(callback);
+	return true; // todo: check if this callback is already registered
+}
+
+bool Engine::OnTagsLoaded(EngineCallbackFunc callback)
+{
+	tagsLoadedCallbacks.push_back(callback);
 	return true; // todo: check if this callback is already registered
 }
 
@@ -52,5 +75,11 @@ void Engine::MainMenuShown()
 	this->mainMenuHasShown = true;
 
 	for (auto callback : mainMenuShownCallbacks)
+		callback();
+}
+
+void Engine::TagsLoaded()
+{
+	for (auto callback : tagsLoadedCallbacks)
 		callback();
 }
