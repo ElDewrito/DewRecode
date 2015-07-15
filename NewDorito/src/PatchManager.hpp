@@ -23,6 +23,10 @@ public:
 	bool ToggleHook(Hook* hook);
 	bool TogglePatchSet(PatchSet* patchSet);
 
+	bool EnablePatch(Patch* patch, bool enable = true);
+	bool EnableHook(Hook* hook, bool enable = true);
+	bool EnablePatchSet(PatchSet* patchSet, bool enable = true);
+
 private:
 	std::deque<Patch> patches;
 	std::deque<Hook> hooks;

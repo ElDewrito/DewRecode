@@ -238,3 +238,42 @@ bool PatchManager::TogglePatchSet(PatchSet* patchSet)
 	patchSet->Enabled = !patchSet->Enabled;
 	return patchSet->Enabled;
 }
+
+/// <summary>
+/// Enables/disables a patch.
+/// </summary>
+/// <param name="patch">The patch.</param>
+/// <param name="enable">Whether to enable it or not (default true)</param>
+/// <returns>The status of the patch.</returns>
+bool PatchManager::EnablePatch(Patch* patch, bool enable)
+{
+	if (patch->Enabled == enable)
+		return true; // patch is already set to this
+	return TogglePatch(patch);
+}
+
+/// <summary>
+/// Enables/disables a hook.
+/// </summary>
+/// <param name="hook">The hook.</param>
+/// <param name="enable">Whether to enable it or not (default true)</param>
+/// <returns>The status of the hook.</returns>
+bool PatchManager::EnableHook(Hook* hook, bool enable)
+{
+	if (hook->Enabled == enable)
+		return true; // hook is already set to this
+	return ToggleHook(hook);
+}
+
+/// <summary>
+/// Enables/disables a patch set.
+/// </summary>
+/// <param name="patchSet">The patch set.</param>
+/// <param name="enable">Whether to enable it or not (default true)</param>
+/// <returns>The status of the patch set.</returns>
+bool PatchManager::EnablePatchSet(PatchSet* patchSet, bool enable)
+{
+	if (patchSet->Enabled == enable)
+		return true; // patchset is already set to this
+	return TogglePatchSet(patchSet);
+}

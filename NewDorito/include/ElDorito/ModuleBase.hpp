@@ -72,6 +72,15 @@ namespace Modules
 			return console->GetVariableString(moduleName + "." + name, value);
 		}
 
+		/// <summary>
+		/// Gets the patch set for this module.
+		/// </summary>
+		/// <returns>The patch set.</returns>
+		PatchSet* GetModulePatchSet()
+		{
+			return modulePatches;
+		}
+
 	protected:
 		IConsole001* console;
 		IEngine001* engine;
@@ -86,15 +95,15 @@ namespace Modules
 		/// <returns>The created & enabled patchset</returns>
 		PatchSet* AddModulePatches(const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks = {})
 		{
-			PatchSet* patchSet = this->patches->AddPatchSet(moduleName, patches, hooks);
-			if (!patchSet)
+			modulePatches = this->patches->AddPatchSet(moduleName, patches, hooks);
+			if (!modulePatches)
 			{
 				logger->Log(LogLevel::Error, moduleName, "Failed to add module patches?!");
 				return nullptr;
 			}
 			// toggle/enable the patch set
-			this->patches->TogglePatchSet(patchSet);
-			return patchSet;
+			this->patches->TogglePatchSet(modulePatches);
+			return modulePatches;
 		}
 
 		/// <summary>
@@ -256,5 +265,6 @@ namespace Modules
 #pragma warning(disable: 4251)
 		std::string moduleName;
 #pragma warning(pop)
+		PatchSet* modulePatches = nullptr;
 	};
 }

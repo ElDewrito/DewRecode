@@ -108,6 +108,10 @@ public:
 	virtual bool TogglePatch(Patch* patch) = 0;
 	virtual bool ToggleHook(Hook* hook) = 0;
 	virtual bool TogglePatchSet(PatchSet* patchSet) = 0;
+
+	virtual bool EnablePatch(Patch* patch, bool enable = true) = 0;
+	virtual bool EnableHook(Hook* hook, bool enable = true) = 0;
+	virtual bool EnablePatchSet(PatchSet* patchSet, bool enable = true) = 0;
 };
 
 #define PATCHMANAGER_INTERFACE_VERSION001 "PatchManager001"
