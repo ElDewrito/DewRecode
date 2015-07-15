@@ -3,20 +3,6 @@
 #include <sstream>
 
 /// <summary>
-/// Finds a command based on its name.
-/// </summary>
-/// <param name="name">The name of the command.</param>
-/// <returns>A pointer to the command, if found.</returns>
-Command* GameConsole::FindCommand(const std::string& name)
-{
-	for (auto it = Commands.begin(); it < Commands.end(); it++)
-		if ((!it->Name.empty() && !_stricmp(it->Name.c_str(), name.c_str())) || (!it->ShortName.empty() && !_stricmp(it->ShortName.c_str(), name.c_str())))
-			return &(*it);
-
-	return nullptr;
-}
-
-/// <summary>
 /// Adds a command to the console commands list.
 /// </summary>
 /// <param name="command">The command to add.</param>
@@ -45,6 +31,20 @@ void GameConsole::FinishAddCommands()
 }
 
 /// <summary>
+/// Finds a command based on its name.
+/// </summary>
+/// <param name="name">The name of the command.</param>
+/// <returns>A pointer to the command, if found.</returns>
+Command* GameConsole::FindCommand(const std::string& name)
+{
+	for (auto it = Commands.begin(); it < Commands.end(); it++)
+		if ((!it->Name.empty() && !_stricmp(it->Name.c_str(), name.c_str())) || (!it->ShortName.empty() && !_stricmp(it->ShortName.c_str(), name.c_str())))
+			return &(*it);
+
+	return nullptr;
+}
+
+/// <summary>
 /// Executes a command string (vector splits spaces?)
 /// </summary>
 /// <param name="command">The command string.</param>
@@ -57,57 +57,6 @@ std::string GameConsole::ExecuteCommand(std::vector<std::string> command, bool i
 		commandStr += "\"" + cmd + "\" ";
 
 	return ExecuteCommand(commandStr, isUserInput);
-}
-
-/// <summary>
-/// Executes a command string, returning a bool indicating success.
-/// </summary>
-/// <param name="command">The command string.</param>
-/// <param name="isUserInput">Whether the command came from the user or internally.</param>
-/// <returns>Whether the command executed successfully.</returns>
-bool GameConsole::ExecuteCommandWithStatus(std::string command, bool isUserInput)
-{
-	int numArgs = 0;
-	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
-
-	if (numArgs <= 0)
-		return false;
-
-	auto cmd = FindCommand(args[0]);
-	if (!cmd || (isUserInput && cmd->Flags & eCommandFlagsInternal))
-		return false;
-
-	std::vector<std::string> argsVect;
-	if (numArgs > 1)
-		for (int i = 1; i < numArgs; i++)
-			argsVect.push_back(args[i]);
-
-	if (cmd->Type == CommandType::Command)
-	{
-		cmd->UpdateEvent(argsVect, std::string()); // if it's a command call it and return
-		return true;
-	}
-
-	std::string previousValue;
-	auto updateRet = SetVariable(cmd, (numArgs > 1 ? argsVect[0] : ""), previousValue);
-
-	if (updateRet != VariableSetReturnValue::Success)
-		return false;
-
-	if (numArgs <= 1)
-		return true;
-
-	if (!cmd->UpdateEvent)
-		return true; // no update event, so we'll just return with what we set the value to
-
-	auto ret = cmd->UpdateEvent(argsVect, std::string());
-
-	if (ret) // error, revert the variable
-		return true;
-
-	// error, revert the variable
-	this->SetVariable(cmd, previousValue, std::string());
-	return false;
 }
 
 /// <summary>
@@ -189,6 +138,95 @@ std::string GameConsole::ExecuteCommand(std::string command, bool isUserInput)
 		return previousValue + " -> " + cmd->ValueString;
 
 	return retVal;
+}
+
+/// <summary>
+/// Executes a list of commands, seperated by new lines
+/// </summary>
+/// <param name="commands">The command string.</param>
+/// <param name="isUserInput">Whether the command came from the user or internally.</param>
+/// <returns>Whether the command executed successfully.</returns>
+std::string GameConsole::ExecuteCommands(std::string& commands, bool isUserInput)
+{
+	std::istringstream stream(commands);
+	std::stringstream ss;
+	std::string line;
+	int lineIdx = 0;
+	while (std::getline(stream, line))
+	{
+		if (!this->ExecuteCommandWithStatus(line, isUserInput))
+		{
+			ss << "Error at line " << lineIdx << std::endl;
+		}
+		lineIdx++;
+	}
+	return ss.str();
+}
+
+/// <summary>
+/// Executes a command string, returning a bool indicating success.
+/// </summary>
+/// <param name="command">The command string.</param>
+/// <param name="isUserInput">Whether the command came from the user or internally.</param>
+/// <returns>Whether the command executed successfully.</returns>
+bool GameConsole::ExecuteCommandWithStatus(std::string command, bool isUserInput)
+{
+	int numArgs = 0;
+	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
+
+	if (numArgs <= 0)
+		return false;
+
+	auto cmd = FindCommand(args[0]);
+	if (!cmd || (isUserInput && cmd->Flags & eCommandFlagsInternal))
+		return false;
+
+	std::vector<std::string> argsVect;
+	if (numArgs > 1)
+		for (int i = 1; i < numArgs; i++)
+			argsVect.push_back(args[i]);
+
+	if (cmd->Type == CommandType::Command)
+	{
+		cmd->UpdateEvent(argsVect, std::string()); // if it's a command call it and return
+		return true;
+	}
+
+	std::string previousValue;
+	auto updateRet = SetVariable(cmd, (numArgs > 1 ? argsVect[0] : ""), previousValue);
+
+	if (updateRet != VariableSetReturnValue::Success)
+		return false;
+
+	if (numArgs <= 1)
+		return true;
+
+	if (!cmd->UpdateEvent)
+		return true; // no update event, so we'll just return with what we set the value to
+
+	auto ret = cmd->UpdateEvent(argsVect, std::string());
+
+	if (ret) // error, revert the variable
+		return true;
+
+	// error, revert the variable
+	this->SetVariable(cmd, previousValue, std::string());
+	return false;
+}
+
+/// <summary>
+/// Executes the command queue.
+/// </summary>
+/// <returns>Results of the executed commands.</returns>
+std::string GameConsole::ExecuteQueue()
+{
+	std::stringstream ss;
+	for (auto cmd : queuedCommands)
+	{
+		ss << ExecuteCommand(cmd, true) << std::endl;
+	}
+	queuedCommands.clear();
+	return ss.str();
 }
 
 /// <summary>
@@ -394,44 +432,6 @@ std::string GameConsole::SaveVariables()
 
 		ss << cmd.Name << " \"" << cmd.ValueString << "\"" << std::endl;
 	}
-	return ss.str();
-}
-
-/// <summary>
-/// Executes a list of commands, seperated by new lines
-/// </summary>
-/// <param name="commands">The command string.</param>
-/// <param name="isUserInput">Whether the command came from the user or internally.</param>
-/// <returns>Whether the command executed successfully.</returns>
-std::string GameConsole::ExecuteCommands(std::string& commands, bool isUserInput)
-{
-	std::istringstream stream(commands);
-	std::stringstream ss;
-	std::string line;
-	int lineIdx = 0;
-	while (std::getline(stream, line))
-	{
-		if (!this->ExecuteCommandWithStatus(line, isUserInput))
-		{
-			ss << "Error at line " << lineIdx << std::endl;
-		}
-		lineIdx++;
-	}
-	return ss.str();
-}
-
-/// <summary>
-/// Executes the command queue.
-/// </summary>
-/// <returns>Results of the executed commands.</returns>
-std::string GameConsole::ExecuteQueue()
-{
-	std::stringstream ss;
-	for (auto cmd : queuedCommands)
-	{
-		ss << ExecuteCommand(cmd, true) << std::endl;
-	}
-	queuedCommands.clear();
 	return ss.str();
 }
 

@@ -23,6 +23,10 @@ public:
 	bool ToggleHook(Hook* hook);
 	bool TogglePatchSet(PatchSet* patchSet);
 
+	PatchStatus EnablePatch(std::string name, bool enable = true);
+	PatchStatus EnableHook(std::string name, bool enable = true);
+	PatchStatus EnablePatchSet(std::string name, bool enable = true);
+
 	bool EnablePatch(Patch* patch, bool enable = true);
 	bool EnableHook(Hook* hook, bool enable = true);
 	bool EnablePatchSet(PatchSet* patchSet, bool enable = true);

@@ -45,38 +45,86 @@ for backwards compatibility (with plugins compiled against an older ED SDK) we c
 class IEngine001
 {
 public:
-	// registers a callback which is called when the game ticks
+	/// <summary>
+	/// Registers a callback which is called when the game ticks, tick callbacks use a seperate path to normal events so we can process them in less cycles.
+	/// </summary>
+	/// <param name="callback">The callback.</param>
+	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
 	virtual bool OnTick(TickCallbackFunc callback) = 0;
 
-	// you can use any eventNamespace/eventName here, the callback will belong to this combination
-	// and calling Engine::Event with the same eventNamespace/eventName will call each of the registered callbacks for this event
-	// (in essense this not only registers callbacks for events but also registers events too)
-	// the only restricted eventNamespace is "Core", this module is reserved for events created by ElDorito
-	// in case your wondering, eventNamespace and eventName are seperate so that plugin authors have to provide a namespace for their event, making it "unique"
+	/// <summary>
+	/// Adds a callback to be called when the specified event occurs. If the eventNamespace/eventName combination doesn't exist a new event will be created.
+	/// Note that the "Core" namespace is restricted to events created by ElDorito.
+	/// </summary>
+	/// <param name="eventNamespace">The namespace the event belongs to.</param>
+	/// <param name="eventName">The name of the event.</param>
+	/// <param name="callback">The callback.</param>
+	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
 	virtual bool OnEvent(std::string eventNamespace, std::string eventName, EventCallbackFunc callback) = 0;
 
-	// called when an event occurs, calls each registered callback for the event
+	/// <summary>
+	/// Calls each of the registered callbacks for the specified event.
+	/// </summary>
+	/// <param name="eventNamespace">The namespace the event belongs to.</param>
+	/// <param name="eventName">The name of the event.</param>
+	/// <param name="param">The parameter to pass to the callbacks.</param>
 	virtual void Event(std::string eventNamespace, std::string eventName, void* param = 0) = 0;
 
-	// registers an interface, plugins can use this to share classes across plugins
+	/// <summary>
+	/// Registers an interface, plugins can use this to share classes across plugins.
+	/// </summary>
+	/// <param name="interfaceName">Name of the interface.</param>
+	/// <param name="ptrToInterface">Pointer to an instance of the interface.</param>
+	/// <returns>true if the interface was registered, false if an interface already exists with this name</returns>
 	virtual bool RegisterInterface(std::string interfaceName, void* ptrToInterface) = 0;
 
 	/// <summary>
-	/// Creates an interface to an exported class.
+	/// Gets an instance of the specified interface, if its been registered.
 	/// </summary>
-	/// <param name="name">The name of the interface.</param>
-	/// <param name="returnCode">0 if the interface was found successfully, otherwise the error code.</param>
-	/// <returns>The requested interface, if found.</returns>
+	/// <param name="interfaceName">Name of the interface.</param>
+	/// <param name="returnCode">Returns 0 if the interface was found, otherwise 1 if it couldn't.</param>
+	/// <returns>A pointer to the requested interface.</returns>
 	virtual void* CreateInterface(std::string interfaceName, int* returnCode) = 0;
 
+	/// <summary>
+	/// Returns true if the main menu has been shown, signifying that the game has initialized.
+	/// </summary>
+	/// <returns>true if the main menu has been shown.</returns>
 	virtual bool HasMainMenuShown() = 0;
 
+	/// <summary>
+	/// Returns the HWND for the game window.
+	/// </summary>
+	/// <returns>The HWND for the game window.</returns>
 	virtual HWND GetGameHWND() = 0;
+
+	/// <summary>
+	/// Gets the main TLS address (optionally with an offset added)
+	/// </summary>
+	/// <param name="offset">The offset to add to the TLS address.</param>
+	/// <returns>A Pointer to the TLS.</returns>
 	virtual Pointer GetMainTls(size_t offset = 0) = 0;
+
+	/// <summary>
+	/// Gets the main thread ID for the game.
+	/// </summary>
+	/// <returns>The main thread ID for the game.</returns>
 	virtual size_t GetMainThreadID() = 0;
+
+	/// <summary>
+	/// Sets the main thread ID for the game.
+	/// </summary>
 	virtual void SetMainThreadID(size_t threadID) = 0;
 
+	/// <summary>
+	/// Gets the module handle for the ElDorito dll.
+	/// </summary>
+	/// <returns>The module handle for the ElDorito dll.</returns>
 	virtual HMODULE GetDoritoModule() = 0;
+
+	/// <summary>
+	/// Sets the module handle for the ElDorito dll.
+	/// </summary>
 	virtual void SetDoritoModule(HMODULE module) = 0;
 };
 

@@ -116,7 +116,7 @@ Patch* PatchManager::FindPatch(std::string name)
 }
 
 /// <summary>
-/// Looks up a hooj based on its name.
+/// Looks up a hook based on its name.
 /// </summary>
 /// <param name="name">The name of the hook.</param>
 /// <returns>A pointer to the hook, if found.</returns>
@@ -237,6 +237,51 @@ bool PatchManager::TogglePatchSet(PatchSet* patchSet)
 
 	patchSet->Enabled = !patchSet->Enabled;
 	return patchSet->Enabled;
+}
+
+/// <summary>
+/// Enables/disables a patch based on its name.
+/// </summary>
+/// <param name="name">The name of the patch.</param>
+/// <param name="enable">Whether to enable it or not (default true)</param>
+/// <returns>The status of the patch.</returns>
+PatchStatus PatchManager::EnablePatch(std::string name, bool enable)
+{
+	Patch* patch = FindPatch(name);
+	if (!patch)
+		return PatchStatus::NotFound;
+
+	return EnablePatch(patch, enable) ? PatchStatus::Enabled : PatchStatus::Disabled;
+}
+
+/// <summary>
+/// Enables/disables a hook based on its name.
+/// </summary>
+/// <param name="hook">The name of the hook.</param>
+/// <param name="enable">Whether to enable it or not (default true)</param>
+/// <returns>The status of the hook.</returns>
+PatchStatus PatchManager::EnableHook(std::string name, bool enable)
+{
+	Hook* hook = FindHook(name);
+	if (!hook)
+		return PatchStatus::NotFound;
+
+	return EnableHook(hook, enable) ? PatchStatus::Enabled : PatchStatus::Disabled;
+}
+
+/// <summary>
+/// Enables/disables a patch set based on its name.
+/// </summary>
+/// <param name="patchSet">The name of the patch set.</param>
+/// <param name="enable">Whether to enable it or not (default true)</param>
+/// <returns>The status of the patch set.</returns>
+PatchStatus PatchManager::EnablePatchSet(std::string name, bool enable)
+{
+	PatchSet* patchSet = FindPatchSet(name);
+	if (!patchSet)
+		return PatchStatus::NotFound;
+
+	return EnablePatchSet(patchSet, enable) ? PatchStatus::Enabled : PatchStatus::Disabled;
 }
 
 /// <summary>

@@ -18,6 +18,13 @@ enum class LogLevel
 class IDebugLog001
 {
 public:
+	/// <summary>
+	/// Logs a line to the log file.
+	/// </summary>
+	/// <param name="level">The severity of the message.</param>
+	/// <param name="module">The module the message originated from.</param>
+	/// <param name="format">The format of the message.</param>
+	/// <param name="">Additional formatting.</param>
 	virtual void Log(LogLevel level, std::string module, std::string format, ...) = 0;
 };
 

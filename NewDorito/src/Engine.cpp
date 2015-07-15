@@ -47,7 +47,7 @@ Engine::Engine()
 }
 
 /// <summary>
-/// Adds a callback to be called when the game ticks.
+/// Registers a callback which is called when the game ticks, tick callbacks use a seperate path to normal events so we can process them in less cycles.
 /// </summary>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
@@ -58,7 +58,8 @@ bool Engine::OnTick(TickCallbackFunc callback)
 }
 
 /// <summary>
-/// Adds a callback to be called when the specified event occurs.
+/// Adds a callback to be called when the specified event occurs. If the eventNamespace/eventName combination doesn't exist a new event will be created.
+/// Note that the "Core" namespace is restricted to events created by ElDorito.
 /// </summary>
 /// <param name="eventNamespace">The namespace the event belongs to.</param>
 /// <param name="eventName">The name of the event.</param>
@@ -99,7 +100,7 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 }
 
 /// <summary>
-/// Calls each of the registered callbacks for the specified event
+/// Calls each of the registered callbacks for the specified event.
 /// </summary>
 /// <param name="eventNamespace">The namespace the event belongs to.</param>
 /// <param name="eventName">The name of the event.</param>
@@ -132,6 +133,44 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event not created!", eventId.c_str());
 }
 
+/// <summary>
+/// Registers an interface, plugins can use this to share classes across plugins.
+/// </summary>
+/// <param name="interfaceName">Name of the interface.</param>
+/// <param name="ptrToInterface">Pointer to an instance of the interface.</param>
+/// <returns>true if the interface was registered, false if an interface already exists with this name</returns>
+bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
+{
+	for (auto kvp : interfaces)
+		if (!kvp.first.compare(interfaceName))
+			return false; // interface with this name already exists
+
+	interfaces.insert(std::pair<std::string, void*>(interfaceName, ptrToInterface));
+	return true;
+}
+
+/// <summary>
+/// Gets an instance of the specified interface, if its been registered.
+/// </summary>
+/// <param name="interfaceName">Name of the interface.</param>
+/// <param name="returnCode">Returns 0 if the interface was found, otherwise 1 if it couldn't.</param>
+/// <returns>A pointer to the requested interface.</returns>
+void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
+{
+	*returnCode = 0;
+	for (auto kvp : interfaces)
+		if (!kvp.first.compare(interfaceName))
+			return kvp.second;
+
+	*returnCode = 1;
+	return nullptr;
+}
+
+/// <summary>
+/// Gets the main TLS address (optionally with an offset added)
+/// </summary>
+/// <param name="offset">The offset to add to the TLS address.</param>
+/// <returns>A Pointer to the TLS.</returns>
 Pointer Engine::GetMainTls(size_t offset)
 {
 	static Pointer ThreadLocalStorage;
@@ -173,27 +212,4 @@ Pointer Engine::GetMainTls(size_t offset)
 	}
 
 	return ThreadLocalStorage(offset);
-}
-
-// registers an interface, plugins can use this to share classes across plugins
-bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
-{
-	for (auto kvp : interfaces)
-		if (!kvp.first.compare(interfaceName))
-			return false; // interface with this name already exists
-
-	interfaces.insert(std::pair<std::string, void*>(interfaceName, ptrToInterface));
-	return true;
-}
-
-// returns the interface by the interface name
-void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
-{
-	*returnCode = 0;
-	for (auto kvp : interfaces)
-		if (!kvp.first.compare(interfaceName))
-			return kvp.second;
-
-	*returnCode = 1;
-	return nullptr;
 }
