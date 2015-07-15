@@ -32,7 +32,7 @@ namespace
 
 				return isModule;
 			}
-			// TODO: returnInfo = cmd->GenerateHelpText();
+			// TODO1: returnInfo = cmd->GenerateHelpText();
 			return true;
 		}
 		returnInfo = console.GenerateHelpText();

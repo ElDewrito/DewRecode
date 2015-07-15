@@ -11,11 +11,10 @@
 //#include "../Patches/Network.hpp"
 //#include "../Patches/PlayerUid.hpp"
 
-/*#include "../ThirdParty/HttpRequest.hpp"
 #include "../ThirdParty/rapidjson/document.h"
 #include "../ThirdParty/rapidjson/writer.h"
 #include "../ThirdParty/rapidjson/stringbuffer.h"
-#include "../Utils/Cryptography.hpp"*/
+// TODO2: #include "../Utils/Cryptography.hpp"
 
 namespace
 {
@@ -63,8 +62,7 @@ namespace
 			in.read(&contents[0], contents.size());
 			in.close();
 
-			// TODO2: 
-			/*rapidjson::Document json;
+			rapidjson::Document json;
 			if (!json.Parse<0>(contents.c_str()).HasParseError() && json.IsObject())
 			{
 				if (json.HasMember("masterServers"))
@@ -75,7 +73,7 @@ namespace
 						destVect.push_back((*it)[endpointType.c_str()].GetString());
 					}
 				}
-			}*/
+			}
 		}
 	}
 
@@ -121,9 +119,8 @@ namespace
 				continue;
 			}
 
-			/* TODO2: 
 			// parse the json response
-			std::string resp = std::string(req.responseBody.begin(), req.responseBody.end());
+			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
 			rapidjson::Document json;
 			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
 			{
@@ -142,7 +139,7 @@ namespace
 			{
 				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
 				continue;
-			}*/
+			}
 		}
 
 		std::string errors = ss.str();
@@ -194,9 +191,8 @@ namespace
 				continue;
 			}
 
-			/* TODO2:
 			// parse the json response
-			std::string resp = std::string(req.responseBody.begin(), req.responseBody.end());
+			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
 			rapidjson::Document json;
 			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
 			{
@@ -215,7 +211,7 @@ namespace
 			{
 				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
 				continue;
-			}*/
+			}
 		}
 
 		std::string errors = ss.str();
@@ -252,9 +248,7 @@ namespace
 
 		// TODO: get an ID for this match
 		int32_t gameId = 0x1337BEEF;
-
-		// TODO2: 
-		/*
+		
 		// build our stats announcement
 		rapidjson::StringBuffer statsBuff;
 		rapidjson::Writer<rapidjson::StringBuffer> statsWriter(statsBuff);
@@ -278,7 +272,7 @@ namespace
 		/*statsWriter.String("doublekill");
 		statsWriter.String("triplekill");
 		statsWriter.String("overkill");
-		statsWriter.String("unfreakingbelieveable");//
+		statsWriter.String("unfreakingbelieveable");*/
 
 		statsWriter.EndArray();
 		statsWriter.EndObject();
@@ -286,12 +280,13 @@ namespace
 		std::string statsObject = statsBuff.GetString();
 		// todo: look into using JSON Web Tokens (JWT) that use JSON Web Signature (JWS), instead of using our own signature stuff
 		std::string statsSignature;
-		if (!Utils::Cryptography::CreateRSASignature(Patches::PlayerUid::GetFormattedPrivKey(), (void*)statsObject.c_str(), statsObject.length(), statsSignature))
+		// TODO2:
+		/*if (!Utils::Cryptography::CreateRSASignature(Patches::PlayerUid::GetFormattedPrivKey(), (void*)statsObject.c_str(), statsObject.length(), statsSignature))
 		{
 			ss << "Failed to create stats RSA signature!";
 			dorito.Logger.Log(LogLevel::Error, "AnnounceStats", ss.str());
 			return 0;
-		}
+		}*/
 
 		rapidjson::StringBuffer s;
 		rapidjson::Writer<rapidjson::StringBuffer> writer(s);
@@ -310,13 +305,14 @@ namespace
 
 		for (auto server : statsEndpoints)
 		{
-			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()), L"", L"");
+			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()));
 
 			try
 			{
-				if (!req.SendRequest(Utils::String::WidenString(server), L"POST", L"", L"", L"Content-Type: application/json\r\n", (void*)sendObject.c_str(), sendObject.length()))
+				auto error = req.SendRequest(Utils::String::WidenString(server), L"POST", L"", L"", L"Content-Type: application/json\r\n", (void*)sendObject.c_str(), sendObject.length());
+				if (error != HttpRequestError::None)
 				{
-					ss << "Unable to connect to master server " << server << " (error: " << req.lastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
+					ss << "Unable to connect to master server " << server << " (error: " << (int)error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
 					continue;
 				}
 			}
@@ -328,13 +324,13 @@ namespace
 
 			// make sure the server replied with 200 OK
 			std::wstring expected = L"HTTP/1.1 200 OK";
-			if (req.responseHeader.length() < expected.length())
+			if (req.ResponseHeader.length() < expected.length())
 			{
 				ss << "Invalid master server stats response from " << server << std::endl << std::endl;
 				continue;
 			}
 
-			auto respHdr = req.responseHeader.substr(0, expected.length());
+			auto respHdr = req.ResponseHeader.substr(0, expected.length());
 			if (respHdr.compare(expected))
 			{
 				ss << "Invalid master server stats response from " << server << std::endl << std::endl;
@@ -342,7 +338,7 @@ namespace
 			}
 
 			// parse the json response
-			std::string resp = std::string(req.responseBody.begin(), req.responseBody.end());
+			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
 			rapidjson::Document json;
 			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
 			{
@@ -362,7 +358,7 @@ namespace
 				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
 				continue;
 			}
-		}*/
+		}
 
 		std::string errors = ss.str();
 		if (!errors.empty())
@@ -511,7 +507,7 @@ namespace
 
 		// parse the json response
 		std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
-		/* TODO2:
+
 		rapidjson::Document json;
 		if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
 		{
@@ -586,10 +582,9 @@ namespace
 		Pointer(0x2240BD4).Write(xnetInfo + 0x10, 0x10);
 		Pointer(0x2240BE4).Write<uint32_t>(1);
 
-		// join our IRC channel
-
 		// TODO3:
-		IRCBackend::Instance().joinIRCChannel("#eldoritogame-" + xnkid, false);
+		// join our IRC channel
+		/*IRCBackend::Instance().joinIRCChannel("#eldoritogame-" + xnkid, false);
 		CreateThread(0, 0, StartTeamspeakClient, 0, 0, 0);*/
 		returnInfo = "Attempting connection to " + address + "...";
 		return true;
@@ -622,9 +617,9 @@ namespace
 			if (!Utils::String::ThinString(playerName).compare(kickPlayerName) || !uidString.compare(kickPlayerName))
 			{
 				typedef bool(__cdecl *Network_squad_session_boot_playerFunc)(int playerIdx, int reason);
-				const Network_squad_session_boot_playerFunc Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerFunc>(0x437D60);
-				bool retVal = Network_squad_session_boot_player(i, 4);
-				if (retVal)
+				auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerFunc>(0x437D60);
+
+				if (Network_squad_session_boot_player(i, 4))
 				{
 					returnInfo = "Issued kick request for player " + kickPlayerName;
 					return true;
