@@ -19,7 +19,7 @@ x64/
 x86/
 build/
 bld/
-[Bb]in/
+#[Bb]in/
 [Oo]bj/
 
 # Visual Studio 2015 cache/options directory
@@ -204,3 +204,10 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+!ts3client_win32.lib
+!ts3server_win32.lib
+!ts3client_win32.dll
+!ts3server_win32.dll
+!directsound_win32.dll
+!windowsaudiosession_win32.dll

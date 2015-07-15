@@ -32,7 +32,7 @@ PLUGIN_API bool __cdecl InitializePlugin()
 	if (retCode != 0)
 		return false;
 
-	logger->Log(LogLevel::Debug, "ChatPlugin", "Chat plugin initialized! (ED version: %d)", version);
+	logger->Log(LogSeverity::Debug, "ChatPlugin", "Chat plugin initialized! (ED version: %d)", version);
 
 	return true;
 }

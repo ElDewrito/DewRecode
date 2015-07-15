@@ -19,6 +19,7 @@ public:
 
 	ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer);
 	bool SetActiveConsoleBuffer(ConsoleBuffer* buffer);
+	void PrintToConsole(std::string str);
 
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 
@@ -37,6 +38,9 @@ public:
 	{
 		return std::pair<int, int>(Pointer(0x2301D08).Read<int>(), Pointer(0x2301D0C).Read<int>());
 	}
+
+	uint32_t GetServerIP();
+	std::string GetPlayerName();
 
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);

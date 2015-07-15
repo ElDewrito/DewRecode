@@ -91,7 +91,7 @@ namespace
 
 	void AddAllBLFContentItems(std::string path)
 	{
-		ElDorito::Instance().Logger.Log(LogLevel::Debug, "ContentItems", "Loading BLF files (dir: %s)", path.c_str());
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "Loading BLF files (dir: %s)", path.c_str());
 
 		for (std::tr2::sys::directory_iterator itr(path); itr != std::tr2::sys::directory_iterator(); ++itr)
 		{

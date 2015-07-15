@@ -12,7 +12,7 @@ namespace
 	{
 		auto& console = ElDorito::Instance().Modules.Console;
 		console.PrintToConsole(">" + input);
-		console.PrintMultiLineStringToConsole(ElDorito::Instance().Commands.Execute(input, true));
+		console.PrintToConsole(ElDorito::Instance().Commands.Execute(input, true));
 	}
 
 	LRESULT __stdcall ConsoleWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -104,16 +104,11 @@ namespace Modules
 
 	void ModuleConsole::PrintToConsole(std::string str)
 	{
-		this->consoleBuffer->Messages.push_back(str);
-	}
-
-	void ModuleConsole::PrintMultiLineStringToConsole(std::string str)
-	{
 		std::stringstream ss(str);
 		std::string item;
 		while (std::getline(ss, item, '\n'))
 			if (!item.empty())
-				PrintToConsole(item);
+				this->consoleBuffer->Messages.push_back(item);
 	}
 
 	ConsoleBuffer* ModuleConsole::AddBuffer(ConsoleBuffer buffer)

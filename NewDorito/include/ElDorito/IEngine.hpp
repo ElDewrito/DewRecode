@@ -144,6 +144,12 @@ public:
 	/// <param name="buffer">The buffer to set as active.</param>
 	/// <returns>true if the buffer was set active.</returns>
 	virtual bool SetActiveConsoleBuffer(ConsoleBuffer* buffer) = 0;
+	
+	/// <summary>
+	/// Prints a string to the console UI.
+	/// </summary>
+	/// <param name="str">The string to print.</param>
+	virtual void PrintToConsole(std::string str) = 0;
 
 	/// <summary>
 	/// Returns true if the main menu has been shown, signifying that the game has initialized.
@@ -203,6 +209,19 @@ public:
 	/// </summary>
 	/// <returns>The resolution.</returns>
 	virtual std::pair<int, int> GetGameResolution() = 0;
+	
+	// TODO2: change this into a struct which is filled with IP/Port/GamePort/VoIPPort from server info json
+	/// <summary>
+	/// Gets the IP of the server we're connected to (only works if connected through Server.Connect!)
+	/// </summary>
+	/// <returns>The IP in network endian.</returns>
+	virtual uint32_t GetServerIP() = 0;
+	
+	/// <summary>
+	/// Gets the name of the player.
+	/// </summary>
+	/// <returns>The name of the player.</returns>
+	virtual std::string GetPlayerName() = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

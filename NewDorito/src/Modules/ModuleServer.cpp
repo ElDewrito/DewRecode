@@ -141,7 +141,7 @@ namespace
 
 		std::string errors = ss.str();
 		if (!errors.empty())
-			dorito.Logger.Log(LogLevel::Error, "Announce", ss.str());
+			dorito.Logger.Log(LogSeverity::Error, "Announce", ss.str());
 
 		return true;
 	}
@@ -213,7 +213,7 @@ namespace
 
 		std::string errors = ss.str();
 		if (!errors.empty())
-			dorito.Logger.Log(LogLevel::Error, "Unannounce", ss.str());
+			dorito.Logger.Log(LogSeverity::Error, "Unannounce", ss.str());
 
 		return true;
 	}
@@ -281,7 +281,7 @@ namespace
 		/*if (!Utils::Cryptography::CreateRSASignature(Patches::PlayerUid::GetFormattedPrivKey(), (void*)statsObject.c_str(), statsObject.length(), statsSignature))
 		{
 			ss << "Failed to create stats RSA signature!";
-			dorito.Logger.Log(LogLevel::Error, "AnnounceStats", ss.str());
+			dorito.Logger.Log(LogSeverity::Error, "AnnounceStats", ss.str());
 			return 0;
 		}*/
 
@@ -359,7 +359,7 @@ namespace
 
 		std::string errors = ss.str();
 		if (!errors.empty())
-			dorito.Logger.Log(LogLevel::Error, "AnnounceStats", ss.str());
+			dorito.Logger.Log(LogSeverity::Error, "AnnounceStats", ss.str());
 
 		return true;
 	}

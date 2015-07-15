@@ -14,9 +14,9 @@
 /// <param name="module">The module the message originated from.</param>
 /// <param name="format">The format of the message.</param>
 /// <param name="">Additional formatting.</param>
-void DebugLog::Log(LogLevel level, std::string module, std::string format, ...)
+void DebugLog::Log(LogSeverity severity, std::string module, std::string format, ...)
 {
-	// TODO1: LogLevel
+	// TODO1: LogSeverity
 
 	va_list ap;
 	va_start(ap, format);

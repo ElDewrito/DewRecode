@@ -5,5 +5,5 @@
 class DebugLog : public IDebugLog001
 {
 public:
-	void Log(LogLevel level, std::string module, std::string format, ...);
+	void Log(LogSeverity severity, std::string module, std::string format, ...);
 };

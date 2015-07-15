@@ -167,7 +167,7 @@ bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCal
 	}
 
 	// callback wasn't found, create a new one!
-	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event created", eventId.c_str());
+	ElDorito::Instance().Logger.Log(LogSeverity::Debug, "EngineEvent", "%s event created", eventId.c_str());
 	eventCallbacks.insert(std::pair<std::string, std::vector<EventCallback>>(eventId, std::vector<EventCallback>{ callback }));
 	return true;
 }
@@ -219,7 +219,7 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 
 	std::string eventId = eventNamespace + "." + eventName;
 	if (eventId.compare("Core.Input.KeyboardUpdate") && eventId.compare("Core.Direct3D.EndScene")) // don't show keyboard update spam
-		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event triggered", eventId.c_str());
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "EngineEvent", "%s event triggered", eventId.c_str());
 
 	if (!eventId.compare("Core.MainMenuShown"))
 	{
@@ -232,7 +232,7 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 	if (it == eventCallbacks.end())
 	{
 		if (eventId.compare("Core.Input.KeyboardUpdate") && eventId.compare("Core.Direct3D.EndScene"))
-			ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event not created (nobody is listening for this event!)", eventId.c_str());
+			ElDorito::Instance().Logger.Log(LogSeverity::Debug, "EngineEvent", "%s event not created (nobody is listening for this event!)", eventId.c_str());
 		return;
 	}
 
@@ -256,19 +256,19 @@ bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
 		!interfaceName.compare(PATCHMANAGER_INTERFACE_VERSION001) ||
 		!interfaceName.compare(UTILS_INTERFACE_VERSION001))
 	{
-		dorito.Logger.Log(LogLevel::Error, "Engine", "Tried registering built-in interface %s!", interfaceName.c_str());
+		dorito.Logger.Log(LogSeverity::Error, "Engine", "Tried registering built-in interface %s!", interfaceName.c_str());
 		return false; // can't register these
 	}
 
 	auto it = interfaces.find(interfaceName);
 	if (it != interfaces.end())
 	{
-		dorito.Logger.Log(LogLevel::Error, "Engine", "Failed to register interface %s as it already exists!", interfaceName.c_str());
+		dorito.Logger.Log(LogSeverity::Error, "Engine", "Failed to register interface %s as it already exists!", interfaceName.c_str());
 		return false;
 	}
 
 	interfaces.insert(std::pair<std::string, void*>(interfaceName, ptrToInterface));
-	dorito.Logger.Log(LogLevel::Debug, "Engine", "Registered interface %s", interfaceName.c_str());
+	dorito.Logger.Log(LogSeverity::Debug, "Engine", "Registered interface %s", interfaceName.c_str());
 	return true;
 }
 
@@ -320,6 +320,29 @@ ConsoleBuffer* Engine::AddConsoleBuffer(ConsoleBuffer buffer)
 bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
 {
 	return ElDorito::Instance().Modules.Console.SetActiveBuffer(buffer);
+}
+
+/// <summary>
+/// Prints a string to the console UI.
+/// </summary>
+/// <param name="str">The string to print.</param>
+void Engine::PrintToConsole(std::string str)
+{
+	ElDorito::Instance().Modules.Console.PrintToConsole(str);
+}
+
+/// <summary>
+/// Gets the IP of the server we're connected to (only works if connected through Server.Connect!)
+/// </summary>
+/// <returns>The IP in network endian.</returns>
+uint32_t Engine::GetServerIP()
+{
+	return *(uint32_t*)(ElDorito::Instance().Modules.Server.SyslinkData + 0x170);
+}
+
+std::string Engine::GetPlayerName()
+{
+	return ElDorito::Instance().Modules.Player.VarPlayerName->ValueString;
 }
 
 /// <summary>

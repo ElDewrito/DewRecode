@@ -117,7 +117,7 @@ namespace
 			}
 			
 			// Execute the command and print its result
-			dorito.Modules.Console.PrintMultiLineStringToConsole(dorito.Commands.Execute(command, true));
+			dorito.Modules.Console.PrintToConsole(dorito.Commands.Execute(command, true));
 		}
 	}
 }

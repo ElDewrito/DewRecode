@@ -26,22 +26,22 @@ namespace
 		vsprintf_s(buff, 4096, format, ap);
 		va_end(ap);
 
-		ElDorito::Instance().Logger.Log(LogLevel::Info, module, "%s", buff);
+		ElDorito::Instance().Logger.Log(LogSeverity::Info, module, "%s", buff);
 	}
 
 	void debuglog_string(char* name, char* value)
 	{
-		ElDorito::Instance().Logger.Log(LogLevel::Info, "Debug", "%s: %s", name, value);
+		ElDorito::Instance().Logger.Log(LogSeverity::Info, "Debug", "%s: %s", name, value);
 	}
 
 	void debuglog_int(char* name, int value)
 	{
-		ElDorito::Instance().Logger.Log(LogLevel::Info, "Debug", "%s: %d", name, value);
+		ElDorito::Instance().Logger.Log(LogSeverity::Info, "Debug", "%s: %d", name, value);
 	}
 
 	void debuglog_float(char* name, float value)
 	{
-		ElDorito::Instance().Logger.Log(LogLevel::Info, "Debug", "%s: %f", name, value);
+		ElDorito::Instance().Logger.Log(LogSeverity::Info, "Debug", "%s: %f", name, value);
 	}
 
 	int networkLogHook(char* format, ...)
@@ -60,7 +60,7 @@ namespace
 		vsnprintf_s(dstBuf, 4096, 4096, formatStr.c_str(), args);
 		va_end(args);
 
-		dorito.Logger.Log(LogLevel::Info, "Network", "%s", dstBuf);
+		dorito.Logger.Log(LogSeverity::Info, "Network", "%s", dstBuf);
 
 		return 1;
 	}
@@ -79,7 +79,7 @@ namespace
 		else
 			logData2 += 0xC;
 
-		ElDorito::Instance().Logger.Log(LogLevel::Info, (const char*)logData1, (char*)logData2);
+		ElDorito::Instance().Logger.Log(LogSeverity::Info, (const char*)logData1, (char*)logData2);
 		return;
 	}
 
@@ -91,7 +91,7 @@ namespace
 		else
 			logData1 += 0xC;
 
-		ElDorito::Instance().Logger.Log(LogLevel::Info, "UiLog", (char*)logData1);
+		ElDorito::Instance().Logger.Log(LogSeverity::Info, "UiLog", (char*)logData1);
 		return;
 	}
 

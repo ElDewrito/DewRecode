@@ -414,7 +414,7 @@ namespace Modules
 		unsigned long serverPort = 0;
 		if (!commands->GetVariableInt("Server.Port", serverPort))
 		{
-			logger->Log(LogLevel::Error, "ServerPlugin", "Failed to get Server.Port variable?");
+			logger->Log(LogSeverity::Error, "ServerPlugin", "Failed to get Server.Port variable?");
 			return;
 		}
 
@@ -435,7 +435,7 @@ namespace Modules
 			bindAddr.sin_port = htons((u_short)port);
 			if (port > (serverPort + 10))
 			{
-				logger->Log(LogLevel::Error, "ServerPlugin", "Failed to create socket for info server, no ports available?");
+				logger->Log(LogSeverity::Error, "ServerPlugin", "Failed to create socket for info server, no ports available?");
 				return;
 			}
 		}
@@ -455,7 +455,7 @@ namespace Modules
 		setsockopt(infoSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&istrue, sizeof(int));
 		unsigned long shouldAnnounce = 0;
 		if (!commands->GetVariableInt("Server.ShouldAnnounce", shouldAnnounce))
-			logger->Log(LogLevel::Error, "ServerPlugin", "Failed to get Server.ShouldAnnounce variable?");
+			logger->Log(LogSeverity::Error, "ServerPlugin", "Failed to get Server.ShouldAnnounce variable?");
 
 		if (shouldAnnounce)
 			commands->Execute("Server.Unannounce");

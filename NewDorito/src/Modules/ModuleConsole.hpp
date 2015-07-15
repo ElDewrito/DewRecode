@@ -68,7 +68,6 @@ namespace Modules
 		bool IsVisible() { return visible; }
 
 		void PrintToConsole(std::string str);
-		void PrintMultiLineStringToConsole(std::string str);
 
 		ConsoleBuffer* AddBuffer(ConsoleBuffer buffer);
 		bool SetActiveBuffer(ConsoleBuffer* buffer);

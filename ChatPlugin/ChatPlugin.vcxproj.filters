@@ -3,8 +3,14 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ModuleIRC.cpp" />
+    <ClCompile Include="ModuleVoIP.cpp" />
+    <ClCompile Include="TeamspeakClient.cpp" />
+    <ClCompile Include="TeamspeakServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ModuleIRC.hpp" />
+    <ClInclude Include="ModuleVoIP.hpp" />
+    <ClInclude Include="TeamspeakServer.hpp" />
+    <ClInclude Include="TeamspeakClient.hpp" />
   </ItemGroup>
 </Project>

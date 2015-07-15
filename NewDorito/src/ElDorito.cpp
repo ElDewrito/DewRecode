@@ -22,22 +22,22 @@ void ElDorito::Initialize()
 	if (this->inited)
 		return;
 
-	Logger.Log(LogLevel::Info, "ElDorito", "ElDewrito | Version: " + Utils::Version::GetVersionString() + " | Build Date: " __DATE__);
+	Logger.Log(LogSeverity::Info, "ElDorito", "ElDewrito | Version: " + Utils::Version::GetVersionString() + " | Build Date: " __DATE__);
 	loadPlugins();
 
-	Logger.Log(LogLevel::Debug, "ElDorito", "Console.FinishAddCommands()...");
+	Logger.Log(LogSeverity::Debug, "ElDorito", "Console.FinishAddCommands()...");
 	Commands.FinishAdd(); // call this so that the default values can be applied to the game
 	
-	Logger.Log(LogLevel::Debug, "ElDorito", "Execute dewrito_prefs.cfg...");
+	Logger.Log(LogSeverity::Debug, "ElDorito", "Execute dewrito_prefs.cfg...");
 	Commands.Execute("Execute dewrito_prefs.cfg");
 
-	Logger.Log(LogLevel::Debug, "ElDorito", "Execute autoexec.cfg...");
+	Logger.Log(LogSeverity::Debug, "ElDorito", "Execute autoexec.cfg...");
 	Commands.Execute("Execute autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
 	// add and toggle(enable) the language patch, can't be done in a module since we have to patch this after cfg files are read
 	Patches.TogglePatch(Patches.AddPatch("GameLanguage", 0x6333FD, { (unsigned char)Modules.Game.VarLanguageID->ValueInt }));
 
-	Logger.Log(LogLevel::Debug, "ElDorito", "Parsing command line...");
+	Logger.Log(LogSeverity::Debug, "ElDorito", "Parsing command line...");
 	// Parse command-line commands
 	int numArgs = 0;
 	LPWSTR* szArgList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
@@ -81,7 +81,7 @@ void ElDorito::Initialize()
 		}
 	}
 
-	Logger.Log(LogLevel::Info, "ElDorito", "ElDewrito initialized!");
+	Logger.Log(LogSeverity::Info, "ElDorito", "ElDewrito initialized!");
 	this->inited = true;
 }
 
@@ -93,7 +93,7 @@ void ElDorito::loadPlugins()
 	auto pluginPath = std::tr2::sys::current_path<std::tr2::sys::path>();
 	pluginPath /= "mods";
 	pluginPath /= "plugins";
-	Logger.Log(LogLevel::Info, "ElDorito", "Loading plugins (plugin dir: %s)", pluginPath.string().c_str());
+	Logger.Log(LogSeverity::Info, "ElDorito", "Loading plugins (plugin dir: %s)", pluginPath.string().c_str());
 
 	for (std::tr2::sys::directory_iterator itr(pluginPath); itr != std::tr2::sys::directory_iterator(); ++itr)
 	{
@@ -102,12 +102,12 @@ void ElDorito::loadPlugins()
 
 		auto& path = itr->path().string();
 		this->Utils.ReplaceCharacters(path, '/', '\\');
-		Logger.Log(LogLevel::Debug, "Plugins", "Loading plugin from %s...", path.c_str());
+		Logger.Log(LogSeverity::Debug, "Plugins", "Loading plugin from %s...", path.c_str());
 
 		auto dllHandle = LoadLibraryA(path.c_str());
 		if (!dllHandle)
 		{
-			Logger.Log(LogLevel::Error, "Plugins", "Failed to load plugin library %s: LoadLibrary failed (code: %d)", path.c_str(), GetLastError());
+			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: LoadLibrary failed (code: %d)", path.c_str(), GetLastError());
 			continue;
 		}
 
@@ -116,7 +116,7 @@ void ElDorito::loadPlugins()
 
 		if (!GetPluginInfo || !InitializePlugin)
 		{
-			Logger.Log(LogLevel::Error, "Plugins", "Failed to load plugin library %s: Couldn't find exports!", path.c_str());
+			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Couldn't find exports!", path.c_str());
 			FreeLibrary(dllHandle);
 			continue;
 		}
@@ -124,20 +124,20 @@ void ElDorito::loadPlugins()
 		auto* info = GetPluginInfo();
 		if (!info)
 		{
-			Logger.Log(LogLevel::Error, "Plugins", "Failed to load plugin library %s: Plugin info invalid!", path.c_str());
+			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Plugin info invalid!", path.c_str());
 			FreeLibrary(dllHandle);
 			continue;
 		}
 
-		Logger.Log(LogLevel::Debug, "Plugins", "Initing \"%s\"", info->Name);
+		Logger.Log(LogSeverity::Debug, "Plugins", "Initing \"%s\"", info->Name);
 		if (!InitializePlugin())
 		{
-			Logger.Log(LogLevel::Error, "Plugins", "Failed to load plugin library %s: Initialization failed!", path.c_str());
+			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Initialization failed!", path.c_str());
 			FreeLibrary(dllHandle);
 			continue;
 		}
 
 		plugins.insert(std::pair<std::string, HMODULE>(path, dllHandle));
-		Logger.Log(LogLevel::Info, "Plugins", "Loaded \"%s\"", info->Name);
+		Logger.Log(LogSeverity::Info, "Plugins", "Loaded \"%s\"", info->Name);
 	}
 }

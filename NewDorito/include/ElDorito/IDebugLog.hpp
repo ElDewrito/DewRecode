@@ -6,7 +6,7 @@ if you want to make changes to this interface create a new IDebugLog002 class an
 for backwards compatibility (with plugins compiled against an older ED SDK) we can't remove any methods, only add new ones to a new interface version
 */
 
-enum class LogLevel
+enum class LogSeverity
 {
 	Debug,
 	Info,
@@ -21,11 +21,11 @@ public:
 	/// <summary>
 	/// Logs a line to the log file.
 	/// </summary>
-	/// <param name="level">The severity of the message.</param>
+	/// <param name="severity">The severity of the message.</param>
 	/// <param name="module">The module the message originated from.</param>
 	/// <param name="format">The format of the message.</param>
 	/// <param name="">Additional formatting.</param>
-	virtual void Log(LogLevel level, std::string module, std::string format, ...) = 0;
+	virtual void Log(LogSeverity severity, std::string module, std::string format, ...) = 0;
 };
 
 #define DEBUGLOG_INTERFACE_VERSION001 "DebugLog001"

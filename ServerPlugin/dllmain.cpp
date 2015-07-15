@@ -32,7 +32,7 @@ PLUGIN_API bool __cdecl InitializePlugin()
 	if (retCode != 0)
 		return false;
 
-	logger->Log(LogLevel::Debug, "ServerPlugin", "Server plugin initialized! (ED version: %d)", version);
+	logger->Log(LogSeverity::Debug, "ServerPlugin", "Server plugin initialized! (ED version: %d)", version);
 
 	return true;
 }

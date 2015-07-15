@@ -103,7 +103,7 @@ namespace Modules
 			modulePatches = this->patches->AddPatchSet(moduleName, patches, hooks);
 			if (!modulePatches)
 			{
-				logger->Log(LogLevel::Error, moduleName, "Failed to add module patches?!");
+				logger->Log(LogSeverity::Error, moduleName, "Failed to add module patches?!");
 				return nullptr;
 			}
 			// toggle/enable the patch set
