@@ -7,9 +7,6 @@
 #include <iostream>
 #include <fstream>
 #include "../ElDorito.hpp"
-// TODO2: 
-//#include "../Patches/Network.hpp"
-//#include "../Patches/PlayerUid.hpp"
 
 #include "../ThirdParty/rapidjson/document.h"
 #include "../ThirdParty/rapidjson/writer.h"

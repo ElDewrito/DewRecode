@@ -353,7 +353,7 @@ namespace Modules
 		auto mode = dorito.Utils.ToLower(dorito.Modules.Camera.VarCameraMode->ValueString);
 
 		// only allow camera input while flying outside of cli/chat
-		if (mode.compare("flying")) // TODO3: || GameConsole::Instance().showConsole || GameConsole::Instance().showChat
+		if (mode.compare("flying") || dorito.Modules.Console.IsVisible())
 			return;
 
 		Pointer &directorGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];

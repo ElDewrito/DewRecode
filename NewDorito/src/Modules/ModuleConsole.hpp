@@ -65,8 +65,11 @@ namespace Modules
 
 		void Show(std::string group = "Console");
 		void Hide();
+		bool IsVisible() { return visible; }
+
 		void PrintToConsole(std::string str);
 		void PrintMultiLineStringToConsole(std::string str);
+
 		ConsoleBuffer* AddBuffer(ConsoleBuffer buffer);
 
 		void Draw(IDirect3DDevice9* device);

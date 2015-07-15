@@ -50,6 +50,8 @@ namespace Modules
 		consoleBuff.Focused = true;
 
 		consoleBuffer = AddBuffer(consoleBuff);
+		PrintToConsole("ElDewrito Version: " + Utils::Version::GetVersionString() + " Build Date: " + __DATE__ + " " + __TIME__);
+		// TODO2: fade in on new msgs
 
 		Show();
 	}
