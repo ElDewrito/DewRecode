@@ -20,7 +20,6 @@ public:
 	DebugLog Logger;
 	Modules::ModuleMain Modules;
 
-	void* CreateInterface(std::string name, int *returnCode);
 	void Initialize();
 
 	static ElDorito& Instance()

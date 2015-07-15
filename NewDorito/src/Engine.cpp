@@ -85,18 +85,6 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 }
 
 /// <summary>
-/// Calls each of the registered MainMenuShown callbacks.
-/// </summary>
-void Engine::MainMenuShown()
-{
-	if (this->mainMenuHasShown)
-		return; // this event should only occur once during the lifecycle of the game
-
-	this->mainMenuHasShown = true;
-	this->Event(EngineEvent::MainMenuShown);
-}
-
-/// <summary>
 /// Calls each of the registered callbacks for the specified event
 /// </summary>
 /// <param name="evt">The event.</param>
@@ -104,6 +92,12 @@ void Engine::MainMenuShown()
 void Engine::Event(EngineEvent evt, void* param)
 {
 	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%d", evt); // TODO: string event names
+	if (evt == EngineEvent::MainMenuShown)
+	{
+		if (this->mainMenuHasShown)
+			return; // this event should only occur once during the lifecycle of the game
+		this->mainMenuHasShown = true;
+	}
 
 	for (auto callback : eventCallbacks[(int)evt])
 		callback(param);
@@ -150,4 +144,39 @@ Pointer Engine::GetMainTls(size_t offset)
 	}
 
 	return ThreadLocalStorage(offset);
+}
+
+EngineEvent Engine::RegisterCustomEvent()
+{
+	auto retVal = currentCustomEvent;
+	currentCustomEvent++;
+	if (retVal == (int)EngineEvent::Count)
+	{
+		ElDorito::Instance().Logger.Log(LogLevel::Warning, "Engine", "Custom event count has reached its limit, bad things will happen!");
+		currentCustomEvent--;
+	}
+	return (EngineEvent)retVal;
+}
+
+// registers an interface, plugins can use this to share classes across plugins
+bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
+{
+	for (auto kvp : interfaces)
+		if (!kvp.first.compare(interfaceName))
+			return false; // interface with this name already exists
+
+	interfaces.insert(std::pair<std::string, void*>(interfaceName, ptrToInterface));
+	return true;
+}
+
+// returns the interface by the interface name
+void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
+{
+	*returnCode = 0;
+	for (auto kvp : interfaces)
+		if (!kvp.first.compare(interfaceName))
+			return kvp.second;
+
+	*returnCode = 1;
+	return nullptr;
 }

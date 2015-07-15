@@ -33,7 +33,7 @@ DORITO_API int GetEDVersion()
 
 DORITO_API void* CreateInterface(const char *name, int *returnCode)
 {
-	return ElDorito::Instance().CreateInterface(name, returnCode);
+	return ElDorito::Instance().Engine.CreateInterface(name, returnCode);
 }
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved)

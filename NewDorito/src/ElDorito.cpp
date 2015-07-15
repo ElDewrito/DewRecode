@@ -15,38 +15,24 @@ ElDorito::~ElDorito()
 }
 
 /// <summary>
-/// Creates an interface to an exported class.
-/// </summary>
-/// <param name="name">The name of the interface.</param>
-/// <param name="returnCode">If 0 the interface was found successfully, otherwise the error code.</param>
-/// <returns>The requested interface, if found.</returns>
-void* ElDorito::CreateInterface(std::string name, int *returnCode)
-{
-	*returnCode = 0;
-
-	if (!name.compare(CONSOLE_INTERFACE_VERSION001))
-		return &this->Console;
-
-	if (!name.compare(PATCHMANAGER_INTERFACE_VERSION001))
-		return &this->Patches;
-
-	if (!name.compare(ENGINE_INTERFACE_VERSION001))
-		return &this->Engine;
-
-	if (!name.compare(DEBUGLOG_INTERFACE_VERSION001))
-		return &this->Logger;
-
-	*returnCode = 1;
-	return 0;
-}
-
-/// <summary>
 /// Initializes this instance.
 /// </summary>
 void ElDorito::Initialize()
 {
 	if (this->inited)
 		return;
+
+	// register our interfaces
+	bool interfaceRes = Engine.RegisterInterface(CONSOLE_INTERFACE_VERSION001, &this->Console) &&
+		Engine.RegisterInterface(PATCHMANAGER_INTERFACE_VERSION001, &this->Patches) &&
+		Engine.RegisterInterface(ENGINE_INTERFACE_VERSION001, &this->Engine) &&
+		Engine.RegisterInterface(DEBUGLOG_INTERFACE_VERSION001, &this->Logger);
+
+	if (!interfaceRes)
+	{
+		Logger.Log(LogLevel::Error, "ElDorito", "Failed to register interfaces!");
+		return;
+	}
 
 	Logger.Log(LogLevel::Info, "ElDorito", "ElDewrito | Version: " + Utils::Version::GetVersionString() + " | Build Date: " __DATE__);
 	loadPlugins();

@@ -8,7 +8,7 @@ namespace
 	{
 		auto& engine = ElDorito::Instance().Engine;
 		if (!engine.HasMainMenuShown() && menuIdToLoad == 0x10083)
-			engine.MainMenuShown();
+			engine.Event(EngineEvent::MainMenuShown);
 
 		bool shouldUpdate = *(DWORD*)((uint8_t*)a1 + 0x10) >= 0x1E;
 
