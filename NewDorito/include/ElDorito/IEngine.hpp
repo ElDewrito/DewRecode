@@ -1,4 +1,5 @@
 #pragma once
+#include "Pointer.hpp"
 #include <chrono>
 
 enum class EngineEvent
@@ -6,6 +7,7 @@ enum class EngineEvent
 	FirstTick,
 	MainMenuShown,
 	TagsLoaded,
+	KeyboardUpdate,
 };
 
 typedef void(__cdecl* TickCallbackFunc)(const std::chrono::duration<double>& deltaTime);
@@ -19,14 +21,17 @@ for backwards compatibility (with plugins compiled against an older ED SDK) we c
 class IEngine001
 {
 public:
+	virtual Pointer GetMainTls(size_t offset = 0) = 0;
+	virtual size_t GetMainThreadID() = 0;
+	virtual void SetMainThreadID(size_t threadID) = 0;
+	virtual bool HasMainMenuShown() = 0;
+
 	virtual bool OnTick(TickCallbackFunc callback) = 0;
 	virtual bool OnEvent(EngineEvent evt, EventCallbackFunc callback) = 0;
 
 	virtual void Tick(const std::chrono::duration<double>& deltaTime) = 0;
-	virtual void MainMenuShown() = 0;
 	virtual void Event(EngineEvent evt, void* param = 0) = 0;
-
-	virtual bool HasMainMenuShown() = 0;
+	virtual void MainMenuShown() = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

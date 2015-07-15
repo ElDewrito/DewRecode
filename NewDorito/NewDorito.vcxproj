@@ -57,7 +57,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>version.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -76,7 +76,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>version.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -86,14 +86,20 @@
     <ClCompile Include="src\GameConsole.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\ElDorito.cpp" />
+    <ClCompile Include="src\Modules\ModuleCamera.cpp" />
     <ClCompile Include="src\Modules\ModuleGame.cpp" />
+    <ClCompile Include="src\Modules\ModuleGraphics.cpp" />
+    <ClCompile Include="src\Modules\ModuleInput.cpp" />
     <ClCompile Include="src\Modules\ModuleMain.cpp" />
     <ClCompile Include="src\Modules\ModulePlayer.cpp" />
-    <ClCompile Include="src\Modules\Patches\PatchModuleArmor.cpp" />
-    <ClCompile Include="src\Modules\Patches\PatchModuleContentItems.cpp" />
-    <ClCompile Include="src\Modules\Patches\PatchModuleCore.cpp" />
-    <ClCompile Include="src\Modules\Patches\PatchModuleNetwork.cpp" />
-    <ClCompile Include="src\Modules\Patches\PatchModuleUI.cpp" />
+    <ClCompile Include="src\Modules\ModuleServer.cpp" />
+    <ClCompile Include="src\Modules\ModuleTime.cpp" />
+    <ClCompile Include="src\Modules\Patches\Input.cpp" />
+    <ClCompile Include="src\Modules\Patches\Armor.cpp" />
+    <ClCompile Include="src\Modules\Patches\ContentItems.cpp" />
+    <ClCompile Include="src\Modules\Patches\Core.cpp" />
+    <ClCompile Include="src\Modules\Patches\Network.cpp" />
+    <ClCompile Include="src\Modules\Patches\UI.cpp" />
     <ClCompile Include="src\Modules\Patches\PlayerPropertiesExtension.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
     <ClCompile Include="src\Utils\Assert.cpp" />
@@ -117,14 +123,20 @@
     <ClInclude Include="src\Engine.hpp" />
     <ClInclude Include="src\GameConsole.hpp" />
     <ClInclude Include="src\ElDorito.hpp" />
+    <ClInclude Include="src\Modules\ModuleCamera.hpp" />
     <ClInclude Include="src\Modules\ModuleGame.hpp" />
+    <ClInclude Include="src\Modules\ModuleGraphics.hpp" />
+    <ClInclude Include="src\Modules\ModuleInput.hpp" />
     <ClInclude Include="src\Modules\ModuleMain.hpp" />
     <ClInclude Include="src\Modules\ModulePlayer.hpp" />
-    <ClInclude Include="src\Modules\Patches\PatchModuleArmor.hpp" />
-    <ClInclude Include="src\Modules\Patches\PatchModuleContentItems.hpp" />
-    <ClInclude Include="src\Modules\Patches\PatchModuleCore.hpp" />
-    <ClInclude Include="src\Modules\Patches\PatchModuleNetwork.hpp" />
-    <ClInclude Include="src\Modules\Patches\PatchModuleUI.hpp" />
+    <ClInclude Include="src\Modules\ModuleServer.hpp" />
+    <ClInclude Include="src\Modules\ModuleTime.hpp" />
+    <ClInclude Include="src\Modules\Patches\Input.hpp" />
+    <ClInclude Include="src\Modules\Patches\Armor.hpp" />
+    <ClInclude Include="src\Modules\Patches\ContentItems.hpp" />
+    <ClInclude Include="src\Modules\Patches\Core.hpp" />
+    <ClInclude Include="src\Modules\Patches\Network.hpp" />
+    <ClInclude Include="src\Modules\Patches\UI.hpp" />
     <ClInclude Include="src\Modules\Patches\PlayerPropertiesExtension.hpp" />
     <ClInclude Include="src\PatchManager.hpp" />
     <ClInclude Include="src\Utils\Assert.hpp" />

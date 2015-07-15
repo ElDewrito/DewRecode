@@ -6,22 +6,33 @@
 class Engine : public IEngine001
 {
 public:
-	// used to register callbacks for these events
-	bool OnTick(TickCallbackFunc callback);
-	bool OnEvent(EngineEvent evt, EventCallbackFunc callback);
-
-	// called when an event occurs, calls each registered callback for the event
-	void Tick(const std::chrono::duration<double>& deltaTime);
-	void MainMenuShown();
-	void Event(EngineEvent evt, void* param = 0);
+	Pointer GetMainTls(size_t offset = 0);
+	size_t GetMainThreadID()
+	{
+		return mainThreadID;
+	}
+	void SetMainThreadID(size_t threadID)
+	{
+		mainThreadID = threadID;
+	}
 
 	bool HasMainMenuShown()
 	{
 		return mainMenuHasShown;
 	}
 
+	// used to register callbacks for these events
+	bool OnTick(TickCallbackFunc callback);
+	bool OnEvent(EngineEvent evt, EventCallbackFunc callback);
+
+	// called when an event occurs, calls each registered callback for the event
+	void Tick(const std::chrono::duration<double>& deltaTime);
+	void Event(EngineEvent evt, void* param = 0);
+	void MainMenuShown();
+
 	Engine();
 private:
+	size_t mainThreadID;
 	bool mainMenuHasShown = false;
 	bool hasFirstTickTocked = false;
 	std::vector<TickCallbackFunc> tickCallbacks;

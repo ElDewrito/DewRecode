@@ -6,7 +6,9 @@ bool InitInstance(HINSTANCE module)
 {
 	DisableThreadLibraryCalls(module);
 
-	ElDorito::Instance().Initialize();
+	auto& dorito = ElDorito::Instance();
+	dorito.Engine.SetMainThreadID(GetCurrentThreadId());
+	dorito.Initialize();
 
 	return true;
 }

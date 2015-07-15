@@ -24,7 +24,7 @@ namespace
 					// Disable it.
 					newFlags = 0;
 
-					/* TODO: Patches::Logging::EnableNetworkLog(false);
+					/* TODO1: Patches::Logging::EnableNetworkLog(false);
 					Patches::Logging::EnableSslLog(false);
 					Patches::Logging::EnableUiLog(false);
 					Patches::Logging::EnableGame1Log(false);
@@ -40,7 +40,7 @@ namespace
 					if (arg.compare("all") == 0 || arg.compare("on") == 0)
 						hookNetwork = hookSSL = hookUI = hookGame1 = hookGame2 = true;
 
-					/* TODO: if (hookNetwork)
+					/* TODO1: if (hookNetwork)
 					{
 						newFlags |= DebugLoggingModes::eDebugLoggingModeNetwork;
 						Patches::Logging::EnableNetworkLog(true);
@@ -82,7 +82,7 @@ namespace
 		else
 		{
 			ss << "enabled: ";
-			/* TODO: if (newFlags & DebugLoggingModes::eDebugLoggingModeNetwork)
+			/* TODO1: if (newFlags & DebugLoggingModes::eDebugLoggingModeNetwork)
 				ss << "Network ";
 			if (newFlags & DebugLoggingModes::eDebugLoggingModeSSL)
 				ss << "SSL ";
@@ -164,16 +164,18 @@ namespace
 		std::string MapName((char*)Pointer(0x22AB018)(0x1A4));
 		std::wstring VariantName((wchar_t*)Pointer(0x23DAF4C));
 
+		auto& dorito = ElDorito::Instance();
+
 		Utils::String::BytesToHexString((char*)Pointer(0x2247b80), 0x10, Xnkid);
 		Utils::String::BytesToHexString((char*)Pointer(0x2247b90), 0x10, Xnaddr);
 
-		// TODO: ss << std::hex << "ThreadLocalStorage: 0x" << std::hex << (size_t)(void*)ElDorito::GetMainTls() << std::endl;
+		ss << std::hex << "ThreadLocalStorage: 0x" << std::hex << (size_t)(void*)dorito.Engine.GetMainTls() << std::endl;
 
 		ss << "Command line args: " << (ArgList.empty() ? "(null)" : ArgList) << std::endl;
 		ss << "Local Secure Key: " << (LocalSecureKey.empty() ? "(null)" : LocalSecureKey) << std::endl;
 		ss << "XNKID: " << Xnkid << std::endl;
 		ss << "XNAddr: " << Xnaddr << std::endl;
-		// TODO: ss << "Server Port: " << std::dec << Modules::ModuleServer::Instance().VarServerPort->ValueInt << std::endl;
+		ss << "Server Port: " << std::dec << dorito.Modules.Server.VarServerPort->ValueInt << std::endl;
 		ss << "Server Endpoint Port: " << std::dec << Pointer(0x1860454).Read<uint32_t>() << std::endl;
 		ss << "Build: " << (Build.empty() ? "(null)" : Build) << std::endl;
 		ss << "SystemID: " << (SystemID.empty() ? "(null)" : SystemID) << std::endl;
@@ -188,7 +190,7 @@ namespace
 		ss << "Loaded Game Type: 0x" << std::hex << Pointer(0x023DAF18).Read<int32_t>() << std::endl;
 		ss << "Tag Table Offset: 0x" << std::hex << Pointer(0x22AAFF4).Read<uint32_t>() << std::endl;
 		ss << "Tag Bank Offset: 0x" << std::hex << Pointer(0x22AAFF8).Read<uint32_t>() << std::endl;
-		// TODO: ss << "Players global addr: 0x" << std::hex << ElDorito::GetMainTls(GameGlobals::Players::TLSOffset).Read<uint32_t>() << std::endl;
+		ss << "Players global addr: 0x" << std::hex << dorito.Engine.GetMainTls(GameGlobals::Players::TLSOffset).Read<uint32_t>() << std::endl;
 
 		returnInfo = ss.str();
 		return true;
@@ -281,15 +283,11 @@ namespace
 		ss << "Loading " << mapName << " gametype: " << Blam::GameTypeNames[gameType] << " gamemode: " << Blam::GameModeNames[gameMode];
 
 		Pointer(0x2391B2C).Write<uint32_t>(gameType);
+		Pointer(0x2391800).Write<uint32_t>(gameMode);
+		Pointer(0x2391824).Write(mapName.c_str(), mapName.length() + 1);
 
 		// Infinite play time
 		Pointer(0x2391C51).Write<uint8_t>(0);
-
-		// Game Mode
-		Pointer(0x2391800).Write<uint32_t>(gameMode);
-
-		// Map Name
-		Pointer(0x2391824).Write(mapName.c_str(), mapName.length() + 1);
 
 		// Map Reset
 		Pointer(0x23917F0).Write<uint8_t>(0x1);
@@ -363,12 +361,16 @@ namespace
 			return false;
 
 		// Load it into a buffer and have the game parse it
-		uint8_t blfData[MapVariantBlfSize];
+		uint8_t* blfData = (uint8_t*)malloc(MapVariantBlfSize);
 		file.read(reinterpret_cast<char*>(blfData), MapVariantBlfSize);
 
 		typedef bool(__thiscall *ParseMapVariantBlfPtr)(void *blf, uint8_t *outVariant, bool *result);
 		auto ParseMapVariant = reinterpret_cast<ParseMapVariantBlfPtr>(0x573250);
-		return ParseMapVariant(blfData, out, nullptr);
+
+		bool retVal = ParseMapVariant(blfData, out, nullptr);
+		free(blfData);
+
+		return retVal;
 	}
 
 	int GetMapId(const std::string &mapName)
@@ -476,7 +478,8 @@ namespace
 			return false;
 		}
 		auto mapName = Arguments[0];
-		uint8_t variantData[0xE090];
+		const auto UnkVariantBlfSize = 0xE090;
+		uint8_t* variantData = (uint8_t*)malloc(UnkVariantBlfSize);
 
 		// If the name is the name of a valid map variant, load it
 		auto variantFileName = "mods/maps/" + mapName + "/sandbox.map";
@@ -487,6 +490,7 @@ namespace
 			if (!LoadMapVariant(mapVariant, variantData))
 			{
 				returnInfo += "\nInvalid map variant file!";
+				free(variantData);
 				return false;
 			}
 		}
@@ -496,6 +500,7 @@ namespace
 			if (!LoadDefaultMapVariant(mapName, variantData))
 			{
 				returnInfo += "\nInvalid map file!";
+				free(variantData);
 				return false;
 			}
 		}
@@ -505,10 +510,12 @@ namespace
 		auto LoadMapVariant = reinterpret_cast<LoadMapVariantPtr>(0xA83AF0);
 		if (!LoadMapVariant(variantData, nullptr))
 		{
+			free(variantData);
 			returnInfo += "\nLoad failed.";
 			return false;
 		}
 		SaveMapVariantToPreferences(variantData);
+		free(variantData);
 		returnInfo += "\nMap variant loaded successfully!";
 		return true;
 	}

@@ -1,4 +1,4 @@
-#include "PatchModuleArmor.hpp"
+#include "Armor.hpp"
 #include <unordered_map>
 #include "../../ElDorito.hpp"
 

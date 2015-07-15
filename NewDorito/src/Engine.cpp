@@ -112,3 +112,46 @@ void Engine::Event(EngineEvent evt, void* param)
 		kvp.first(param);
 	}
 }
+
+Pointer Engine::GetMainTls(size_t offset)
+{
+	static Pointer ThreadLocalStorage;
+	if (!ThreadLocalStorage && GetMainThreadID())
+	{
+		size_t MainThreadID = GetMainThreadID();
+
+		HANDLE MainThreadHandle = OpenThread(THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, false, MainThreadID);
+
+		// Get thread context
+		CONTEXT MainThreadContext;
+		MainThreadContext.ContextFlags = CONTEXT_FULL;
+
+		if (MainThreadID != GetCurrentThreadId())
+			SuspendThread(MainThreadHandle);
+
+		BOOL success = GetThreadContext(MainThreadHandle, &MainThreadContext);
+		if (!success)
+		{
+			OutputDebugStringA(std::string("Error getting thread context: ").append(std::to_string(GetLastError())).c_str());
+			std::exit(1);
+		}
+		ResumeThread(MainThreadHandle);
+
+		// Get thread selector
+
+		LDT_ENTRY MainThreadLdt;
+
+		success = GetThreadSelectorEntry(MainThreadHandle, MainThreadContext.SegFs, &MainThreadLdt);
+		if (!success)
+		{
+			OutputDebugStringA(std::string("Error getting thread context: ").append(std::to_string(GetLastError())).c_str());
+		}
+		size_t TlsPtrArrayAddress = (size_t)((size_t)(MainThreadLdt.HighWord.Bits.BaseHi << 24) | (MainThreadLdt.HighWord.Bits.BaseMid << 16) | MainThreadLdt.BaseLow) + 0x2C;
+		size_t TlsPtrAddress = Pointer(TlsPtrArrayAddress).Read<uint32_t>();
+
+		// Index has been consistantly 0. Keep a look out.
+		ThreadLocalStorage = Pointer(TlsPtrAddress)[0];
+	}
+
+	return ThreadLocalStorage(offset);
+}

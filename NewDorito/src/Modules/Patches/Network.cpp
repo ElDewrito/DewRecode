@@ -1,4 +1,4 @@
-#include "PatchModuleNetwork.hpp"
+#include "Network.hpp"
 #include "../../ElDorito.hpp"
 
 namespace

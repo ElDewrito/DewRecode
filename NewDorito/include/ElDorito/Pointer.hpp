@@ -4,20 +4,12 @@
 #include <Windows.h>
 #include <sstream>
 
-size_t GetMainThreadId();
-size_t GetMainThreadId(size_t ProcessId);
-
 void* GetModuleBase();
 void* GetModuleBase(const std::string& ModuleName);
 inline void* GetBasePointer()
 {
 	return GetModuleBase();
 }
-
-// Some pages require changes to VirtualProtect.
-// Use this to change to flags such as:
-//		PAGE_EXECUTE_READWRITE
-void SetPageAccess(size_t Offset, size_t Size, size_t AccessFlags);
 
 class Pointer
 {
