@@ -67,6 +67,9 @@
       <AdditionalLibraryDirectories>../Debug/</AdditionalLibraryDirectories>
       <AdditionalDependencies>mtndew.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>Copy /Y "$(TargetDir)$(TargetFileName)" "C:\Halo\mods\plugins\$(TargetFileName)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -87,6 +90,9 @@
       <AdditionalLibraryDirectories>../Release/</AdditionalLibraryDirectories>
       <AdditionalDependencies>mtndew.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>Copy /Y "$(TargetDir)$(TargetFileName)" "C:\Halo\mods\plugins\$(TargetFileName)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

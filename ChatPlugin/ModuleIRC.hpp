@@ -28,6 +28,11 @@ namespace Modules
 		SOCKET winSocket;
 		ConsoleBuffer* globalBuffer;
 		ConsoleBuffer* ingameBuffer;
+#ifdef _DEBUG
+		std::string userMode = "+B";
+#else
+		std::string userMode = "+BIc";
+#endif
 
 		bool initIRCChat();
 		void ircChatLoop();

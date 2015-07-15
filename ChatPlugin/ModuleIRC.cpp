@@ -273,13 +273,13 @@ namespace Modules
 			ingameBuffer->Visible = true;
 		}
 
-		sprintf_s(buffer, "MODE %s +BIc\r\nJOIN %s\r\n", IRCNick.c_str(), channel.c_str());
+		sprintf_s(buffer, "MODE %s %s\r\nJOIN %s\r\n", IRCNick.c_str(), userMode.c_str(), channel.c_str());
 		send(winSocket, buffer, strlen(buffer), 0);
 	}
 
 	void ModuleIRC::ChannelLeave(std::string channel)
 	{
-		sprintf_s(buffer, "MODE %s +BIc\r\nPART %s\r\n", IRCNick.c_str(), channel.c_str());
+		sprintf_s(buffer, "MODE %s %s\r\nPART %s\r\n", IRCNick.c_str(), userMode.c_str(), channel.c_str());
 		send(winSocket, buffer, strlen(buffer), 0);
 		GameChatChannel = "";
 		engine->SetActiveConsoleBuffer(globalBuffer);
