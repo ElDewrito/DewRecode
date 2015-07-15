@@ -31,13 +31,13 @@ namespace
 	{
 		void* v2;
 
-		typedef char(__cdecl *sub_454F20Func)(void** a1);
-		sub_454F20Func sub_454F20 = (sub_454F20Func)0x454F20;
+		typedef char(__cdecl *sub_454F20Ptr)(void** a1);
+		auto sub_454F20 = reinterpret_cast<sub_454F20Ptr>(0x454F20);
 		if (!sub_454F20(&v2))
 			return 0;
 
-		typedef char*(__thiscall *sub_45C250Func)(void* thisPtr);
-		sub_45C250Func sub_45C250 = (sub_45C250Func)0x45C250;
+		typedef char*(__thiscall *sub_45C250Ptr)(void* thisPtr);
+		auto sub_45C250 = reinterpret_cast<sub_45C250Ptr>(0x45C250);
 
 		return *(DWORD*)(sub_45C250(v2) + 0x10A0);
 	}

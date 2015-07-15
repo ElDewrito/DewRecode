@@ -12,6 +12,7 @@
 #include "Patches/Core.hpp"
 #include "Patches/Input.hpp"
 #include "Patches/Network.hpp"
+#include "Patches/PlayerUid.hpp"
 #include "Patches/Scoreboard.hpp"
 #include "Patches/UI.hpp"
 #include "Patches/VirtualKeyboard.hpp"
@@ -34,6 +35,7 @@ namespace Modules
 		PatchModuleCore CorePatches;
 		PatchModuleInput InputPatches;
 		PatchModuleNetwork NetworkPatches;
+		PatchModulePlayerUid PlayerUidPatches;
 		PatchModuleScoreboard ScoreboardPatches;
 		PatchModuleUI UIPatches;
 		PatchModuleVirtualKeyboard VirtualKeyboardPatches;
