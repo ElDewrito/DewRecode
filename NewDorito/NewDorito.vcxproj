@@ -99,6 +99,7 @@
     <ClCompile Include="src\Modules\Patches\ContentItems.cpp" />
     <ClCompile Include="src\Modules\Patches\Core.cpp" />
     <ClCompile Include="src\Modules\Patches\Network.cpp" />
+    <ClCompile Include="src\Modules\Patches\Scoreboard.cpp" />
     <ClCompile Include="src\Modules\Patches\UI.cpp" />
     <ClCompile Include="src\Modules\Patches\PlayerPropertiesExtension.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="src\Modules\Patches\ContentItems.hpp" />
     <ClInclude Include="src\Modules\Patches\Core.hpp" />
     <ClInclude Include="src\Modules\Patches\Network.hpp" />
+    <ClInclude Include="src\Modules\Patches\Scoreboard.hpp" />
     <ClInclude Include="src\Modules\Patches\UI.hpp" />
     <ClInclude Include="src\Modules\Patches\PlayerPropertiesExtension.hpp" />
     <ClInclude Include="src\PatchManager.hpp" />

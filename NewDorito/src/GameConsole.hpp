@@ -6,6 +6,7 @@ namespace
 	char** CommandLineToArgvA(char* CmdLine, int* _argc);
 }
 
+// if you make any changes to this class make sure to update the exported interface (create a new interface + inherit from it if the interface already shipped)
 class GameConsole : public IConsole001
 {
 public:
