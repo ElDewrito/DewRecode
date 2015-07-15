@@ -9,6 +9,12 @@ List of events registered by ED (eventNamespace/eventName seperated by a period)
 	Core.Engine.TagsLoaded - when the tags have been reloaded
 	Core.Input.KeyboardUpdate - when a key is pressed (i think? haven't looked into keyboard code much)
 
+
+	Core.Server.Start - when the user has started a server
+	Core.Server.Stop - when the user has stopped the server
+	Core.Server.PlayerKick - when a user has been kicked (host only)
+
+
 (soon):
     Core.Direct3D.Present - when the game is about to call D3DDevice::Present
 	Core.Direct3D.EndScene - when the game is about to call D3DDevice::EndScene
@@ -18,11 +24,8 @@ List of events registered by ED (eventNamespace/eventName seperated by a period)
 	Core.Game.Leave - when the user leaves a game (ez)
 	Core.Game.Start - when a game has started
 	Core.Game.End - when a game has finished (ez)
-	Core.Server.Start - when the user has started a server (ez)
-	Core.Server.Stop - when the user has stopped the server (ez)
 	Core.Player.Join - when a user joins the game (signals for all users, not just host)
 	Core.Player.Leave - when a user leaves the game (signals for all users, not just host) (ez)
-	Core.Player.Kick - when a user has been kicked (host only) (ez)
 	Fore.Twenty - when the kush hits you
 
 later:
@@ -33,6 +36,12 @@ later:
 	Core.Medals.Overkill
 	(etc)
 */
+
+struct PlayerKickInfo
+{
+	std::string Name;
+	uint64_t UID;
+};
 
 typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
 typedef void(__cdecl* EventCallback)(void* param);
@@ -134,6 +143,18 @@ public:
 	/// Sets the module handle for the ElDorito dll.
 	/// </summary>
 	virtual void SetDoritoModule(HMODULE module) = 0;
+
+	/// <summary>
+	/// Gets the ElDorito dll version as a string.
+	/// </summary>
+	/// <returns>The ElDorito dll version as a string.</returns>
+	virtual std::string GetDoritoVersionString() = 0;
+
+	/// <summary>
+	/// Gets the ElDorito dll version as an integer.
+	/// </summary>
+	/// <returns>The ElDorito dll version as an integer.</returns>
+	virtual DWORD GetDoritoVersionInt() = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

@@ -41,9 +41,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>mtndew</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>mtndew</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -104,10 +106,8 @@
     <ClCompile Include="src\Modules\Patches\PlayerPropertiesExtension.cpp" />
     <ClCompile Include="src\Modules\Patches\VirtualKeyboard.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
-    <ClCompile Include="src\Utils\Assert.cpp" />
-    <ClCompile Include="src\Utils\Cryptography.cpp" />
+    <ClCompile Include="src\Utils.cpp" />
     <ClCompile Include="src\Utils\HttpRequest.cpp" />
-    <ClCompile Include="src\Utils\String.cpp" />
     <ClCompile Include="src\Utils\VersionInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -116,6 +116,7 @@
     <ClInclude Include="include\ElDorito\IDebugLog.hpp" />
     <ClInclude Include="include\ElDorito\IEngine.hpp" />
     <ClInclude Include="include\ElDorito\IPatchManager.hpp" />
+    <ClInclude Include="include\ElDorito\IUtils.hpp" />
     <ClInclude Include="include\ElDorito\ModuleBase.hpp" />
     <ClInclude Include="include\ElDorito\Pointer.hpp" />
     <ClInclude Include="src\Modules\Patches\VirtualKeyboard.hpp" />
@@ -145,13 +146,11 @@
     <ClInclude Include="src\Modules\Patches\UI.hpp" />
     <ClInclude Include="src\Modules\Patches\PlayerPropertiesExtension.hpp" />
     <ClInclude Include="src\PatchManager.hpp" />
-    <ClInclude Include="src\Utils\Assert.hpp" />
+    <ClInclude Include="src\Utils.hpp" />
     <ClInclude Include="src\Utils\Bits.hpp" />
-    <ClInclude Include="src\Utils\Cryptography.hpp" />
     <ClInclude Include="src\Utils\HttpRequest.hpp" />
     <ClInclude Include="src\Utils\Macros.hpp" />
     <ClInclude Include="src\Utils\Misc.hpp" />
-    <ClInclude Include="src\Utils\String.hpp" />
     <ClInclude Include="src\Utils\Utils.hpp" />
     <ClInclude Include="src\Utils\VersionInfo.hpp" />
   </ItemGroup>

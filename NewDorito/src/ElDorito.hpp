@@ -7,6 +7,7 @@
 #include "Engine.hpp"
 #include "DebugLog.hpp"
 #include "Modules/ModuleMain.hpp"
+#include "Utils.hpp"
 
 #include "Utils/Utils.hpp"
 #include <ElDorito/Pointer.hpp>
@@ -14,10 +15,11 @@
 class ElDorito
 {
 public:
-	GameConsole Console;
-	PatchManager Patches;
-	Engine Engine;
 	DebugLog Logger;
+	PatchManager Patches;
+	GameConsole Console;
+	PublicUtils Utils;
+	Engine Engine;
 	Modules::ModuleMain Modules;
 
 	void Initialize();

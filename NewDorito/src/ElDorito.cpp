@@ -22,18 +22,6 @@ void ElDorito::Initialize()
 	if (this->inited)
 		return;
 
-	// register our interfaces
-	bool interfaceRes = Engine.RegisterInterface(CONSOLE_INTERFACE_VERSION001, &this->Console) &&
-		Engine.RegisterInterface(PATCHMANAGER_INTERFACE_VERSION001, &this->Patches) &&
-		Engine.RegisterInterface(ENGINE_INTERFACE_VERSION001, &this->Engine) &&
-		Engine.RegisterInterface(DEBUGLOG_INTERFACE_VERSION001, &this->Logger);
-
-	if (!interfaceRes)
-	{
-		Logger.Log(LogLevel::Error, "ElDorito", "Failed to register interfaces!");
-		return;
-	}
-
 	Logger.Log(LogLevel::Info, "ElDorito", "ElDewrito | Version: " + Utils::Version::GetVersionString() + " | Build Date: " __DATE__);
 	loadPlugins();
 
@@ -113,13 +101,16 @@ void ElDorito::loadPlugins()
 			continue;
 
 		auto& path = itr->path().string();
+		this->Utils.ReplaceCharacters(path, '/', '\\');
+		Logger.Log(LogLevel::Debug, "Plugins", "Loading plugin from %s...", path.c_str());
 
 		auto dllHandle = LoadLibraryA(path.c_str());
 		if (!dllHandle)
 		{
-			Logger.Log(LogLevel::Error, "Plugins", "Failed to load plugin library %s: LoadLibrary failed!", path.c_str());
+			Logger.Log(LogLevel::Error, "Plugins", "Failed to load plugin library %s: LoadLibrary failed (code: %d)", path.c_str(), GetLastError());
 			continue;
 		}
+
 		auto GetPluginInfo = reinterpret_cast<GetPluginInfoPtr>(GetProcAddress(dllHandle, "GetPluginInfo"));
 		auto InitializePlugin = reinterpret_cast<InitializePluginPtr>(GetProcAddress(dllHandle, "InitializePlugin"));
 
@@ -138,7 +129,7 @@ void ElDorito::loadPlugins()
 			continue;
 		}
 
-		Logger.Log(LogLevel::Debug, "Plugins", "Initing plugin \"%s\"", info->Name);
+		Logger.Log(LogLevel::Debug, "Plugins", "Initing \"%s\"", info->Name);
 		if (!InitializePlugin())
 		{
 			Logger.Log(LogLevel::Error, "Plugins", "Failed to load plugin library %s: Initialization failed!", path.c_str());
@@ -147,6 +138,6 @@ void ElDorito::loadPlugins()
 		}
 
 		plugins.insert(std::pair<std::string, HMODULE>(path, dllHandle));
-		Logger.Log(LogLevel::Info, "Plugins", "Loaded plugin \"%s\"", info->Name);
+		Logger.Log(LogLevel::Info, "Plugins", "Loaded \"%s\"", info->Name);
 	}
 }

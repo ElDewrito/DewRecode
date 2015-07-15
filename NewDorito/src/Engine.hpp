@@ -1,6 +1,7 @@
 #pragma once
 #include <ElDorito/ElDorito.hpp>
 #include <map>
+#include "Utils/Utils.hpp"
 
 // handles game events and callbacks for different modules/plugins
 // if you make any changes to this class make sure to update the exported interface (create a new interface + inherit from it if the interface already shipped)
@@ -25,6 +26,9 @@ public:
 
 	HMODULE GetDoritoModule() { return doritoModule; }
 	void SetDoritoModule(HMODULE module) { doritoModule = module; }
+
+	std::string GetDoritoVersionString() { return Utils::Version::GetVersionString(); }
+	DWORD GetDoritoVersionInt() { return Utils::Version::GetVersionInt(); }
 
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);

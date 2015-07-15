@@ -92,7 +92,7 @@ namespace
 	{
 		if (uMsg == WM_COMMAND && wParam == 1)
 		{
-			HWND textEditHandle = GetDlgItem(hwndDlg, 0);
+			HWND textEditHandle = GetDlgItem(hwndDlg, IDTEXT);
 			int len = SendMessage(textEditHandle, WM_GETTEXTLENGTH, 0, 0);
 			inputLineText = new char[len + 1];
 			SendMessage(textEditHandle, WM_GETTEXT, (WPARAM)len + 1, (LPARAM)inputLineText);

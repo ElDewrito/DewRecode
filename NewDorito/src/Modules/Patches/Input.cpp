@@ -81,7 +81,7 @@ namespace
 		auto& dorito = ElDorito::Instance();
 
 		// TODO: this
-		/*if (!Modules::ModuleInput::Instance().VarInputRawInput->ValueInt)
+		if (!dorito.Modules.Input.VarInputRawInput->ValueInt)
 			return false;
 		if (rwInput->header.dwType != RIM_TYPEMOUSE)
 			return true;
@@ -136,7 +136,7 @@ namespace
 		currentHoriz -= (float)rwInput->data.mouse.lLastX * xaxisSens / 1000.0f / weaponSensitivity;
 
 		horizPtr.Write(currentHoriz);
-		vertPtr.Write(currentVert);*/
+		vertPtr.Write(currentVert);
 		return true;
 	}
 

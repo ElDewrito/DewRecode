@@ -1,5 +1,5 @@
 #pragma once
-#include "../NewDorito/include/ElDorito/ElDorito.hpp"
+#include <ElDorito/ElDorito.hpp>
 
 namespace Modules
 {

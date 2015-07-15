@@ -36,6 +36,44 @@ namespace
 		return ElDorito::Instance().Engine.WndProc(hWnd, msg, wParam, lParam);
 	}
 
+	DWORD __cdecl Network_managed_session_create_session_internalHook(int a1, int a2)
+	{
+		DWORD isOnline = *(DWORD*)a2;
+		bool isHost = (*(uint16_t *)(a2 + 284) & 1);
+
+		typedef DWORD(__cdecl *Network_managed_session_create_session_internalFunc)(int a1, int a2);
+		Network_managed_session_create_session_internalFunc Network_managed_session_create_session_internal = (Network_managed_session_create_session_internalFunc)0x481550;
+		auto retval = Network_managed_session_create_session_internal(a1, a2);
+
+		if (isHost)
+			ElDorito::Instance().Engine.Event("Core", isOnline == 1 ? "Server.Start" : "Server.Stop");
+
+		return retval;
+	}
+
+	bool __fastcall Network_leader_request_boot_machineHook(void* thisPtr, void* unused, void* playerAddr, int reason)
+	{
+		uint32_t base = 0x1A4DC98;
+		uint32_t playerOffset = (uint32_t)playerAddr - base;
+		uint32_t playerIndex = playerOffset / 0xF8; // 0xF8 = size of player entry in this struct
+
+		uint32_t uidBase = 0x1A4ED18;
+		uint32_t uidOffset = uidBase + (0x1648 * playerIndex) + 0x50;
+		uint64_t uid = Pointer(uidOffset).Read<uint64_t>();
+
+		wchar_t playerName[0x10];
+		memcpy(playerName, (char*)uidOffset + 0x8, 0x10 * sizeof(wchar_t));
+
+		typedef bool(__thiscall *Network_leader_request_boot_machineFunc)(void *thisPtr, void* playerAddr, int reason);
+		const Network_leader_request_boot_machineFunc Network_leader_request_boot_machine = reinterpret_cast<Network_leader_request_boot_machineFunc>(0x45D4A0);
+		bool retVal = Network_leader_request_boot_machine(thisPtr, playerAddr, reason);
+		PlayerKickInfo info = { ElDorito::Instance().Utils.ThinString(playerName), uid };
+		if (retVal)
+			ElDorito::Instance().Engine.Event("Core", "Server.PlayerKick", &info);
+
+		return retVal;
+	}
+
 }
 
 /// <summary>
@@ -53,6 +91,8 @@ Engine::Engine()
 	{
 		Hook("GameTick", 0x505E64, GameTickHook, HookType::Call),
 		Hook("TagsLoaded", 0x5030EA, TagsLoadedHook, HookType::Jmp),
+		Hook("ServerSessionInfo", 0x482AAC, Network_managed_session_create_session_internalHook, HookType::Call),
+		Hook("PlayerKick", 0x437E17, Network_leader_request_boot_machineHook, HookType::Call)
 	}));
 }
 
@@ -92,7 +132,7 @@ bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCal
 	std::string eventId = eventNamespace + "." + eventName;
 	for (auto kvp : eventCallbacks)
 	{
-		if (kvp.first.compare(eventId))
+		if (!kvp.first.compare(eventId))
 		{
 			// TODO: check if callback is already registered for this event, bad plugin coders might have put their OnEvent in a loop by accident or something
 			kvp.second.push_back(callback);
@@ -152,7 +192,8 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 	// TODO: find a way to optimize this?
 
 	std::string eventId = eventNamespace + "." + eventName;
-	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event triggered", eventId.c_str());
+	if (eventId.compare("Core.Input.KeyboardUpdate")) // don't show keyboard update spam
+		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event triggered", eventId.c_str());
 
 	if (!eventId.compare("Core.MainMenuShown"))
 	{
@@ -172,7 +213,7 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 			callback(param);
 	}
 	if (!found)
-		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event not created!", eventId.c_str());
+		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event not created (nobody is listening for this event!)", eventId.c_str());
 }
 
 /// <summary>
@@ -183,11 +224,22 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 /// <returns>true if the interface was registered, false if an interface already exists with this name</returns>
 bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
 {
+	if (!interfaceName.compare(CONSOLE_INTERFACE_VERSION001) ||
+		!interfaceName.compare(ENGINE_INTERFACE_VERSION001) ||
+		!interfaceName.compare(DEBUGLOG_INTERFACE_VERSION001) ||
+		!interfaceName.compare(PATCHMANAGER_INTERFACE_VERSION001) ||
+		!interfaceName.compare(UTILS_INTERFACE_VERSION001))
+		return false; // can't register these
+
 	for (auto kvp : interfaces)
 		if (!kvp.first.compare(interfaceName))
-			return false; // interface with this name already exists
+		{
+			ElDorito::Instance().Logger.Log(LogLevel::Error, "Engine", "Failed to register interface %s as it already exists!", interfaceName.c_str());
+			return false;
+		}
 
 	interfaces.insert(std::pair<std::string, void*>(interfaceName, ptrToInterface));
+	ElDorito::Instance().Logger.Log(LogLevel::Debug, "Engine", "Registered interface %s", interfaceName.c_str());
 	return true;
 }
 
@@ -199,7 +251,20 @@ bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
 /// <returns>A pointer to the requested interface.</returns>
 void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
 {
+	auto& dorito = ElDorito::Instance();
+
 	*returnCode = 0;
+	if (!interfaceName.compare(CONSOLE_INTERFACE_VERSION001))
+		return &dorito.Console;
+	if (!interfaceName.compare(ENGINE_INTERFACE_VERSION001))
+		return &dorito.Engine;
+	if (!interfaceName.compare(DEBUGLOG_INTERFACE_VERSION001))
+		return &dorito.Logger;
+	if (!interfaceName.compare(PATCHMANAGER_INTERFACE_VERSION001))
+		return &dorito.Patches;
+	if (!interfaceName.compare(UTILS_INTERFACE_VERSION001))
+		return &dorito.Utils;
+
 	for (auto kvp : interfaces)
 		if (!kvp.first.compare(interfaceName))
 			return kvp.second;

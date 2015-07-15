@@ -60,7 +60,7 @@ namespace
 	bool AddContentItem(std::string itemPath)
 	{
 		// need to convert path from ASCII to unicode now
-		std::wstring unicode = Utils::String::WidenString(itemPath);
+		std::wstring unicode = ElDorito::Instance().Utils.WidenString(itemPath);
 		return AddContentItem((wchar_t*)unicode.c_str());
 	}
 

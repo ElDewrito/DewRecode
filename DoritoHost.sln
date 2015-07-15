@@ -15,6 +15,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExamplePlugin", "ExamplePlu
 		{A737B7B0-D18C-4625-9137-6DE99BE398AC} = {A737B7B0-D18C-4625-9137-6DE99BE398AC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerPlugin", "ServerPlugin\ServerPlugin.vcxproj", "{41F48857-73BF-4CC7-B21D-BEE91A18CB8A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A737B7B0-D18C-4625-9137-6DE99BE398AC} = {A737B7B0-D18C-4625-9137-6DE99BE398AC}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +38,10 @@ Global
 		{42FC1BB2-5286-49AD-9114-0EDA1A87AE29}.Debug|Win32.Build.0 = Debug|Win32
 		{42FC1BB2-5286-49AD-9114-0EDA1A87AE29}.Release|Win32.ActiveCfg = Release|Win32
 		{42FC1BB2-5286-49AD-9114-0EDA1A87AE29}.Release|Win32.Build.0 = Release|Win32
+		{41F48857-73BF-4CC7-B21D-BEE91A18CB8A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41F48857-73BF-4CC7-B21D-BEE91A18CB8A}.Debug|Win32.Build.0 = Debug|Win32
+		{41F48857-73BF-4CC7-B21D-BEE91A18CB8A}.Release|Win32.ActiveCfg = Release|Win32
+		{41F48857-73BF-4CC7-B21D-BEE91A18CB8A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -17,7 +17,8 @@ namespace
 	// determine which camera definitions are editable based on the current camera mode
 	bool __stdcall IsCameraDefinitionEditable(CameraDefinitionType definition)
 	{
-		auto mode = Utils::String::ToLower(ElDorito::Instance().Modules.Camera.VarCameraMode->ValueString);
+		auto& dorito = ElDorito::Instance();
+		auto mode = dorito.Utils.ToLower(dorito.Modules.Camera.VarCameraMode->ValueString);
 		if (!mode.compare("first") || !mode.compare("third"))
 		{
 			if (definition == CameraDefinitionType::PositionShift ||
@@ -169,7 +170,8 @@ namespace
 	
 	bool VariableCameraModeUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		auto mode = Utils::String::ToLower(ElDorito::Instance().Modules.Camera.VarCameraMode->ValueString);
+		auto& dorito = ElDorito::Instance();
+		auto mode = dorito.Utils.ToLower(ElDorito::Instance().Modules.Camera.VarCameraMode->ValueString);
 
 		// TODO1: 
 		/*
@@ -318,11 +320,12 @@ namespace Modules
 
 	void ModuleCamera::UpdatePosition()
 	{
-		auto mode = Utils::String::ToLower(ElDorito::Instance().Modules.Camera.VarCameraMode->ValueString);
+		auto& dorito = ElDorito::Instance();
+
+		auto mode = dorito.Utils.ToLower(dorito.Modules.Camera.VarCameraMode->ValueString);
 		if (mode.compare("flying"))
 			return;
 
-		auto& dorito = ElDorito::Instance();
 		Pointer &directorGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];
 		Pointer &playerControlGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
 

@@ -12,12 +12,12 @@ namespace
 
 	bool VariablePlayerNameUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		auto& player = ElDorito::Instance().Modules.Player;
-		std::string name = player.VarPlayerName->ValueString;
+		auto& dorito = ElDorito::Instance();
+		std::string name = dorito.Modules.Player.VarPlayerName->ValueString;
 
-		std::wstring nameStr = Utils::String::WidenString(name);
-		wcscpy_s(player.UserName, 16, nameStr.c_str());
-		std::string actualName = Utils::String::ThinString(player.UserName);
+		std::wstring nameStr = dorito.Utils.WidenString(name);
+		wcscpy_s(dorito.Modules.Player.UserName, 16, nameStr.c_str());
+		std::string actualName = dorito.Utils.ThinString(dorito.Modules.Player.UserName);
 
 		return true;
 	}
@@ -33,7 +33,7 @@ namespace
 
 		uint64_t uid = Pointer(0x19AB730).Read<uint64_t>();
 		std::string uidStr;
-		Utils::String::BytesToHexString(&uid, sizeof(uint64_t), uidStr);
+		ElDorito::Instance().Utils.BytesToHexString(&uid, sizeof(uint64_t), uidStr);
 		returnInfo = "Player UID: 0x" + uidStr;
 		return true;
 	}

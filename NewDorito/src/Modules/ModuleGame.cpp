@@ -166,8 +166,8 @@ namespace
 
 		auto& dorito = ElDorito::Instance();
 
-		Utils::String::BytesToHexString((char*)Pointer(0x2247b80), 0x10, Xnkid);
-		Utils::String::BytesToHexString((char*)Pointer(0x2247b90), 0x10, Xnaddr);
+		dorito.Utils.BytesToHexString((char*)Pointer(0x2247b80), 0x10, Xnkid);
+		dorito.Utils.BytesToHexString((char*)Pointer(0x2247b90), 0x10, Xnaddr);
 
 		ss << std::hex << "ThreadLocalStorage: 0x" << std::hex << (size_t)(void*)dorito.Engine.GetMainTls() << std::endl;
 
@@ -186,7 +186,7 @@ namespace
 		ss << "Flash Version: " << (FlashVersion.empty() ? "(null)" : FlashVersion) << std::endl;
 		ss << "Current Map: " << (MapName.empty() ? "(null)" : MapName) << std::endl;
 		ss << "Current Map Cache Size: " << std::dec << Pointer(0x22AB018)(0x8).Read<int32_t>() << std::endl;
-		ss << "Loaded Game Variant: " << (VariantName.empty() ? "(null)" : Utils::String::ThinString(VariantName)) << std::endl;
+		ss << "Loaded Game Variant: " << (VariantName.empty() ? "(null)" : dorito.Utils.ThinString(VariantName)) << std::endl;
 		ss << "Loaded Game Type: 0x" << std::hex << Pointer(0x023DAF18).Read<int32_t>() << std::endl;
 		ss << "Tag Table Offset: 0x" << std::hex << Pointer(0x22AAFF4).Read<uint32_t>() << std::endl;
 		ss << "Tag Bank Offset: 0x" << std::hex << Pointer(0x22AAFF8).Read<uint32_t>() << std::endl;

@@ -78,7 +78,7 @@ namespace Utils
 			return versionStr;
 		}
 
-		std::string GetInfo(const std::string &csEntry)
+		std::string GetResourceInfo(const std::string &csEntry)
 		{
 			std::string csRet;
 

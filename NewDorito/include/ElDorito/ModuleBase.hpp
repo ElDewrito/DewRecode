@@ -15,6 +15,10 @@ namespace Modules
 			if (retCode != 0)
 				throw std::runtime_error("Failed to create console interface");
 
+			logger = reinterpret_cast<IDebugLog001*>(CreateInterface(DEBUGLOG_INTERFACE_VERSION001, &retCode));
+			if (retCode != 0)
+				throw std::runtime_error("Failed to create debug log interface");
+
 			engine = reinterpret_cast<IEngine001*>(CreateInterface(ENGINE_INTERFACE_VERSION001, &retCode));
 			if (retCode != 0)
 				throw std::runtime_error("Failed to create engine interface");
@@ -23,9 +27,9 @@ namespace Modules
 			if (retCode != 0)
 				throw std::runtime_error("Failed to create patch manager interface");
 
-			logger = reinterpret_cast<IDebugLog001*>(CreateInterface(DEBUGLOG_INTERFACE_VERSION001, &retCode));
+			utils = reinterpret_cast<IUtils001*>(CreateInterface(UTILS_INTERFACE_VERSION001, &retCode));
 			if (retCode != 0)
-				throw std::runtime_error("Failed to create debug log interface");
+				throw std::runtime_error("Failed to create utils interface");
 		}
 
 		/// <summary>
@@ -84,8 +88,9 @@ namespace Modules
 	protected:
 		IConsole001* console;
 		IEngine001* engine;
-		IPatchManager001* patches;
 		IDebugLog001* logger;
+		IPatchManager001* patches;
+		IUtils001* utils;
 
 		/// <summary>
 		/// Adds the default patches for this module (automatically enabled).

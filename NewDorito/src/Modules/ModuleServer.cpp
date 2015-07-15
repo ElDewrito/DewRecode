@@ -87,11 +87,11 @@ namespace
 
 		for (auto server : announceEndpoints)
 		{
-			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()));
+			HttpRequest req(L"ElDewrito/" + dorito.Utils.WidenString(Utils::Version::GetVersionString()));
 
 			try
 			{
-				auto error = req.SendRequest(Utils::String::WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString), L"GET", L"", L"", L"", NULL, 0);
+				auto error = req.SendRequest(dorito.Utils.WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString), L"GET", L"", L"", L"", NULL, 0);
 				if (error != HttpRequestError::None)
 				{
 					ss << "Unable to connect to master server " << server << " (error: " << (int)error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
@@ -159,11 +159,11 @@ namespace
 
 		for (auto server : announceEndpoints)
 		{
-			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()));
+			HttpRequest req(L"ElDewrito/" + dorito.Utils.WidenString(Utils::Version::GetVersionString()));
 
 			try
 			{
-				auto error = req.SendRequest(Utils::String::WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString + "&shutdown=true"), L"GET", L"", L"", L"", NULL, 0);
+				auto error = req.SendRequest(dorito.Utils.WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString + "&shutdown=true"), L"GET", L"", L"", L"", NULL, 0);
 				if (error != HttpRequestError::None)
 				{
 					ss << "Unable to connect to master server " << server << " (error: " << (int)error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
@@ -305,11 +305,11 @@ namespace
 
 		for (auto server : statsEndpoints)
 		{
-			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()));
+			HttpRequest req(L"ElDewrito/" + dorito.Utils.WidenString(Utils::Version::GetVersionString()));
 
 			try
 			{
-				auto error = req.SendRequest(Utils::String::WidenString(server), L"POST", L"", L"", L"Content-Type: application/json\r\n", (void*)sendObject.c_str(), sendObject.length());
+				auto error = req.SendRequest(dorito.Utils.WidenString(server), L"POST", L"", L"", L"Content-Type: application/json\r\n", (void*)sendObject.c_str(), sendObject.length());
 				if (error != HttpRequestError::None)
 				{
 					ss << "Unable to connect to master server " << server << " (error: " << (int)error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
@@ -415,6 +415,7 @@ namespace
 			returnInfo = "Invalid arguments.";
 			return false;
 		}
+		auto& dorito = ElDorito::Instance();
 
 		std::string address = Arguments[0];
 		std::string password = "";
@@ -473,17 +474,17 @@ namespace
 		}
 		
 		// query the server
-		HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()));
+		HttpRequest req(L"ElDewrito/" + dorito.Utils.WidenString(Utils::Version::GetVersionString()));
 
 		std::wstring usernameStr = L"";
 		std::wstring passwordStr = L"";
 		if (!password.empty())
 		{
 			usernameStr = L"dorito";
-			passwordStr = Utils::String::WidenString(password);
+			passwordStr = dorito.Utils.WidenString(password);
 		}
 
-		auto error = req.SendRequest(Utils::String::WidenString("http://" + host + ":" + std::to_string(httpPort) + "/"), L"GET", usernameStr, passwordStr, L"", NULL, 0);
+		auto error = req.SendRequest(dorito.Utils.WidenString("http://" + host + ":" + std::to_string(httpPort) + "/"), L"GET", usernameStr, passwordStr, L"", NULL, 0);
 		if (error != HttpRequestError::None)
 		{
 			returnInfo = "Unable to connect to server. (error: " + std::to_string((int)error) + "/" + std::to_string(req.LastError) + "/" + std::to_string(GetLastError()) + ")";
@@ -558,8 +559,8 @@ namespace
 		uint16_t gamePort = (uint16_t)json["port"].GetInt();
 
 		BYTE xnetInfo[0x20];
-		Utils::String::HexStringToBytes(xnkid, xnetInfo, 0x10);
-		Utils::String::HexStringToBytes(xnaddr, xnetInfo + 0x10, 0x10);
+		dorito.Utils.HexStringToBytes(xnkid, xnetInfo, 0x10);
+		dorito.Utils.HexStringToBytes(xnaddr, xnetInfo + 0x10, 0x10);
 
 		// set up our syslink data struct
 		auto& server = ElDorito::Instance().Modules.Server;
@@ -597,6 +598,7 @@ namespace
 			returnInfo = "Invalid arguments";
 			return false;
 		}
+		auto& dorito = ElDorito::Instance();
 
 		std::string kickPlayerName = Arguments[0];
 
@@ -614,7 +616,7 @@ namespace
 			auto uidString = uidStream.str();
 
 			memcpy(playerName, (char*)(uidOffset + 8), 0x10 * sizeof(wchar_t));
-			if (!Utils::String::ThinString(playerName).compare(kickPlayerName) || !uidString.compare(kickPlayerName))
+			if (!dorito.Utils.ThinString(playerName).compare(kickPlayerName) || !uidString.compare(kickPlayerName))
 			{
 				typedef bool(__cdecl *Network_squad_session_boot_playerPtr)(int playerIdx, int reason);
 				auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerPtr>(0x437D60);
@@ -633,6 +635,7 @@ namespace
 	bool CommandServerListPlayers(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
 		std::stringstream ss;
+		auto& dorito = ElDorito::Instance();
 
 		// TODO: check if player is in a lobby
 		// TODO: find an addr where we can find this data in clients memory
@@ -649,7 +652,7 @@ namespace
 			uid = Pointer(uidOffset).Read<uint64_t>();
 			memcpy(playerName, (char*)(uidOffset + 8), 0x10 * sizeof(wchar_t));
 
-			std::string name = Utils::String::ThinString(playerName);
+			std::string name = dorito.Utils.ThinString(playerName);
 			if (uid == 0 && name.empty())
 				continue; // todo: proper way of checking if this index is populated
 
