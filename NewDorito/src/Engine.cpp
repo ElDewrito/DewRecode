@@ -130,14 +130,12 @@ bool Engine::OnWndProc(WNDPROC callback)
 bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback)
 {
 	std::string eventId = eventNamespace + "." + eventName;
-	for (auto kvp : eventCallbacks)
+	auto it = eventCallbacks.find(eventId);
+	if (it != eventCallbacks.end())
 	{
-		if (!kvp.first.compare(eventId))
-		{
-			// TODO: check if callback is already registered for this event, bad plugin coders might have put their OnEvent in a loop by accident or something
-			kvp.second.push_back(callback);
-			return true;
-		}
+		// TODO: check if callback is already registered for this event, bad plugin coders might have put their OnEvent in a loop by accident or something
+		(*it).second.push_back(callback);
+		return true;
 	}
 
 	// callback wasn't found, create a new one!
@@ -202,18 +200,15 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 		this->mainMenuHasShown = true;
 	}
 
-	bool found = false;
-	for (auto kvp : eventCallbacks)
+	auto it = eventCallbacks.find(eventId);
+	if (it == eventCallbacks.end())
 	{
-		if (kvp.first.compare(eventId))
-			continue;
-
-		found = true;
-		for (auto callback : kvp.second)
-			callback(param);
-	}
-	if (!found)
 		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event not created (nobody is listening for this event!)", eventId.c_str());
+		return;
+	}
+
+	for (auto callback : (*it).second)
+		callback(param);
 }
 
 /// <summary>
@@ -224,22 +219,27 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 /// <returns>true if the interface was registered, false if an interface already exists with this name</returns>
 bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
 {
+	auto& dorito = ElDorito::Instance();
+
 	if (!interfaceName.compare(CONSOLE_INTERFACE_VERSION001) ||
 		!interfaceName.compare(ENGINE_INTERFACE_VERSION001) ||
 		!interfaceName.compare(DEBUGLOG_INTERFACE_VERSION001) ||
 		!interfaceName.compare(PATCHMANAGER_INTERFACE_VERSION001) ||
 		!interfaceName.compare(UTILS_INTERFACE_VERSION001))
+	{
+		dorito.Logger.Log(LogLevel::Error, "Engine", "Tried registering built-in interface %s!", interfaceName.c_str());
 		return false; // can't register these
+	}
 
-	for (auto kvp : interfaces)
-		if (!kvp.first.compare(interfaceName))
-		{
-			ElDorito::Instance().Logger.Log(LogLevel::Error, "Engine", "Failed to register interface %s as it already exists!", interfaceName.c_str());
-			return false;
-		}
+	auto it = interfaces.find(interfaceName);
+	if (it != interfaces.end())
+	{
+		dorito.Logger.Log(LogLevel::Error, "Engine", "Failed to register interface %s as it already exists!", interfaceName.c_str());
+		return false;
+	}
 
 	interfaces.insert(std::pair<std::string, void*>(interfaceName, ptrToInterface));
-	ElDorito::Instance().Logger.Log(LogLevel::Debug, "Engine", "Registered interface %s", interfaceName.c_str());
+	dorito.Logger.Log(LogLevel::Debug, "Engine", "Registered interface %s", interfaceName.c_str());
 	return true;
 }
 
@@ -265,9 +265,9 @@ void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
 	if (!interfaceName.compare(UTILS_INTERFACE_VERSION001))
 		return &dorito.Utils;
 
-	for (auto kvp : interfaces)
-		if (!kvp.first.compare(interfaceName))
-			return kvp.second;
+	auto it = interfaces.find(interfaceName);
+	if (it != interfaces.end())
+		return (*it).second;
 
 	*returnCode = 1;
 	return nullptr;

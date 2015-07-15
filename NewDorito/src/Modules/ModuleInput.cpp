@@ -44,8 +44,7 @@ namespace
 		}
 
 		// Get the key, convert it to lowercase, and translate it to a key code
-		auto key = Arguments[0];
-		std::transform(key.begin(), key.end(), key.begin(), tolower);
+		auto key = ElDorito::Instance().Utils.ToLower(Arguments[0]);
 		auto it = keyCodes.find(key);
 		if (it == keyCodes.end())
 		{
