@@ -8,6 +8,8 @@ bool InitInstance(HINSTANCE module)
 
 	auto& dorito = ElDorito::Instance();
 	dorito.Engine.SetMainThreadID(GetCurrentThreadId());
+	dorito.Engine.SetDoritoModule(module);
+
 	dorito.Initialize();
 
 	return true;
@@ -26,7 +28,7 @@ DORITO_API int GetAdaptersInfo()
 
 DORITO_API int GetEDVersion()
 {
-	return 1337;
+	return Utils::Version::GetVersionInt();
 }
 
 DORITO_API void* CreateInterface(const char *name, int *returnCode)

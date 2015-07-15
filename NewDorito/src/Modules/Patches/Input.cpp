@@ -170,7 +170,7 @@ namespace Modules
 {
 	PatchModuleInput::PatchModuleInput() : ModuleBase("Patches.Input")
 	{
-		patches->TogglePatchSet(patches->AddPatchSet("Patches.Input", {},
+		AddModulePatches({},
 		{
 			Hook("KeyboardUpdate", 0x51299D, KeyboardUpdateHook, HookType::Jmp),
 			Hook("KeyTest1", 0x511B66, KeyTestHook, HookType::Call),
@@ -179,7 +179,7 @@ namespace Modules
 			Hook("AimAssist", 0x58AA17, AimAssistHook, HookType::Jmp),
 			// Hook the input handling routine to fix mouse acceleration
 			Hook("RawInput", 0x512395, RawInputHook, HookType::Jmp)
-		}));
+		});
 	}
 
 	uint8_t PatchModuleInput::GetKeyTicks(Blam::KeyCodes key, Blam::InputType type)

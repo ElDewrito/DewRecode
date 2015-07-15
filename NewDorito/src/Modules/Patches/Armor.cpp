@@ -401,7 +401,7 @@ namespace Modules
 	PatchModuleArmor::PatchModuleArmor() : ModuleBase("Patches.Armor")
 	{
 		ElDorito::Instance().Modules.NetworkPatches.PlayerPropertiesExtender.Add(std::make_shared<ArmorExtension>());
-		patches->TogglePatchSet(patches->AddPatchSet("Patches.Armor",
+		AddModulePatches(
 		{
 			// Fix rendering the scoreboard player model
 			// (todo: figure out why your biped doesn't show on the postgame screen...there's probably something missing here)
@@ -414,7 +414,7 @@ namespace Modules
 			Hook("ScoreboardModel", 0x8360D9, ScoreboardPlayerModelArmorHook, HookType::Call),
 			// Fix the player model on the main menu
 			Hook("MainMenuModel", 0x60086D, UiPlayerModelArmorHook, HookType::Call)
-		}));
+		});
 
 		engine->OnEvent(EngineEvent::TagsLoaded, UI_RefreshPlayerArmor);
 	}

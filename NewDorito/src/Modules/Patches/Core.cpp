@@ -18,7 +18,7 @@ namespace Modules
 {
 	PatchModuleCore::PatchModuleCore() : ModuleBase("Patches.Core")
 	{
-		patches->TogglePatchSet(patches->AddPatchSet("Patches.Core",
+		AddModulePatches(
 		{
 			// Enable tag edits
 			Patch("TagEdits1", 0x501A5B, { 0xEB }),
@@ -49,6 +49,6 @@ namespace Modules
 		},
 		{
 			Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp)*/
-		}));
+		});
 	}
 }

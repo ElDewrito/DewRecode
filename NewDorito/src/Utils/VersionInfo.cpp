@@ -1,8 +1,6 @@
 #include "VersionInfo.hpp"
-
 #include <windows.h>
-
-static HMODULE s_versionModule = NULL;
+#include "../ElDorito.hpp"
 
 namespace Utils
 {
@@ -12,12 +10,14 @@ namespace Utils
 		{
 			DWORD retVer = 0;
 
-			HRSRC hVersion = FindResource(s_versionModule,
+			HMODULE module = ElDorito::Instance().Engine.GetDoritoModule();
+
+			HRSRC hVersion = FindResource(module,
 				MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
 			if (!hVersion)
 				return retVer;
 
-			HGLOBAL hGlobal = LoadResource(s_versionModule, hVersion);
+			HGLOBAL hGlobal = LoadResource(module, hVersion);
 			if (!hGlobal)
 				return retVer;
 
@@ -25,7 +25,7 @@ namespace Utils
 			if (!versionInfo)
 				return retVer;
 
-			DWORD versionSize = SizeofResource(s_versionModule, hVersion);
+			DWORD versionSize = SizeofResource(module, hVersion);
 			LPVOID versionCopy = LocalAlloc(LMEM_FIXED, versionSize);
 			if (!versionCopy)
 				return retVer;
@@ -82,12 +82,14 @@ namespace Utils
 		{
 			std::string csRet;
 
-			HRSRC hVersion = FindResource(s_versionModule,
+			HMODULE module = ElDorito::Instance().Engine.GetDoritoModule();
+
+			HRSRC hVersion = FindResource(module,
 				MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
 			if (!hVersion)
 				return csRet;
 
-			HGLOBAL hGlobal = LoadResource(s_versionModule, hVersion);
+			HGLOBAL hGlobal = LoadResource(module, hVersion);
 			if (!hGlobal)
 				return csRet;
 
@@ -95,7 +97,7 @@ namespace Utils
 			if (!versionInfo)
 				return csRet;
 
-			DWORD versionSize = SizeofResource(s_versionModule, hVersion);
+			DWORD versionSize = SizeofResource(module, hVersion);
 			LPVOID versionCopy = LocalAlloc(LMEM_FIXED, versionSize);
 			if (!versionCopy)
 				return csRet;
@@ -133,11 +135,6 @@ namespace Utils
 			LocalFree(versionCopy);
 
 			return csRet;
-		}
-
-		void SetModule(HMODULE module)
-		{
-			s_versionModule = module;
 		}
 	}
 }

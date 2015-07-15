@@ -22,6 +22,7 @@ class IEngine001
 {
 public:
 	virtual Pointer GetMainTls(size_t offset = 0) = 0;
+	virtual HWND GetHWND() = 0;
 	virtual size_t GetMainThreadID() = 0;
 	virtual void SetMainThreadID(size_t threadID) = 0;
 	virtual bool HasMainMenuShown() = 0;

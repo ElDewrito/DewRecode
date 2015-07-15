@@ -242,7 +242,7 @@ namespace Modules
 {
 	PatchModuleContentItems::PatchModuleContentItems() : ModuleBase("Patches.ContentItems")
 	{
-		patches->TogglePatchSet(patches->AddPatchSet("Patches.ContentItems",
+		AddModulePatches(
 		{
 			// Fix storage device checks, so storage device funcs return 0 instead of 0xCACACACA
 			Patch("StorageCheck1", 0x5A7A80, { 0x31, 0xC0, 0xC3 }),
@@ -291,6 +291,6 @@ namespace Modules
 			Hook("Filo3", 0x74CCF0, FS_GetFiloForContentItemHook1, HookType::Jmp),
 
 			Hook("BLFFlag", 0x74D376, Game_SetFlagAfterCopyBLFDataHook, HookType::Call),
-		}));
+		});
 	}
 }

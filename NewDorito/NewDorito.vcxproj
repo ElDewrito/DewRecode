@@ -102,6 +102,7 @@
     <ClCompile Include="src\Modules\Patches\Scoreboard.cpp" />
     <ClCompile Include="src\Modules\Patches\UI.cpp" />
     <ClCompile Include="src\Modules\Patches\PlayerPropertiesExtension.cpp" />
+    <ClCompile Include="src\Modules\Patches\VirtualKeyboard.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
     <ClCompile Include="src\Utils\Assert.cpp" />
     <ClCompile Include="src\Utils\Cryptography.cpp" />
@@ -116,6 +117,8 @@
     <ClInclude Include="include\ElDorito\IPatchManager.hpp" />
     <ClInclude Include="include\ElDorito\ModuleBase.hpp" />
     <ClInclude Include="include\ElDorito\Pointer.hpp" />
+    <ClInclude Include="src\Modules\Patches\VirtualKeyboard.hpp" />
+    <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\Blam\BitStream.hpp" />
     <ClInclude Include="src\Blam\BlamTypes.hpp" />
     <ClInclude Include="src\Blam\Tags\GameEngineSettingsDefinition.hpp" />
@@ -148,6 +151,9 @@
     <ClInclude Include="src\Utils\String.hpp" />
     <ClInclude Include="src\Utils\Utils.hpp" />
     <ClInclude Include="src\Utils\VersionInfo.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\Resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

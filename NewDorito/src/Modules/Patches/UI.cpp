@@ -48,12 +48,12 @@ namespace
 		{
 			// call sub that handles showing game options
 			mov ecx, esi
-				push[edi + 0x10]
-				mov eax, 0xB225B0
-				call eax
-				// jump back to original function
-				mov eax, 0xB21B9F
-				jmp eax
+			push[edi + 0x10]
+			mov eax, 0xB225B0
+			call eax
+			// jump back to original function
+			mov eax, 0xB21B9F
+			jmp eax
 		}
 	}
 
@@ -170,7 +170,7 @@ namespace Modules
 		engine->OnEvent(EngineEvent::FirstTick, UIPatches_ApplyMapNameFixes);
 
 		// add our patches
-		patches->TogglePatchSet(patches->AddPatchSet("Patches.UI",
+		AddModulePatches(
 		{
 			// Fix "Network" setting in lobbies (change broken 0x100B7 menuID to 0x100B6)
 			Patch("NetworkFix", 0xAC34B0, { 0xB6 }),
@@ -215,7 +215,7 @@ namespace Modules
 
 			// Hook window title sprintf to replace the dest buf with our string
 			Hook("WindowTitle", 0x42EB84, WindowTitleSprintfHook, HookType::Call),
-		}));
+		});
 
 		// TODO: forge menu hook, pause menu hook
 	}

@@ -8,6 +8,20 @@ class Engine : public IEngine001
 {
 public:
 	Pointer GetMainTls(size_t offset = 0);
+	HWND GetHWND()
+	{
+		return Pointer(0x199C014).Read<HWND>();
+	}
+
+	HMODULE GetDoritoModule()
+	{
+		return doritoModule;
+	}
+	void SetDoritoModule(HMODULE module)
+	{
+		doritoModule = module;
+	}
+
 	size_t GetMainThreadID()
 	{
 		return mainThreadID;
@@ -33,6 +47,7 @@ public:
 
 	Engine();
 private:
+	HMODULE doritoModule;
 	size_t mainThreadID;
 	bool mainMenuHasShown = false;
 	bool hasFirstTickTocked = false;

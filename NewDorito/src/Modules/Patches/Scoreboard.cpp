@@ -182,7 +182,7 @@ namespace Modules
 {
 	PatchModuleScoreboard::PatchModuleScoreboard() : ModuleBase("Patches.Scoreboard")
 	{
-		patches->TogglePatchSet(patches->AddPatchSet("Patches.Scoreboard",
+		AddModulePatches(
 		{
 			// Set scoreboard UIDs to player datum indexes
 			Patch("ScoreboardUID1", 0x71000F, { 0x3E, 0x8B, 0x4D, 0xC4 }),  // mov ecx, [ebp - 0x3C]
@@ -204,6 +204,6 @@ namespace Modules
 
 			// Local player UID hook
 			Hook("PlayerUID", 0x58A1D6, SetLocalPlayerHook, HookType::Jmp)
-		}));
+		});
 	}
 }
