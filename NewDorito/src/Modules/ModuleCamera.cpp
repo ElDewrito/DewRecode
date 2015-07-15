@@ -115,16 +115,16 @@ namespace
 
 	bool VariableCameraCrosshairUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		auto& camera = ElDorito::Instance().Modules.Camera;
+		auto& dorito = ElDorito::Instance();
 
-		unsigned long value = camera.VarCameraCrosshair->ValueInt;
+		unsigned long value = dorito.Modules.Camera.VarCameraCrosshair->ValueInt;
 
 		std::string status = "disabled.";
 		bool statusBool = value != 0;
 		if (statusBool)
 			status = "enabled.";
 
-		// TODO1: camera.CenteredCrosshairPatch.Apply(!statusBool);
+		dorito.Patches.EnablePatch(dorito.Modules.Camera.CenteredCrosshairPatch, statusBool);
 
 		returnInfo = "Centered crosshair " + status;
 		return true;
@@ -142,16 +142,16 @@ namespace
 
 	bool VariableCameraHideHudUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		auto& camera = ElDorito::Instance().Modules.Camera;
+		auto& dorito = ElDorito::Instance();
 
-		unsigned long value = camera.VarCameraHideHud->ValueInt;
+		unsigned long value = dorito.Modules.Camera.VarCameraHideHud->ValueInt;
 
 		std::string status = "shown.";
 		bool statusBool = value != 0;
 		if (statusBool)
 			status = "hidden.";
 
-		// TODO1: Modules::ModuleCamera::Instance().HideHudPatch.Apply(!statusBool);
+		dorito.Patches.EnablePatch(dorito.Modules.Camera.HideHudPatch, statusBool);
 
 		returnInfo = "HUD " + status;
 		return true;
@@ -173,27 +173,16 @@ namespace
 		auto& dorito = ElDorito::Instance();
 		auto mode = dorito.Utils.ToLower(ElDorito::Instance().Modules.Camera.VarCameraMode->ValueString);
 
-		// TODO1: 
-		/*
+		auto& camera = dorito.Modules.Camera;
 		// prevent the game from updating certain camera values depending on the current camera mode
-		Modules::ModuleCamera::Instance().CameraPermissionHook.Apply(mode == "default");
-		Modules::ModuleCamera::Instance().CameraPermissionHookAlt1.Apply(mode == "default");
-		Modules::ModuleCamera::Instance().CameraPermissionHookAlt2.Apply(mode == "default");
-		Modules::ModuleCamera::Instance().CameraPermissionHookAlt3.Apply(mode == "default");
-
-		// prevent the game from automatically switching camera modes depending on the current mode
-		Modules::ModuleCamera::Instance().Debug1CameraPatch.Apply(mode == "default");
-		Modules::ModuleCamera::Instance().Debug2CameraPatch.Apply(mode == "default");
-		Modules::ModuleCamera::Instance().ThirdPersonPatch.Apply(mode == "default");
-		Modules::ModuleCamera::Instance().FirstPersonPatch.Apply(mode == "default");
-		Modules::ModuleCamera::Instance().DeadPersonPatch.Apply(mode == "default");
+		dorito.Patches.EnablePatchSet(camera.CameraPatches, mode.compare("default") != 0);
 
 		// hides the hud when flying or in static camera mode
-		Modules::ModuleCamera::Instance().HideHudPatch.Apply(mode != "flying" && mode != "static");
+		if (!camera.VarCameraHideHud->ValueInt)
+			dorito.Patches.EnablePatch(camera.HideHudPatch, mode.compare("flying") == 0 || mode.compare("static") == 0);
 
 		// prevents death from resetting look angles when in static camera mode
-		Modules::ModuleCamera::Instance().StaticILookVectorPatch.Apply(mode != "static");
-		Modules::ModuleCamera::Instance().StaticKLookVectorPatch.Apply(mode != "static");
+		dorito.Patches.EnablePatchSet(camera.StaticPatches, mode.compare("status") == 0);
 
 		// disable player movement while in flycam
 		Pointer &playerControlGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
@@ -264,7 +253,7 @@ namespace
 			offset = 0x165A6E4;
 		else if (!mode.compare("unk4")) // c_authored_camera
 			offset = 0x1672920;
-		//
+		*/
 
 		// update camera perspective function
 		Pointer &directorPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];
@@ -274,7 +263,7 @@ namespace
 		// output old -> new perspective function information to console
 		std::stringstream ss;
 		ss << "0x" << std::hex << oldOffset << " -> 0x" << offset;
-		returnInfo = ss.str();*/
+		returnInfo = ss.str();
 
 		return true;
 	}
@@ -282,20 +271,7 @@ namespace
 
 namespace Modules
 {
-	ModuleCamera::ModuleCamera() : ModuleBase("Camera")/*, 
-		CameraPermissionHook(0x21440D, UpdateCameraDefinitions),
-		CameraPermissionHookAlt1(0x214818, UpdateCameraDefinitionsAlt1),
-		CameraPermissionHookAlt2(0x2148BE, UpdateCameraDefinitionsAlt2),
-		CameraPermissionHookAlt3(0x214902, UpdateCameraDefinitionsAlt3),
-		Debug1CameraPatch(0x325A80, 0x90, 6),
-		Debug2CameraPatch(0x191525, 0x90, 6),
-		ThirdPersonPatch(0x328640, 0x90, 6),
-		FirstPersonPatch(0x25F420, 0x90, 6),
-		DeadPersonPatch(0x329E6F, 0x90, 6),
-		StaticILookVectorPatch(0x211433, 0x90, 8),
-		StaticKLookVectorPatch(0x21143E, 0x90, 6),
-		HideHudPatch(0x12B5A5C, { 0xC3, 0xF5, 0x48, 0x40 }), // 3.14f in hex form
-		CenteredCrosshairPatch(0x25FA43, { 0x31, 0xC0, 0x90, 0x90 })*/
+	ModuleCamera::ModuleCamera() : ModuleBase("Camera")
 	{
 		// TODO: commands for setting camera speed, positions, save/restore etc.
 
@@ -315,7 +291,31 @@ namespace Modules
 		VarCameraSpeed->ValueFloatMin = 0.01f;
 		VarCameraSpeed->ValueFloatMax = 5.0f;
 
-		this->VarCameraMode = AddVariableString("Mode", "camera_mode", "Camera mode, valid modes: default, first, third, flying, static", eCommandFlagsDontUpdateInitial, "default", VariableCameraModeUpdate);
+		VarCameraMode = AddVariableString("Mode", "camera_mode", "Camera mode, valid modes: default, first, third, flying, static", eCommandFlagsDontUpdateInitial, "default", VariableCameraModeUpdate);
+
+		CameraPatches = patches->AddPatchSet("CameraPatches", 
+		{
+			Patch("CameraDebug1", 0x725A80, 0x90, 6),
+			Patch("CameraDebug2", 0x591525, 0x90, 6),
+			Patch("CameraThirdPerson", 0x728640, 0x90, 6),
+			Patch("CameraFirstPerson", 0x65F420, 0x90, 6),
+			Patch("CameraDead", 0x729E6F, 0x90, 6),
+		},
+		{
+			Hook("CameraPermHook", 0x61440D, UpdateCameraDefinitions, HookType::Jmp),
+			Hook("CameraPermHookAlt1", 0x614818, UpdateCameraDefinitionsAlt1, HookType::Jmp),
+			Hook("CameraPermHookAlt2", 0x6148BE, UpdateCameraDefinitionsAlt2, HookType::Jmp),
+			Hook("CameraPermHookAlt3", 0x614902, UpdateCameraDefinitionsAlt3, HookType::Jmp),
+		});
+
+		StaticPatches = patches->AddPatchSet("StaticCameraPatches",
+		{
+			Patch("StaticILookVector", 0x611433, 0x90, 8),
+			Patch("StaticKLookVector", 0x61143E, 0x90, 6),
+		});
+
+		HideHudPatch = patches->AddPatch("HideHud", 0x16B5A5C, { 0xC3, 0xF5, 0x48, 0x40 }); // 3.14f in hex form
+		CenteredCrosshairPatch = patches->AddPatch("CenteredCrosshair", 0x65FA43, { 0x31, 0xC0, 0x90, 0x90 });
 	}
 
 	void ModuleCamera::UpdatePosition()

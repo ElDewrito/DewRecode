@@ -583,10 +583,9 @@ namespace
 		Pointer(0x2240BD4).Write(xnetInfo + 0x10, 0x10);
 		Pointer(0x2240BE4).Write<uint32_t>(1);
 
-		// TODO3:
-		// join our IRC channel
-		/*IRCBackend::Instance().joinIRCChannel("#eldoritogame-" + xnkid, false);
-		CreateThread(0, 0, StartTeamspeakClient, 0, 0, 0);*/
+		// send an event
+		dorito.Engine.Event("Core", "Game.Joining");
+
 		returnInfo = "Attempting connection to " + address + "...";
 		return true;
 	}

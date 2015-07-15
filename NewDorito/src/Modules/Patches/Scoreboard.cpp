@@ -186,15 +186,15 @@ namespace Modules
 		{
 			// Set scoreboard UIDs to player datum indexes
 			Patch("ScoreboardUID1", 0x71000F, { 0x3E, 0x8B, 0x4D, 0xC4 }),  // mov ecx, [ebp - 0x3C]
-			Patch("ScoreboardUID2", 0x710013, true, 2),						// nop out leftover data
+			Patch("ScoreboardUID2", 0x710013, 0x90, 2),						// nop out leftover data
 			Patch("ScoreboardUID3", 0x710018, { 0x31, 0xC9 }),				// xor ecx, ecx
-			Patch("ScoreboardUID4", 0x71001A, true, 4),						// nop out leftover data
+			Patch("ScoreboardUID4", 0x71001A, 0x90, 4),						// nop out leftover data
 
 			// Set podium UIDs to player datum indexes
 			Patch("PodiumUID1", 0x6E323E, { 0x8B, 0x47, 0x08 }),			// mov eax, [edi + 8]
-			Patch("PodiumUID2", 0x6E3241, true, 4),							// nop out leftover data
+			Patch("PodiumUID2", 0x6E3241, 0x90, 4),							// nop out leftover data
 			Patch("PodiumUID3", 0x6E3248, { 0x31, 0xC0 }),					// xor eax, eax
-			Patch("PodiumUID4", 0x6E324A, true, 5)							// nop out leftover data
+			Patch("PodiumUID4", 0x6E324A, 0x90, 5)							// nop out leftover data
 		},
 		{
 			// Scoreboard hooks

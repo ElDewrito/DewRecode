@@ -30,12 +30,12 @@ struct Patch
 		Enabled = false;
 	}
 
-	Patch(std::string name, size_t address, bool nopFill, size_t numNops)
+	Patch(std::string name, size_t address, unsigned char fillByte, size_t numBytes)
 	{
 		Name = name;
 		Address = address;
-		Data.resize(numNops);
-		memset(Data.data(), 0x90, numNops);
+		Data.resize(numBytes);
+		memset(Data.data(), fillByte, numBytes);
 		Orig = {};
 		Enabled = false;
 	}
@@ -110,6 +110,16 @@ public:
 	/// <param name="data">The data to write.</param>
 	/// <returns>The created <see cref="Patch"/>.</returns>
 	virtual Patch* AddPatch(std::string name, size_t address, const PatchInitializerListType& data) = 0;
+
+	/// <summary>
+	/// Adds a patch to the manager.
+	/// </summary>
+	/// <param name="name">The patches name.</param>
+	/// <param name="address">The address to patch.</param>
+	/// <param name="fillByte">What byte to fill with.</param>
+	/// <param name="numBytes">Number of bytes to fill.</param>
+	/// <returns>The created <see cref="Patch"/>.</returns>
+	virtual Patch* AddPatch(std::string name, size_t address, unsigned char fillByte, size_t numBytes) = 0;
 
 	/// <summary>
 	/// Adds a hook to the manager.

@@ -16,22 +16,11 @@ namespace Modules
 		Command* VarCameraSpeed;
 
 		// patches to stop camera mode from changing
-		Patch* Debug1CameraPatch;
-		Patch* Debug2CameraPatch;
-		Patch* ThirdPersonPatch;
-		Patch* FirstPersonPatch;
-		Patch* DeadPersonPatch;
-
-		Patch* StaticILookVectorPatch;
-		Patch* StaticKLookVectorPatch;
+		PatchSet* CameraPatches;
+		PatchSet* StaticPatches;
 
 		Patch* HideHudPatch;
 		Patch* CenteredCrosshairPatch;
-
-		Hook* CameraPermissionHook;
-		Hook* CameraPermissionHookAlt1;
-		Hook* CameraPermissionHookAlt2;
-		Hook* CameraPermissionHookAlt3;
 
 		ModuleCamera();
 

@@ -177,17 +177,17 @@ namespace Modules
 
 			// Fix gamepad option in settings (todo: find out why it doesn't detect gamepads
 			// and find a way to at least enable pressing ESC when gamepad is enabled)
-			Patch("GamepadFix", 0x60D7F2, true, 2),
+			Patch("GamepadFix", 0x60D7F2, 0x90, 2),
 
 			// Hacky fix to stop the game crashing when you move selection on UI
 			// (todo: find out what's really causing this)
-			Patch("UICrashFix", 0x969D07, true, 3),
+			Patch("UICrashFix", 0x969D07, 0x90, 3),
 
 			// Remove Xbox Live from the network menu
-			Patch("RemoveXBL1", 0xB23D85, true, 0x17),
+			Patch("RemoveXBL1", 0xB23D85, 0x90, 0x17),
 			Patch("RemoveXBL2", 0xB23DA1, { 0 }),
 			Patch("RemoveXBL3", 0xB23DB8, { 1 }),
-			Patch("RemoveXBL4", 0xB23DFF, true, 3),
+			Patch("RemoveXBL4", 0xB23DFF, 0x90, 3),
 			Patch("RemoveXBL5", 0xB23E07, { 0 }),
 			Patch("RemoveXBL6", 0xB23E1C, { 0 }),
 
@@ -196,7 +196,7 @@ namespace Modules
 			Patch("RemoveBuiltInText", 0xB05D6F, { 0x2 }),
 
 			// Fix for leave game button to show H3 pause menu
-			Patch("ShowH3PauseMenu1", 0x7B682B, true, 1),
+			Patch("ShowH3PauseMenu1", 0x7B682B, 0x90, 1),
 		}, 
 		{
 

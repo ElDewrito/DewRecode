@@ -27,16 +27,12 @@ void DebugLog::Log(LogLevel level, std::string module, std::string format, ...)
 
 	auto& gameModule = ElDorito::Instance().Modules.Game;
 	for (auto filter : gameModule.FiltersExclude)
-	{
 		if (strstr(buff, filter.c_str()) != NULL)
 			return; // string contains an excluded string
-	}
 
 	for (auto filter : gameModule.FiltersInclude)
-	{
 		if (strstr(buff, filter.c_str()) == NULL)
 			return; // string doesn't contain an included string
-	}
 
 	std::ofstream outfile;
 	outfile.open(gameModule.VarLogName->ValueString, std::ios_base::app);

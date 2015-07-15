@@ -22,8 +22,8 @@ namespace Modules
 		{
 			// Enable tag edits
 			Patch("TagEdits1", 0x501A5B, { 0xEB }),
-			Patch("TagEdits2", 0x502874, true, 2),//{ 0x90, 0x90 }),
-			Patch("TagEdits3", 0x5030AA, true, 2),//{ 0x90, 0x90 }),
+			Patch("TagEdits2", 0x502874, 0x90, 2),
+			Patch("TagEdits3", 0x5030AA, 0x90, 2),
 
 			// No --account args patch
 			Patch("AccountArgs1", 0x83731A, { 0xEB, 0x0E }),
@@ -34,18 +34,18 @@ namespace Modules
 			Patch("VariantOverride2", 0x5A31A4, { 0xEB }),
 
 			// Level load patch (?)
-			Patch("LevelLoad", 0x6D26DF, true, 5),
+			Patch("LevelLoad", 0x6D26DF, 0x90, 5),
 
 			/* TODO: find out if one of these patches is breaking game prefs
 			// Remove preferences.dat hash check
-			Patch("PrefsDatHashCheck", 0x50C99A, true, 6),
+			Patch("PrefsDatHashCheck", 0x50C99A, 0x90, 6),
 
 			// Patch to allow spawning AI through effects
-			Patch("SpawnAIWithEffects", 0x1433321, true, 2),
+			Patch("SpawnAIWithEffects", 0x1433321, 0x90, 2),
 
 			// Prevent FOV from being overridden when the game loads
-			Patch("FOVOverride1", 0x65FA79, true, 10),
-			Patch("FOVOverride2", 0x65FA86, true, 5)
+			Patch("FOVOverride1", 0x65FA79, 0x90, 10),
+			Patch("FOVOverride2", 0x65FA86, 0x90, 5)
 		},
 		{
 			Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp)*/

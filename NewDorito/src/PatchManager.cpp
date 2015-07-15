@@ -53,6 +53,25 @@ Patch* PatchManager::AddPatch(std::string name, size_t address, const PatchIniti
 }
 
 /// <summary>
+/// Adds a patch to the manager.
+/// </summary>
+/// <param name="name">The patches name.</param>
+/// <param name="address">The address to patch.</param>
+/// <param name="fillByte">What byte to fill with.</param>
+/// <param name="numBytes">Number of bytes to fill.</param>
+/// <returns>The created <see cref="Patch"/>.</returns>
+Patch* PatchManager::AddPatch(std::string name, size_t address, unsigned char fillByte, size_t numBytes)
+{
+	Patch patch(name, address, fillByte, numBytes);
+
+	patch.Orig.resize(numBytes);
+	Pointer(address).Read(patch.Orig.data(), patch.Orig.size());
+
+	patches.push_back(patch);
+	return &patches.back();
+}
+
+/// <summary>
 /// Adds a hook to the manager.
 /// </summary>
 /// <param name="name">The hooks name.</param>

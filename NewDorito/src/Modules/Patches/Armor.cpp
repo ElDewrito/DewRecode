@@ -405,10 +405,10 @@ namespace Modules
 		{
 			// Fix rendering the scoreboard player model
 			// (todo: figure out why your biped doesn't show on the postgame screen...there's probably something missing here)
-			Patch("Scoreboard1", 0x835DAB, true, 0x50),
-			Patch("Scoreboard2", 0x8360DE, true, 0x1A9),
+			Patch("Scoreboard1", 0x835DAB, 0x90, 0x50),
+			Patch("Scoreboard2", 0x8360DE, 0x90, 0x1A9),
 			Patch("Scoreboard3", 0x83628A, { 0x1C }),
-			Patch("Scoreboard4", 0x83628B, true, 0x3)
+			Patch("Scoreboard4", 0x83628B, 0x90, 0x3)
 		},
 		{
 			Hook("ScoreboardModel", 0x8360D9, ScoreboardPlayerModelArmorHook, HookType::Call),

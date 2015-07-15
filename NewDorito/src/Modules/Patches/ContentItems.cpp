@@ -249,12 +249,12 @@ namespace Modules
 			Patch("StorageCheck2", 0x54D570, { 0x31, 0xC0, 0xC3 }),
 
 			// needed for the game to load our items in "content items" global
-			Patch("ContentItemsGlobal1", 0xADA59A, true, 6),
-			Patch("ContentItemsGlobal2", 0xADC0EA, true, 6),
+			Patch("ContentItemsGlobal1", 0xADA59A, 0x90, 6),
+			Patch("ContentItemsGlobal2", 0xADC0EA, 0x90, 6),
 
 			// patch the func that handles game variant BLFs so it'll load byteswapped blfs
-			Patch("BLFByteSwap1", 0x5731CD, true, 2),
-			Patch("BLFByteSwap2", 0x5732CD, true, 2),
+			Patch("BLFByteSwap1", 0x5731CD, 0x90, 2),
+			Patch("BLFByteSwap2", 0x5732CD, 0x90, 2),
 
 			// patch proper endian -1 into BLF header creation
 			Patch("EndianSwap", 0x462AE8, { 0xFF, 0xFE }),
@@ -264,7 +264,7 @@ namespace Modules
 
 			// Hook the func that gets the save file dest. name, 
 			Patch("SaveFileGetName1", 0x52708E, { 0x8B, 0x4D, 0x14 }), // pass blf data to our func
-			Patch("SaveFileGetName2", 0x527096, true, 3),
+			Patch("SaveFileGetName2", 0x527096, 0x90, 3),
 		},
 		{
 			// Allow saving content without a profile
