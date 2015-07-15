@@ -2,51 +2,6 @@
 #include "Pointer.hpp"
 #include <chrono>
 
-enum class EngineEvent
-{
-	FirstTick,
-	MainMenuShown,
-	TagsLoaded,
-	KeyboardUpdate,
-
-	PluginCustomEvent1,
-	PluginCustomEvent2,
-	PluginCustomEvent3,
-	PluginCustomEvent4,
-	PluginCustomEvent5,
-	PluginCustomEvent6,
-	PluginCustomEvent7,
-	PluginCustomEvent8,
-	PluginCustomEvent9,
-	PluginCustomEvent10,
-
-	PluginCustomEvent11,
-	PluginCustomEvent12,
-	PluginCustomEvent13,
-	PluginCustomEvent14,
-	PluginCustomEvent15,
-	PluginCustomEvent16,
-	PluginCustomEvent17,
-	PluginCustomEvent18,
-	PluginCustomEvent19,
-	PluginCustomEvent20,
-
-	PluginCustomEvent21,
-	PluginCustomEvent22,
-	PluginCustomEvent23,
-	PluginCustomEvent24,
-	PluginCustomEvent25,
-	PluginCustomEvent26,
-	PluginCustomEvent27,
-	PluginCustomEvent28,
-	PluginCustomEvent29,
-	PluginCustomEvent30,
-	PluginCustomEvent31,
-	PluginCustomEvent32,
-
-	Count
-};
-
 typedef void(__cdecl* TickCallbackFunc)(const std::chrono::duration<double>& deltaTime);
 typedef void(__cdecl* EventCallbackFunc)(void* param);
 
@@ -58,12 +13,18 @@ for backwards compatibility (with plugins compiled against an older ED SDK) we c
 class IEngine001
 {
 public:
-	// used to register callbacks for these events
+	// registers a callback which is called when the game ticks
 	virtual bool OnTick(TickCallbackFunc callback) = 0;
-	virtual bool OnEvent(EngineEvent evt, EventCallbackFunc callback) = 0;
+
+	// you can use any eventModule/eventName here, the callback will belong to this combination
+	// and calling Engine::Event with the same eventModule/eventName will call each of the registered callbacks for this event
+	// (in essense this not only registers callbacks for events but also registers events too)
+	// the only restricted eventModule is "Core", this module is reserved for events created by ElDorito
+	// in case your wondering, eventModule and eventName are seperate so that plugin authors have to provide a module name for their event, making it "unique"
+	virtual bool OnEvent(std::string eventModule, std::string eventName, EventCallbackFunc callback) = 0;
 
 	// called when an event occurs, calls each registered callback for the event
-	virtual void Event(EngineEvent evt, void* param = 0) = 0;
+	virtual void Event(std::string eventModule, std::string eventName, void* param = 0) = 0;
 
 	// registers an interface, plugins can use this to share classes across plugins
 	virtual bool RegisterInterface(std::string interfaceName, void* ptrToInterface) = 0;
@@ -75,11 +36,6 @@ public:
 	/// <param name="returnCode">0 if the interface was found successfully, otherwise the error code.</param>
 	/// <returns>The requested interface, if found.</returns>
 	virtual void* CreateInterface(std::string interfaceName, int* returnCode) = 0;
-
-	// returns an EngineEvent that is unique to the plugin and can be used for custom plugin events
-	// eg. plugin uses this to create an event, registers a callback with OnEvent and makes a hook that calls Event(returnedEvent) when a player is stuck with a plasma grenade
-	// it'd probably be better to just call the callback directly in that case, but using EngineEvents can let you share your events with other plugins (via interfaces)
-	virtual EngineEvent RegisterCustomEvent() = 0;
 
 	virtual bool HasMainMenuShown() = 0;
 

@@ -416,7 +416,7 @@ namespace Modules
 			Hook("MainMenuModel", 0x60086D, UiPlayerModelArmorHook, HookType::Call)
 		});
 
-		engine->OnEvent(EngineEvent::TagsLoaded, UI_RefreshPlayerArmor);
+		engine->OnEvent("Core", "TagsLoaded", UI_RefreshPlayerArmor);
 	}
 
 	void PatchModuleArmor::RefreshUiPlayer()

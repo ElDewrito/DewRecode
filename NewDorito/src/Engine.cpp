@@ -17,7 +17,7 @@ namespace
 
 	void TagsLoadedHookImpl()
 	{
-		ElDorito::Instance().Engine.Event(EngineEvent::TagsLoaded);
+		ElDorito::Instance().Engine.Event("Core", "TagsLoaded");
 	}
 
 	__declspec(naked) void TagsLoadedHook()
@@ -63,10 +63,22 @@ bool Engine::OnTick(TickCallbackFunc callback)
 /// <param name="evt">The event.</param>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
-bool Engine::OnEvent(EngineEvent evt, EventCallbackFunc callback)
+bool Engine::OnEvent(std::string eventModule, std::string eventName, EventCallbackFunc callback)
 {
-	eventCallbacks[(int)evt].push_back(callback);
-	return true; // todo: check if this callback is already registered
+	std::string eventId = eventModule + "." + eventName;
+	for (auto kvp : eventCallbacks)
+	{
+		if (kvp.first.compare(eventId))
+		{
+			kvp.second.push_back(callback);
+			return true;
+		}
+	}
+
+	// callback wasn't found, create a new one!
+	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event registered", eventId.c_str());
+	eventCallbacks.insert(std::pair<std::string, std::vector<EventCallbackFunc>>(eventId, std::vector<EventCallbackFunc>{ callback }));
+	return true;
 }
 
 /// <summary>
@@ -78,7 +90,7 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 	if (!hasFirstTickTocked)
 	{
 		hasFirstTickTocked = true;
-		this->Event(EngineEvent::FirstTick);
+		this->Event("Core", "FirstTick");
 	}
 	for (auto callback : tickCallbacks)
 		callback(deltaTime);
@@ -89,18 +101,27 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 /// </summary>
 /// <param name="evt">The event.</param>
 /// <param name="param">The parameter to pass to the callbacks.</param>
-void Engine::Event(EngineEvent evt, void* param)
+void Engine::Event(std::string eventModule, std::string eventName, void* param)
 {
-	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%d", evt); // TODO: string event names
-	if (evt == EngineEvent::MainMenuShown)
+	// TODO: find a way to optimize this?
+
+	std::string eventId = eventModule + "." + eventName;
+	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event triggered", eventId.c_str());
+
+	if (!eventId.compare("Core.MainMenuShown"))
 	{
 		if (this->mainMenuHasShown)
 			return; // this event should only occur once during the lifecycle of the game
 		this->mainMenuHasShown = true;
 	}
 
-	for (auto callback : eventCallbacks[(int)evt])
-		callback(param);
+	for (auto kvp : eventCallbacks)
+	{
+		if (kvp.first.compare(eventId))
+			continue;
+		for (auto callback : kvp.second)
+			callback(param);
+	}
 }
 
 Pointer Engine::GetMainTls(size_t offset)
@@ -144,18 +165,6 @@ Pointer Engine::GetMainTls(size_t offset)
 	}
 
 	return ThreadLocalStorage(offset);
-}
-
-EngineEvent Engine::RegisterCustomEvent()
-{
-	auto retVal = currentCustomEvent;
-	currentCustomEvent++;
-	if (retVal == (int)EngineEvent::Count)
-	{
-		ElDorito::Instance().Logger.Log(LogLevel::Warning, "Engine", "Custom event count has reached its limit, bad things will happen!");
-		currentCustomEvent--;
-	}
-	return (EngineEvent)retVal;
 }
 
 // registers an interface, plugins can use this to share classes across plugins

@@ -133,7 +133,7 @@ namespace Modules
 		VarInputRawInput->ValueIntMax = 1;
 
 		AddCommand("Bind", "bind", "Binds a command to a key", eCommandFlagsNone, CommandBind, { "key", "[+]command", "arguments" });
-		engine->OnEvent(EngineEvent::KeyboardUpdate, KeyboardUpdated);
+		engine->OnEvent("Core", "KeyboardUpdate", KeyboardUpdated);
 	}
 }
 
