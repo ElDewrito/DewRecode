@@ -3,7 +3,7 @@
 #include <chrono>
 
 /* 
-List of events registered by ED (eventModule/eventName seperated by a period):
+List of events registered by ED (eventNamespace/eventName seperated by a period):
 	Core.Engine.FirstTick - signalled when the game engine loop starts ticking, only signals once
 	Core.Engine.MainMenuShown - when the mainmenu is first being shown, only signals once after the game has inited etc
 	Core.Engine.TagsLoaded - when the tags have been reloaded
@@ -48,15 +48,15 @@ public:
 	// registers a callback which is called when the game ticks
 	virtual bool OnTick(TickCallbackFunc callback) = 0;
 
-	// you can use any eventModule/eventName here, the callback will belong to this combination
-	// and calling Engine::Event with the same eventModule/eventName will call each of the registered callbacks for this event
+	// you can use any eventNamespace/eventName here, the callback will belong to this combination
+	// and calling Engine::Event with the same eventNamespace/eventName will call each of the registered callbacks for this event
 	// (in essense this not only registers callbacks for events but also registers events too)
-	// the only restricted eventModule is "Core", this module is reserved for events created by ElDorito
-	// in case your wondering, eventModule and eventName are seperate so that plugin authors have to provide a module name for their event, making it "unique"
-	virtual bool OnEvent(std::string eventModule, std::string eventName, EventCallbackFunc callback) = 0;
+	// the only restricted eventNamespace is "Core", this module is reserved for events created by ElDorito
+	// in case your wondering, eventNamespace and eventName are seperate so that plugin authors have to provide a namespace for their event, making it "unique"
+	virtual bool OnEvent(std::string eventNamespace, std::string eventName, EventCallbackFunc callback) = 0;
 
 	// called when an event occurs, calls each registered callback for the event
-	virtual void Event(std::string eventModule, std::string eventName, void* param = 0) = 0;
+	virtual void Event(std::string eventNamespace, std::string eventName, void* param = 0) = 0;
 
 	// registers an interface, plugins can use this to share classes across plugins
 	virtual bool RegisterInterface(std::string interfaceName, void* ptrToInterface) = 0;

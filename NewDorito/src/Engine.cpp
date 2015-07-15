@@ -60,13 +60,13 @@ bool Engine::OnTick(TickCallbackFunc callback)
 /// <summary>
 /// Adds a callback to be called when the specified event occurs.
 /// </summary>
-/// <param name="eventModule">The module that calls the event.</param>
+/// <param name="eventNamespace">The namespace the event belongs to.</param>
 /// <param name="eventName">The name of the event.</param>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
-bool Engine::OnEvent(std::string eventModule, std::string eventName, EventCallbackFunc callback)
+bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCallbackFunc callback)
 {
-	std::string eventId = eventModule + "." + eventName;
+	std::string eventId = eventNamespace + "." + eventName;
 	for (auto kvp : eventCallbacks)
 	{
 		if (kvp.first.compare(eventId))
@@ -101,14 +101,14 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 /// <summary>
 /// Calls each of the registered callbacks for the specified event
 /// </summary>
-/// <param name="eventModule">The module that calls the event.</param>
+/// <param name="eventNamespace">The namespace the event belongs to.</param>
 /// <param name="eventName">The name of the event.</param>
 /// <param name="param">The parameter to pass to the callbacks.</param>
-void Engine::Event(std::string eventModule, std::string eventName, void* param)
+void Engine::Event(std::string eventNamespace, std::string eventName, void* param)
 {
 	// TODO: find a way to optimize this?
 
-	std::string eventId = eventModule + "." + eventName;
+	std::string eventId = eventNamespace + "." + eventName;
 	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event triggered", eventId.c_str());
 
 	if (!eventId.compare("Core.MainMenuShown"))

@@ -10,15 +10,15 @@ public:
 	// registers a callback which is called when the game ticks
 	bool OnTick(TickCallbackFunc callback);
 
-	// you can use any eventModule/eventName here, the callback will belong to this combination
-	// and calling Engine::Event with the same eventModule/eventName will call each of the registered callbacks for this event
+	// you can use any eventNamespace/eventName here, the callback will belong to this combination
+	// and calling Engine::Event with the same eventNamespace/eventName will call each of the registered callbacks for this event
 	// (in essense this not only registers callbacks for events but also registers events too)
-	// the only restricted eventModule is "Core", this module is reserved for events created by ElDorito
-	// in case your wondering, eventModule and eventName are seperate so that plugin authors have to provide a module name for their event, making it "unique"
-	bool OnEvent(std::string eventModule, std::string eventName, EventCallbackFunc callback);
+	// the only restricted eventNamespace is "Core", this module is reserved for events created by ElDorito
+	// in case your wondering, eventNamespace and eventName are seperate so that plugin authors have to provide a namespace for their event, making it "unique"
+	bool OnEvent(std::string eventNamespace, std::string eventName, EventCallbackFunc callback);
 
 	// called when an event occurs, calls each registered callback for the event
-	void Event(std::string eventModule, std::string eventName, void* param = 0);
+	void Event(std::string eventNamespace, std::string eventName, void* param = 0);
 
 	// registers an interface, plugins can use this to share classes across plugins
 	bool RegisterInterface(std::string interfaceName, void* ptrToInterface);
