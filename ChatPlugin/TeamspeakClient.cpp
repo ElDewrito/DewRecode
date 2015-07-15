@@ -1315,7 +1315,7 @@ DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP& voipModule)
 		(ipAddr)& 0xFF);
 
 	if (strcmp(ipAddrStr, "0.0.0.0") == 0){
-		sprintf(ipAddrStr, "localhost");
+		sprintf(ipAddrStr, "127.0.0.1");
 	}
 	if (engine != nullptr)
 		engine->PrintToConsole("Attempting connection to VoIP server (" + std::string(ipAddrStr) + ")");
@@ -1326,7 +1326,9 @@ DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP& voipModule)
 	if (engine != nullptr)
 		engine->PrintToConsole("VoIP name is: " + playerName);
 #endif
-	if ((error = ts3client_startConnection(scHandlerID, identity, std::string(ipAddrStr).c_str(), 9987, playerName.c_str(), NULL, "", "secret")) != ERROR_ok)
+
+	unsigned int port = voipModule.VarVoIPServerPort->ValueInt; // TODO1: get this from server info json
+	if ((error = ts3client_startConnection(scHandlerID, identity, std::string(ipAddrStr).c_str(), port, playerName.c_str(), NULL, "", "secret")) != ERROR_ok)
 	{
 		if (engine != nullptr)
 			engine->PrintToConsole("Error connecting to VoIP server: " + std::to_string(error));

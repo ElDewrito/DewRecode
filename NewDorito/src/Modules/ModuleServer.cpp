@@ -11,7 +11,6 @@
 #include "../ThirdParty/rapidjson/document.h"
 #include "../ThirdParty/rapidjson/writer.h"
 #include "../ThirdParty/rapidjson/stringbuffer.h"
-// TODO2: #include "../Utils/Cryptography.hpp"
 
 namespace
 {
@@ -608,9 +607,13 @@ namespace Modules
 		VarServerPort->ValueIntMin = 1;
 		VarServerPort->ValueIntMax = 0xFFFF;
 
+		VarServerCheats = AddVariableInt("Cheats", "sv_cheats", "Allows/blocks using cheat commands", eCommandFlagsReplicated, 0);
+		VarServerCheats->ValueIntMin = 0;
+		VarServerCheats->ValueIntMax = 1;
+
 		AddCommand("Connect", "connect", "Begins establishing a connection to a server", eCommandFlagsRunOnMainMenu, CommandServerConnect, { "host:port The server info to connect to", "password(string) The password for the server" });
-		AddCommand("Announce", "announce", "Announces this server to the master servers", eCommandFlagsHostOnly, CommandServerAnnounce);
-		AddCommand("Unannounce", "unannounce", "Notifies the master servers to remove this server", eCommandFlagsHostOnly, CommandServerUnannounce);
+		AddCommand("Announce", "announce", "Announces this server to the master servers", eCommandFlagsMustBeHosting, CommandServerAnnounce);
+		AddCommand("Unannounce", "unannounce", "Notifies the master servers to remove this server", eCommandFlagsMustBeHosting, CommandServerUnannounce);
 
 		AddCommand("AnnounceStats", "announcestats", "Announces the players stats to the masters at the end of the game", eCommandFlagsNone, CommandServerAnnounceStats);
 	}

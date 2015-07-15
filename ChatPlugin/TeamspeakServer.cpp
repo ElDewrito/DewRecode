@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include <ElDorito/ElDorito.hpp>
+#include "ModuleVoIP.hpp"
 #include <teamspeak/public_definitions.h>
 #include <teamspeak/public_errors.h>
 #include <teamspeak/serverlib_publicdefinitions.h>
@@ -250,7 +251,7 @@ int writeKeyPairToFile(const char *fileName, const char* keyPair) {
 	return 0;
 }
 
-DWORD WINAPI StartTeamspeakServer(LPVOID)
+DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
 {
 	char *version;
 	uint64 serverID;
@@ -263,13 +264,18 @@ DWORD WINAPI StartTeamspeakServer(LPVOID)
 	/* Create struct for callback function pointers */
 	struct ServerLibFunctions funcs;
 
+	int retCode = 0;
 	if (sEngine == nullptr)
 	{
-		int retCode = 0;
 		sEngine = reinterpret_cast<IEngine001*>(CreateInterface(ENGINE_INTERFACE_VERSION001, &retCode));
 		if (retCode != 0)
 			throw std::runtime_error("Failed to create engine interface");
 	}
+
+	ICommands001* commands = reinterpret_cast<ICommands001*>(CreateInterface(COMMANDS_INTERFACE_VERSION001, &retCode));
+	if (retCode != 0)
+		throw std::runtime_error("Failed to create commands interface");
+
 
 	if (sEngine != nullptr)
 		sEngine->PrintToConsole("Starting VoIP server...");
@@ -327,24 +333,31 @@ DWORD WINAPI StartTeamspeakServer(LPVOID)
 		keyPair = "";  /* No Id saved, start virtual server with empty keyPair string */
 	}
 
-	/* Create virtual server using default port 9987 with max 10 slots */
-
 	/* Create the virtual server with specified port, name, keyPair and max clients */
 	if (sEngine != nullptr)
 		sEngine->PrintToConsole("Create VoIP server using keypair " + std::string(keyPair));
 
 	// TODO5: make this use ports from 11794 - 11804 (11774 - 11784 is reserved for game, game tries each port in that range until it finds an unused one, info server does the same with 11784 - 11794)
 	// TODO5: also print the port
-	if ((error = ts3server_createVirtualServer(9987, "0.0.0.0", "Eldewrito VoIP Server", keyPair, 16, &serverID)) != ERROR_ok)
+	unsigned int port = voipModule.VarVoIPServerPort->ValueInt;
+	while (port <= (voipModule.VarVoIPServerPort->ValueInt + 10))
 	{
-		char* errormsg;
-		if (ts3server_getGlobalErrorMessage(error, &errormsg) == ERROR_ok)
+		if ((error = ts3server_createVirtualServer(port, "0.0.0.0", "Eldewrito VoIP Server", keyPair, 16, &serverID)) != ERROR_ok)
 		{
-			if (sEngine != nullptr)
-				sEngine->PrintToConsole("Error creating VoIP server: " + std::string(errormsg) + "(" + std::to_string(error) + ")");
-			ts3server_freeMemory(errormsg);
+			char* errormsg;
+			if (ts3server_getGlobalErrorMessage(error, &errormsg) == ERROR_ok)
+			{
+				if (sEngine != nullptr)
+					sEngine->PrintToConsole("Error creating VoIP server: " + std::string(errormsg) + "(" + std::to_string(error) + ")");
+				ts3server_freeMemory(errormsg);
+			}
+			continue;
 		}
-		return 1;
+		if (commands != nullptr)
+			commands->SetVariable(voipModule.VarVoIPServerPort, std::to_string(port), std::string());
+		if (sEngine != nullptr)
+			sEngine->PrintToConsole("VoIP server listening on port " + std::to_string(port));
+		break;
 	}
 
 	/* If we didn't load the keyPair before, query it from virtual server and save to file */

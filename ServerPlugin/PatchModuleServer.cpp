@@ -140,8 +140,8 @@ namespace Modules
 		VarServerShouldAnnounce->ValueIntMin = 0;
 		VarServerShouldAnnounce->ValueIntMax = 1;
 
-		AddCommand("KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsHostOnly, CommandServerKickPlayer, { "playername/UID The name or UID of the player to kick" });
-		AddCommand("ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsHostOnly, CommandServerListPlayers);
+		AddCommand("KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsMustBeHosting, CommandServerKickPlayer, { "playername/UID The name or UID of the player to kick" });
+		AddCommand("ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsMustBeHosting, CommandServerListPlayers);
 	}
 
 	void PatchModuleServer::Announce()
@@ -300,10 +300,27 @@ namespace Modules
 					{
 						writer.Key("xnkid");
 						writer.String(xnkid.c_str());
+
 						writer.Key("xnaddr");
 						writer.String(xnaddr.c_str());
-						writer.Key("players");
 
+						writer.Key("variables");
+						writer.StartArray();
+						auto cmds = commands->GetList();
+						for (auto cmd : cmds)
+						{
+							if (!(cmd.Flags & eCommandFlagsReplicated))
+								continue;
+							writer.StartObject();
+							writer.Key("name");
+							writer.String(cmd.Name.c_str());
+							writer.Key("value");
+							writer.String(cmd.ValueString.c_str());
+							writer.EndObject();
+						}
+						writer.EndArray();
+
+						writer.Key("players");
 						writer.StartArray();
 						uint32_t playerScoresBase = 0x23F1724;
 						//uint32_t playerInfoBase = 0x2162DD0;

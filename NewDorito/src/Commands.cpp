@@ -1,6 +1,7 @@
 #include "Commands.hpp"
 #include <algorithm>
 #include <sstream>
+#include "ElDorito.hpp"
 
 /// <summary>
 /// Adds a command to the console commands list.
@@ -77,14 +78,17 @@ std::string Commands::Execute(std::string command, bool isUserInput)
 	if (!cmd || (isUserInput && cmd->Flags & eCommandFlagsInternal))
 		return "Command/Variable not found";
 
-	if ((cmd->Flags & eCommandFlagsRunOnMainMenu))// && !ElDorito::Instance().GameHasMenuShown)
+	if ((cmd->Flags & eCommandFlagsRunOnMainMenu) && !ElDorito::Instance().Engine.HasMainMenuShown())
 	{
 		queuedCommands.push_back(command);
 		return "Command queued until mainmenu shows";
 	}
 
-	if ((cmd->Flags & eCommandFlagsHostOnly))// && !ElDorito::Instance().IsHostPlayer())
+	if ((cmd->Flags & eCommandFlagsMustBeHosting))// TODO1: && !ElDorito::Instance().IsHostPlayer())
 		return "Only a player hosting a game can use this command";
+
+	if ((cmd->Flags & eCommandFlagsReplicated))// TODO1: check if player is host or on mainmenu
+		return "You must be at the lobby or hosting a game to use this command";
 
 	std::vector<std::string> argsVect;
 	if (numArgs > 1)
@@ -414,6 +418,60 @@ std::string Commands::GenerateHelpText(std::string moduleFilter)
 	}
 
 	ss << hasParent.str();
+
+	return ss.str();
+}
+
+std::string Commands::GenerateHelpText(const Command& command)
+{
+	std::stringstream ss;
+	ss << command.Name << " - " << command.Description << "." << std::endl;
+	ss << "Usage: " << command.Name << " ";
+	if (command.Type != CommandType::Command)
+	{
+		ss << "<value(";
+		switch (command.Type)
+		{
+		case CommandType::VariableInt:
+			ss << "int";
+			break;
+		case CommandType::VariableInt64:
+			ss << "int64";
+			break;
+		case CommandType::VariableFloat:
+			ss << "float";
+			break;
+		case CommandType::VariableString:
+			ss << "string";
+			break;
+		}
+		ss << ")>" << std::endl << "Current value: " << command.ValueString << std::endl << std::endl;
+	}
+	else
+	{
+		std::stringstream paramStream;
+		for (auto arg : command.CommandArgs)
+		{
+			auto argname = arg;
+			std::string argdesc = "";
+			auto nameEnd = arg.find(" ");
+			if (nameEnd != std::string::npos)
+			{
+				argname = arg.substr(0, nameEnd);
+				if (arg.length() > (nameEnd + 1))
+					argdesc = arg.substr(nameEnd + 1);
+			}
+			ss << "<" << argname << "> ";
+			if (argdesc.length() > 0)
+				paramStream << "  " << argname << ": " << argdesc << std::endl;
+		}
+		ss << std::endl;
+		auto paramDescs = paramStream.str();
+		if (paramDescs.length() > 0)
+			ss << paramDescs << std::endl;
+		else
+			ss << std::endl;
+	}
 
 	return ss.str();
 }

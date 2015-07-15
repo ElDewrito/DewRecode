@@ -14,6 +14,8 @@ public:
 	void FinishAdd();
 	Command* Find(const std::string& name);
 
+	const std::deque<Command>& GetList() { return List; }
+
 	std::string Execute(std::vector<std::string> command, bool isUserInput = false);
 	std::string Execute(std::string command, bool isUserInput = false);
 	std::string ExecuteList(std::string& commands, bool isUserInput = false);
@@ -29,6 +31,7 @@ public:
 	VariableSetReturnValue SetVariable(Command* command, std::string& value, std::string& previousValue);
 
 	std::string GenerateHelpText(std::string moduleFilter = "");
+	std::string GenerateHelpText(const Command& command);
 
 	std::string SaveVariables();
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <deque>
 
 enum class VariableSetReturnValue
 {
@@ -22,15 +23,15 @@ enum class CommandType
 enum CommandFlags
 {
 	eCommandFlagsNone,
-	eCommandFlagsCheat = 1 << 0, // only allow this command on cheat-enabled servers, whenever they get implemented
-	eCommandFlagsReplicated = 1 << 1, // value of this variable should be output into the server info JSON, clients should update their variable to match the one in JSON
-	eCommandFlagsArchived = 1 << 2, // value of this variable should be written when using WriteConfig
-	eCommandFlagsDontUpdateInitial = 1 << 3, // don't call the update event when the variable is first being initialized
-	eCommandFlagsHidden = 1 << 4, // hide this command/var from the help listing
-	eCommandFlagsRunOnMainMenu = 1 << 5, // if run at startup queue the command until the main menu is shown
-	eCommandFlagsHostOnly = 1 << 6, // only execute the command if the user is host
-	eCommandFlagsOmitValueInList = 1 << 7, // omit the variables value in help listing
-	eCommandFlagsInternal = 1 << 8  // disallow the user from using this command, only internal ExecuteCommand calls can use it
+	eCommandFlagsCheat = 1 << 0,				// only allow the command/variable to be run/changed if Server.Cheats is set to 1
+	eCommandFlagsReplicated = 1 << 1,			// value of this variable should be output into the server info JSON, clients should update their variable to match the one in JSON
+	eCommandFlagsArchived = 1 << 2,				// value of this variable should be written when using WriteConfig
+	eCommandFlagsDontUpdateInitial = 1 << 3,	// don't call the update event when the variable is first being initialized
+	eCommandFlagsHidden = 1 << 4,				// hide this command/var from the help listing
+	eCommandFlagsRunOnMainMenu = 1 << 5,		// if run at startup queue the command until the main menu is shown
+	eCommandFlagsMustBeHosting = 1 << 6,		// only execute the command if the user is host
+	eCommandFlagsOmitValueInList = 1 << 7,		// omit the variables value in help listing
+	eCommandFlagsInternal = 1 << 8,				// disallow the user from using this command, only internal ExecuteCommand calls can use it
 };
 
 typedef bool(*CommandUpdateFunc)(const std::vector<std::string>& Arguments, std::string& returnInfo);
@@ -99,6 +100,8 @@ public:
 	/// <param name="name">The name of the command.</param>
 	/// <returns>A pointer to the command, if found.</returns>
 	virtual Command* Find(const std::string& name) = 0;
+
+	virtual const std::deque<Command>& GetList() = 0;
 
 	/// <summary>
 	/// Executes a command string (vector splits spaces?)
@@ -194,6 +197,13 @@ public:
 	/// <param name="moduleFilter">If set, only commands/variables belonging to this module will be printed.</param>
 	/// <returns>Help text.</returns>
 	virtual std::string GenerateHelpText(std::string moduleFilter = "") = 0;
+
+	/// <summary>
+	/// Generates help text for a command.
+	/// </summary>
+	/// <param name="command">The command to generate help text for.</param>
+	/// <returns>Help text.</returns>
+	virtual std::string GenerateHelpText(const Command& command) = 0;
 
 	/// <summary>
 	/// Writes each variables name and value to a string.

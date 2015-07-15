@@ -144,6 +144,11 @@ namespace
 		return StartTeamspeakClient(VoipModule);
 	}
 
+	DWORD __stdcall StartServer(LPVOID)
+	{
+		return StartTeamspeakServer(VoipModule);
+	}
+
 	void CallbackServerStop(void* param)
 	{
 		StopTeamspeakClient();
@@ -166,7 +171,7 @@ namespace
 	void CallbackServerStart(void* param)
 	{
 		// Start the Teamspeak VoIP Server since this is the host
-		CreateThread(0, 0, StartTeamspeakServer, 0, 0, 0);
+		CreateThread(0, 0, StartServer, 0, 0, 0);
 
 		// Join the Teamspeak VoIP Server so the host can talk
 		CallbackClientStart(param);
@@ -214,6 +219,11 @@ namespace Modules
 		VarVoIPServerEnabled = AddVariableInt("ServerEnabled", "voip_server", "Enables or disables the VoIP Server.", eCommandFlagsArchived, 1, VariableServerEnabledUpdate);
 		VarVoIPServerEnabled->ValueIntMin = 0;
 		VarVoIPServerEnabled->ValueIntMax = 1;
+
+		VarVoIPServerPort = AddVariableInt("ServerPort", "voip_port", "The port number to listen for VoIP connections on."
+			"Tries listening on ports in the range [ServerPort..ServerPort+10].", (CommandFlags)(eCommandFlagsArchived | eCommandFlagsReplicated), 11794);
+		VarVoIPServerPort->ValueIntMin = 0;
+		VarVoIPServerPort->ValueIntMax = 0xFFFF;
 
 		VarVoIPTalk = AddVariableInt("Talk", "voip_Talk", "Enables or disables talking (for push to talk)", eCommandFlagsNone, 0);
 		VarVoIPTalk->ValueIntMin = 0;

@@ -12,6 +12,7 @@ namespace Modules
 		Command* VarVoIPEchoCancellation;
 		Command* VarVoIPVADLevel;
 		Command* VarVoIPServerEnabled;
+		Command* VarVoIPServerPort;
 		Command* VarVoIPTalk;
 
 		ModuleVoIP();
