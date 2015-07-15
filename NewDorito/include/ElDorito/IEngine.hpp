@@ -51,6 +51,7 @@ struct PlayerKickInfo
 struct ConsoleBuffer
 {
 	std::string Name;
+	std::string Group;
 	std::vector<std::string> Messages;
 	std::vector<std::string> InputHistory;
 	int InputHistoryIndex = -1;
@@ -60,9 +61,10 @@ struct ConsoleBuffer
 	bool Visible;
 	bool Focused;
 
-	ConsoleBuffer(std::string name, EventCallback inputEventCallback, bool visible = false)
+	ConsoleBuffer(std::string name, std::string group, EventCallback inputEventCallback, bool visible = false)
 	{
 		Name = name;
+		Group = group;
 		InputEventCallback = inputEventCallback;
 		Visible = visible;
 		Focused = false;

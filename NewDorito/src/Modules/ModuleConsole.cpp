@@ -21,7 +21,11 @@ namespace
 
 	bool CommandConsoleShow(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		ElDorito::Instance().Modules.Console.Show();
+		std::string group = "Console";
+		if (Arguments.size() > 0)
+			group = Arguments[0];
+
+		ElDorito::Instance().Modules.Console.Show(group);
 		return true;
 	}
 
@@ -42,26 +46,28 @@ namespace Modules
 		AddCommand("Show", "show_console", "Shows the console/chat UI", eCommandFlagsNone, CommandConsoleShow);
 		AddCommand("Hide", "hide_console", "Hides the console/chat UI", eCommandFlagsNone, CommandConsoleHide);
 
-		ConsoleBuffer consoleBuff("Console", UIConsoleInput, true);
+		ConsoleBuffer consoleBuff("Console", "Console", UIConsoleInput, true);
 		consoleBuff.Focused = true;
 
 		consoleBuffer = AddBuffer(consoleBuff);
-		consoleBuffer->Messages.push_back("msg1");
-		consoleBuffer->Messages.push_back("msg2");
 
 		Show();
 	}
 
-	void ModuleConsole::Show()
+	void ModuleConsole::Show(std::string group)
 	{
-		if (visible)
+		group = utils->ToLower(group);
+		if (activeGroup.compare(group) && getNumBuffersInGroup(group) > 0)
+			activeGroup = group;
+
+		if (visible || getNumBuffersInGroup(group) <= 0)
 			return;
 
 		capsLockToggled = GetKeyState(VK_CAPITAL) & 1;
 
 		visible = true;
-		buffers.at(selectedBufferIdx).ScrollIndex = 0;
-		buffers.at(selectedBufferIdx).Focused = true;
+		buffers.at(getSelectedIdx()).ScrollIndex = 0;
+		buffers.at(getSelectedIdx()).Focused = true;
 
 		// Disables game keyboard input and enables our keyboard hook
 		RAWINPUTDEVICE Rid;
@@ -109,7 +115,10 @@ namespace Modules
 
 	ConsoleBuffer* ModuleConsole::AddBuffer(ConsoleBuffer buffer)
 	{
+		buffer.Group = utils->ToLower(buffer.Group);
 		buffers.push_back(buffer);
+		if (selectedBufferIdx.find(buffer.Group) == selectedBufferIdx.end())
+			selectedBufferIdx.insert(std::pair<std::string, int>(buffer.Group, buffers.size() - 1));
 
 		return &buffers.back();
 	}
@@ -139,11 +148,14 @@ namespace Modules
 		size_t maxCharsPerLine = 105;
 
 		int tempX = x;
-		for (int i = 0; i < buffers.size(); i++)
+		for (size_t i = 0; i < buffers.size(); i++)
 		{
 			auto& buffer = buffers.at(i);
+			if (utils->ToLower(buffer.Group).compare(activeGroup))
+				continue;
+
 			std::string displayName = buffer.Name;
-			if (i == selectedBufferIdx)
+			if (i == getSelectedIdx() && getNumBuffersInGroup(activeGroup) > 1)
 				displayName = ">" + displayName + "<";
 
 			drawBox(device, tempX, y, getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
@@ -152,7 +164,8 @@ namespace Modules
 		}
 
 		// TODO4: make this text fade out after a while
-		drawText("Press tab to switch tabs. Press ` or F1 to open the console.", x, y + verticalSpacingBetweenTopOfInputBoxAndFont + verticalSpacingBetweenLinesAndInputBox, COLOR_WHITE, normalSizeFont);
+		if (getNumBuffersInGroup(activeGroup) > 1)
+			drawText("Press tab to switch tabs. Press ` or F1 to open the console.", x, y + verticalSpacingBetweenTopOfInputBoxAndFont + verticalSpacingBetweenLinesAndInputBox, COLOR_WHITE, normalSizeFont);
 
 		y -= verticalSpacingBetweenLinesAndInputBox;
 
@@ -188,7 +201,7 @@ namespace Modules
 		y -= verticalSpacingBetweenLinesAndInputBox;
 
 		// Draw text from selected buffer
-		auto& selectedBuffer = buffers.at(selectedBufferIdx);
+		auto& selectedBuffer = buffers.at(getSelectedIdx());
 		for (int i = (int)selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex; i >= 0; i--)
 		{
 			if (i <= (int)(selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex) - selectedBuffer.MaxDisplayLines)
@@ -350,7 +363,8 @@ namespace Modules
 
 	void ModuleConsole::consoleKeyCallBack(USHORT vKey)
 	{
-		auto& buffer = buffers.at(selectedBufferIdx);
+		auto& buffer = buffers.at(getSelectedIdx());
+		auto& dorito = ElDorito::Instance();
 
 		switch (vKey)
 		{
@@ -428,47 +442,37 @@ namespace Modules
 			break;
 
 		case VK_TAB:
-			if (selectedBufferIdx + 1 >= buffers.size())
-				selectedBufferIdx = 0;
-			else
-				selectedBufferIdx++;
-
-			buffers.at(selectedBufferIdx).InputHistoryIndex = 0;
-
-			/* TAB COMPLETION TODO3:
-
-			if (currentInput.currentInput.find_first_of(" ") == std::string::npos && currentInput.currentInput.length() > 0)
-			{
-			if (tabHitLast)
-			{
-			if (currentCommandList.size() > 0)
-			{
-			currentInput.set(currentCommandList.at((++tryCount) % currentCommandList.size()));
-			}
-			}
+			if (getNumBuffersInGroup(activeGroup) > 1)
+				switchToNextIdx();
 			else
 			{
-			tryCount = 0;
-			currentCommandList.clear();
-			commandPriorComplete = currentInput.currentInput;
+				if (inputBox.Text.find_first_of(" ") != std::string::npos || inputBox.Text.empty())
+					break;
 
-			auto currentLine = currentInput.currentInput;
-			std::transform(currentLine.begin(), currentLine.end(), currentLine.begin(), ::tolower);
+				if (tabHitLast)
+				{
+					if (currentCommandList.size() > 0)
+						inputBox.Set(currentCommandList.at((++tryCount) % currentCommandList.size()));
+				}
+				else
+				{
+					tryCount = 0;
+					currentCommandList.clear();
+					commandPriorComplete = inputBox.Text;
 
-			for (auto cmd : Modules::CommandMap::Instance().Commands)
-			{
-			auto commandName = cmd.Name;
-			std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::tolower);
+					auto currentLine = utils->ToLower(inputBox.Text);
 
-			if (commandName.compare(0, currentLine.length(), currentLine) == 0)
-			{
-			currentCommandList.push_back(commandName);
+					for (auto cmd : dorito.Commands.List)
+					{
+						auto commandName = utils->ToLower(cmd.Name);
+
+						if (commandName.compare(0, currentLine.length(), currentLine) == 0)
+							currentCommandList.push_back(cmd.Name);
+					}
+					buffers.at(getSelectedIdx()).Messages.push_back(std::to_string(currentCommandList.size()) + " commands found starting with \"" + currentLine + ".\"");
+					buffers.at(getSelectedIdx()).Messages.push_back("Press tab to go through them.");
+				}
 			}
-			}
-			consoleQueue.pushLineFromGameToUI(std::to_string(currentCommandList.size()) + " commands found starting with \"" + currentLine + ".\"");
-			consoleQueue.pushLineFromGameToUI("Press tab to go through them.");
-			}
-			}*/
 			break;
 
 		case 'V':
@@ -484,7 +488,7 @@ namespace Modules
 						std::string newInputLine = inputBox.Text + text;
 
 						for (char c : text)
-							if (true) // (currentInput.currentInput.size() <= INPUT_MAX_CHARS)
+							if (inputBox.Text.size() <= INPUT_MAX_CHARS)
 								inputBox.Entry(c);
 
 						GlobalUnlock(hData);
@@ -503,12 +507,12 @@ namespace Modules
 			break;
 		}
 
-		//TODO3: tabHitLast = vKey == VK_TAB;
+		tabHitLast = vKey == VK_TAB;
 	}
 
 	void ModuleConsole::handleDefaultKeyInput(USHORT vKey)
 	{
-		if (false) //inputBox.Text.size() > INPUT_MAX_CHARS)
+		if (inputBox.Text.size() > INPUT_MAX_CHARS)
 			return;
 
 		WORD buf;
@@ -529,5 +533,64 @@ namespace Modules
 			inputBox.Entry(buf >> 8);
 			inputBox.Entry(buf & 0x00ff);
 		}
+	}
+
+	int ModuleConsole::getSelectedIdxForGroup(std::string group)
+	{
+		auto it = selectedBufferIdx.find(group);
+		if (it == selectedBufferIdx.end())
+			return 0;
+		return (*it).second;
+	}
+
+	int ModuleConsole::getSelectedIdx()
+	{
+		return getSelectedIdxForGroup(activeGroup);
+	}
+
+	int ModuleConsole::getNumBuffersInGroup(std::string group)
+	{
+		int count = 0;
+		for (auto buff : buffers)
+		{
+			if (!buff.Group.compare(group))
+				count++;
+		}
+		return count;
+	}
+
+	void ModuleConsole::switchToNextIdx()
+	{
+		// first try looking for a buffer in the same group starting from the current buffer
+		int nextIdx = 0;
+		bool foundBuff = false;
+		auto it = selectedBufferIdx.find(activeGroup);
+		if (it == selectedBufferIdx.end()) // if it don't exist create it
+			selectedBufferIdx.insert(std::pair<std::string, int>(activeGroup, nextIdx));
+		else
+			nextIdx = (*it).second + 1;
+
+		auto it2 = selectedBufferIdx.find(activeGroup);
+		for (size_t i = nextIdx; i < buffers.size(); i++)
+		{
+			if (buffers.at(i).Group.compare(activeGroup))
+				continue;
+			nextIdx = i;
+			foundBuff = true;
+			break;
+		}
+
+		if (foundBuff)
+			(*it2).second = nextIdx;
+		else // couldn't find one in the same group, try starting from the beginning
+			for (size_t i = 0; i < buffers.size(); i++)
+			{
+				if (buffers.at(i).Group.compare(activeGroup))
+					continue;
+				(*it2).second = i;
+				break;
+			}
+
+		buffers.at(getSelectedIdx()).InputHistoryIndex = 0;
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <ElDorito/ModuleBase.hpp>
 #include <d3dx9.h>
+#include <map>
 
 class TextInput
 {
@@ -62,7 +63,7 @@ namespace Modules
 	public:
 		ModuleConsole();
 
-		void Show();
+		void Show(std::string group = "Console");
 		void Hide();
 		void PrintToConsole(std::string str);
 		void PrintMultiLineStringToConsole(std::string str);
@@ -86,6 +87,7 @@ namespace Modules
 		static CONST D3DCOLOR COLOR_WHITE = D3DCOLOR_ARGB(255, 255, 255, 249);
 
 	private:
+		const size_t INPUT_MAX_CHARS = 400;
 		bool visible = false;
 
 		TextInput inputBox;
@@ -97,14 +99,21 @@ namespace Modules
 		LPD3DXFONT normalSizeFont = 0;
 		LPD3DXFONT largeSizeFont = 0;
 
+		std::string activeGroup = "Console";
 		std::deque<ConsoleBuffer> buffers;
+		std::map<std::string, int> selectedBufferIdx; // <GroupName, index>
 		ConsoleBuffer* consoleBuffer;
-		unsigned int selectedBufferIdx = 0;
+		
 
 		int lastTimeConsoleBlink = 0;
 		bool consoleBlinking = false;
 
 		bool capsLockToggled = false;
+
+		bool tabHitLast = false;
+		int tryCount = 0;
+		std::string commandPriorComplete = "";
+		std::vector<std::string> currentCommandList = std::vector < std::string > {};
 
 		void initFonts(IDirect3DDevice9* device);
 
@@ -122,5 +131,10 @@ namespace Modules
 
 		void consoleKeyCallBack(USHORT vKey);
 		void handleDefaultKeyInput(USHORT vKey);
+
+		int getSelectedIdxForGroup(std::string group);
+		int getNumBuffersInGroup(std::string group);
+		int getSelectedIdx();
+		void switchToNextIdx();
 	};
 }
