@@ -39,8 +39,10 @@ later:
 	(etc)
 */
 
+struct ConsoleBuffer;
 typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
 typedef void(__cdecl* EventCallback)(void* param);
+typedef void(__cdecl* ConsoleInputCallback)(const std::string& input, ConsoleBuffer* buffer);
 
 struct PlayerKickInfo
 {
@@ -57,15 +59,15 @@ struct ConsoleBuffer
 	int InputHistoryIndex = -1;
 	unsigned int ScrollIndex;
 	int MaxDisplayLines;
-	EventCallback InputEventCallback;
+	ConsoleInputCallback InputCallback;
 	bool Visible;
 	bool Focused;
 
-	ConsoleBuffer(std::string name, std::string group, EventCallback inputEventCallback, bool visible = false)
+	ConsoleBuffer(std::string name, std::string group, ConsoleInputCallback inputCallback, bool visible = false)
 	{
 		Name = name;
 		Group = group;
-		InputEventCallback = inputEventCallback;
+		InputCallback = inputCallback;
 		Visible = visible;
 		Focused = false;
 		ScrollIndex = 0;
@@ -135,6 +137,13 @@ public:
 	/// <param name="buffer">The buffer to add.</param>
 	/// <returns>A pointer to the added buffer.</returns>
 	virtual ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer) = 0;
+
+	/// <summary>
+	/// Sets the active console UI buffer to this buffer (for the buffers group only)
+	/// </summary>
+	/// <param name="buffer">The buffer to set as active.</param>
+	/// <returns>true if the buffer was set active.</returns>
+	virtual bool SetActiveConsoleBuffer(ConsoleBuffer* buffer) = 0;
 
 	/// <summary>
 	/// Returns true if the main menu has been shown, signifying that the game has initialized.

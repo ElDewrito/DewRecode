@@ -71,6 +71,7 @@ namespace Modules
 		void PrintMultiLineStringToConsole(std::string str);
 
 		ConsoleBuffer* AddBuffer(ConsoleBuffer buffer);
+		bool SetActiveBuffer(ConsoleBuffer* buffer);
 
 		void Draw(IDirect3DDevice9* device);
 		LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -104,7 +105,7 @@ namespace Modules
 
 		std::string activeGroup = "Console";
 		std::deque<ConsoleBuffer> buffers;
-		std::map<std::string, int> selectedBufferIdx; // <GroupName, index>
+		std::map<std::string, int> activeBufferIdx; // <GroupName, index>
 		ConsoleBuffer* consoleBuffer;
 		
 

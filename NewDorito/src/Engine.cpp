@@ -302,9 +302,24 @@ void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
 	return nullptr;
 }
 
+/// <summary>
+/// Adds a new buffer/queue to the console UI.
+/// </summary>
+/// <param name="buffer">The buffer to add.</param>
+/// <returns>A pointer to the added buffer.</returns>
 ConsoleBuffer* Engine::AddConsoleBuffer(ConsoleBuffer buffer)
 {
 	return ElDorito::Instance().Modules.Console.AddBuffer(buffer);
+}
+
+/// <summary>
+/// Sets the active console UI buffer to this buffer (for the buffers group only)
+/// </summary>
+/// <param name="buffer">The buffer to set as active.</param>
+/// <returns>true if the buffer was set active.</returns>
+bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
+{
+	return ElDorito::Instance().Modules.Console.SetActiveBuffer(buffer);
 }
 
 /// <summary>

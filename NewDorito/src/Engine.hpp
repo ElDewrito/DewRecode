@@ -18,6 +18,7 @@ public:
 	void* CreateInterface(std::string interfaceName, int* returnCode);
 
 	ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer);
+	bool SetActiveConsoleBuffer(ConsoleBuffer* buffer);
 
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 

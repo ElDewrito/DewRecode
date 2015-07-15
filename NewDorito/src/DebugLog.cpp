@@ -16,7 +16,7 @@
 /// <param name="">Additional formatting.</param>
 void DebugLog::Log(LogLevel level, std::string module, std::string format, ...)
 {
-	// TODO: LogLevel
+	// TODO1: LogLevel
 
 	va_list ap;
 	va_start(ap, format);

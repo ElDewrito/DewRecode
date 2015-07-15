@@ -8,10 +8,11 @@ namespace
 		ElDorito::Instance().Modules.Console.Draw(reinterpret_cast<IDirect3DDevice9*>(param));
 	}
 
-	void UIConsoleInput(void* param)
+	void UIConsoleInput(const std::string& input, ConsoleBuffer* buffer)
 	{
-		std::string* string = reinterpret_cast<std::string*>(param);
-		ElDorito::Instance().Modules.Console.PrintMultiLineStringToConsole(ElDorito::Instance().Commands.Execute(*string, true));
+		auto& console = ElDorito::Instance().Modules.Console;
+		console.PrintToConsole(">" + input);
+		console.PrintMultiLineStringToConsole(ElDorito::Instance().Commands.Execute(input, true));
 	}
 
 	LRESULT __stdcall ConsoleWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -119,10 +120,33 @@ namespace Modules
 	{
 		buffer.Group = utils->ToLower(buffer.Group);
 		buffers.push_back(buffer);
-		if (selectedBufferIdx.find(buffer.Group) == selectedBufferIdx.end())
-			selectedBufferIdx.insert(std::pair<std::string, int>(buffer.Group, buffers.size() - 1));
+		if (activeBufferIdx.find(buffer.Group) == activeBufferIdx.end())
+			activeBufferIdx.insert(std::pair<std::string, int>(buffer.Group, buffers.size() - 1));
 
 		return &buffers.back();
+	}
+
+	bool ModuleConsole::SetActiveBuffer(ConsoleBuffer* buffer)
+	{
+		buffer->Group = utils->ToLower(buffer->Group);
+		int bufferIdx = -1;
+		for (size_t i = 0; i < buffers.size(); i++)
+		{
+			if (buffer != &buffers.at(i))
+				continue;
+			bufferIdx = i;
+			break;
+		}
+		if (bufferIdx == -1)
+			return false;
+
+		auto it = this->activeBufferIdx.find(buffer->Group);
+		if (it == this->activeBufferIdx.end())
+			this->activeBufferIdx.insert(std::pair<std::string, int>(buffer->Group, bufferIdx));
+		else
+			(*it).second = bufferIdx;
+
+		return true;
 	}
 
 	void ModuleConsole::Draw(IDirect3DDevice9* device)
@@ -153,7 +177,7 @@ namespace Modules
 		for (size_t i = 0; i < buffers.size(); i++)
 		{
 			auto& buffer = buffers.at(i);
-			if (utils->ToLower(buffer.Group).compare(activeGroup))
+			if (!buffer.Visible || utils->ToLower(buffer.Group).compare(activeGroup))
 				continue;
 
 			std::string displayName = buffer.Name;
@@ -171,7 +195,7 @@ namespace Modules
 
 		y -= verticalSpacingBetweenLinesAndInputBox;
 
-		// Display current input (TODO4: allow input thats longer than the input box)
+		// Display current input (TODO4: scroll input thats longer than the input box)
 		drawBox(device, x, y, inputTextBoxWidth, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
 		drawText(inputBox.Text.c_str(), x + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
 
@@ -374,10 +398,9 @@ namespace Modules
 			if (!this->inputBox.Text.empty())
 			{
 				auto& text = this->inputBox.Text;
-				buffer.Messages.push_back(text);
 				buffer.InputHistory.push_back(text);
-				if (buffer.InputEventCallback != nullptr)
-					buffer.InputEventCallback(&text);
+				if (buffer.InputCallback != nullptr)
+					buffer.InputCallback(text, &buffer);
 
 				buffer.ScrollIndex = 0;
 				this->inputBox.Clear();
@@ -539,8 +562,8 @@ namespace Modules
 
 	int ModuleConsole::getSelectedIdxForGroup(std::string group)
 	{
-		auto it = selectedBufferIdx.find(group);
-		if (it == selectedBufferIdx.end())
+		auto it = activeBufferIdx.find(group);
+		if (it == activeBufferIdx.end())
 			return 0;
 		return (*it).second;
 	}
@@ -566,13 +589,13 @@ namespace Modules
 		// first try looking for a buffer in the same group starting from the current buffer
 		int nextIdx = 0;
 		bool foundBuff = false;
-		auto it = selectedBufferIdx.find(activeGroup);
-		if (it == selectedBufferIdx.end()) // if it don't exist create it
-			selectedBufferIdx.insert(std::pair<std::string, int>(activeGroup, nextIdx));
+		auto it = activeBufferIdx.find(activeGroup);
+		if (it == activeBufferIdx.end()) // if it don't exist create it
+			activeBufferIdx.insert(std::pair<std::string, int>(activeGroup, nextIdx));
 		else
 			nextIdx = (*it).second + 1;
 
-		auto it2 = selectedBufferIdx.find(activeGroup);
+		auto it2 = activeBufferIdx.find(activeGroup);
 		for (size_t i = nextIdx; i < buffers.size(); i++)
 		{
 			if (buffers.at(i).Group.compare(activeGroup))
