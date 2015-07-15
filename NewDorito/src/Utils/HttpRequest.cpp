@@ -112,7 +112,7 @@ HttpRequestError HttpRequest::SendRequest(const std::wstring &uri, const std::ws
 
 	LPCWSTR addtHdrs = WINHTTP_NO_ADDITIONAL_HEADERS;
 	DWORD length = 0;
-	if (headers.length() > 0)
+	if (!headers.empty())
 	{
 		addtHdrs = headers.c_str();
 		length = (DWORD)-1;

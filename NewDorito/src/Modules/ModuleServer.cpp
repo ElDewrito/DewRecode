@@ -146,7 +146,7 @@ namespace
 		}
 
 		std::string errors = ss.str();
-		if (errors.length() > 0)
+		if (!errors.empty())
 			dorito.Logger.Log(LogLevel::Error, "Announce", ss.str());
 
 		return true;
@@ -219,7 +219,7 @@ namespace
 		}
 
 		std::string errors = ss.str();
-		if (errors.length() > 0)
+		if (!errors.empty())
 			dorito.Logger.Log(LogLevel::Error, "Unannounce", ss.str());
 
 		return true;
@@ -365,7 +365,7 @@ namespace
 		}*/
 
 		std::string errors = ss.str();
-		if (errors.length() > 0)
+		if (!errors.empty())
 			dorito.Logger.Log(LogLevel::Error, "AnnounceStats", ss.str());
 
 		return true;

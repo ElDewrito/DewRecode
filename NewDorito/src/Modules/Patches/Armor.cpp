@@ -68,15 +68,15 @@ namespace
 		memset(out->colors, 0, 5 * sizeof(uint32_t));
 
 		uint32_t temp = 0;
-		if (playerVars.VarColorsPrimary->ValueString.length() > 0 && playerVars.VarColorsPrimary->ValueString.substr(0, 1) == "#")
+		if (!playerVars.VarColorsPrimary->ValueString.empty() && playerVars.VarColorsPrimary->ValueString.substr(0, 1) == "#")
 			out->colors[ColorIndexes::Primary] = std::stoi(playerVars.VarColorsPrimary->ValueString.substr(1), 0, 16);
-		if (playerVars.VarColorsSecondary->ValueString.length() > 0 && playerVars.VarColorsSecondary->ValueString.substr(0, 1) == "#")
+		if (!playerVars.VarColorsSecondary->ValueString.empty() && playerVars.VarColorsSecondary->ValueString.substr(0, 1) == "#")
 			out->colors[ColorIndexes::Secondary] = std::stoi(playerVars.VarColorsSecondary->ValueString.substr(1), 0, 16);
-		if (playerVars.VarColorsLights->ValueString.length() > 0 && playerVars.VarColorsLights->ValueString.substr(0, 1) == "#")
+		if (!playerVars.VarColorsLights->ValueString.empty() && playerVars.VarColorsLights->ValueString.substr(0, 1) == "#")
 			out->colors[ColorIndexes::Lights] = std::stoi(playerVars.VarColorsLights->ValueString.substr(1), 0, 16);
-		if (playerVars.VarColorsVisor->ValueString.length() > 0 && playerVars.VarColorsVisor->ValueString.substr(0, 1) == "#")
+		if (!playerVars.VarColorsVisor->ValueString.empty() && playerVars.VarColorsVisor->ValueString.substr(0, 1) == "#")
 			out->colors[ColorIndexes::Visor] = std::stoi(playerVars.VarColorsVisor->ValueString.substr(1), 0, 16);
-		if (playerVars.VarColorsHolo->ValueString.length() > 0 && playerVars.VarColorsHolo->ValueString.substr(0, 1) == "#")
+		if (!playerVars.VarColorsHolo->ValueString.empty() && playerVars.VarColorsHolo->ValueString.substr(0, 1) == "#")
 			out->colors[ColorIndexes::Holo] = std::stoi(playerVars.VarColorsHolo->ValueString.substr(1), 0, 16);
 
 		out->armor[ArmorIndexes::Helmet] = GetArmorIndex(playerVars.VarArmorHelmet->ValueString, helmetIndexes);
@@ -416,7 +416,7 @@ namespace Modules
 			Hook("MainMenuModel", 0x60086D, UiPlayerModelArmorHook, HookType::Call)
 		});
 
-		engine->OnEvent("Core", "TagsLoaded", UI_RefreshPlayerArmor);
+		engine->OnEvent("Core", "Engine.TagsLoaded", UI_RefreshPlayerArmor);
 	}
 
 	void PatchModuleArmor::RefreshUiPlayer()

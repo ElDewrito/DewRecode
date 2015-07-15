@@ -17,7 +17,7 @@ namespace
 
 	void TagsLoadedHookImpl()
 	{
-		ElDorito::Instance().Engine.Event("Core", "TagsLoaded");
+		ElDorito::Instance().Engine.Event("Core", "Engine.TagsLoaded");
 	}
 
 	__declspec(naked) void TagsLoadedHook()
@@ -60,7 +60,8 @@ bool Engine::OnTick(TickCallbackFunc callback)
 /// <summary>
 /// Adds a callback to be called when the specified event occurs.
 /// </summary>
-/// <param name="evt">The event.</param>
+/// <param name="eventModule">The module that calls the event.</param>
+/// <param name="eventName">The name of the event.</param>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
 bool Engine::OnEvent(std::string eventModule, std::string eventName, EventCallbackFunc callback)
@@ -70,13 +71,14 @@ bool Engine::OnEvent(std::string eventModule, std::string eventName, EventCallba
 	{
 		if (kvp.first.compare(eventId))
 		{
+			// TODO: check if callback is already registered for this event, bad plugin coders might have put their OnEvent in a loop by accident or something
 			kvp.second.push_back(callback);
 			return true;
 		}
 	}
 
 	// callback wasn't found, create a new one!
-	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event registered", eventId.c_str());
+	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event created", eventId.c_str());
 	eventCallbacks.insert(std::pair<std::string, std::vector<EventCallbackFunc>>(eventId, std::vector<EventCallbackFunc>{ callback }));
 	return true;
 }
@@ -90,7 +92,7 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 	if (!hasFirstTickTocked)
 	{
 		hasFirstTickTocked = true;
-		this->Event("Core", "FirstTick");
+		this->Event("Core", "Engine.FirstTick");
 	}
 	for (auto callback : tickCallbacks)
 		callback(deltaTime);
@@ -99,7 +101,8 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 /// <summary>
 /// Calls each of the registered callbacks for the specified event
 /// </summary>
-/// <param name="evt">The event.</param>
+/// <param name="eventModule">The module that calls the event.</param>
+/// <param name="eventName">The name of the event.</param>
 /// <param name="param">The parameter to pass to the callbacks.</param>
 void Engine::Event(std::string eventModule, std::string eventName, void* param)
 {
@@ -115,13 +118,18 @@ void Engine::Event(std::string eventModule, std::string eventName, void* param)
 		this->mainMenuHasShown = true;
 	}
 
+	bool found = false;
 	for (auto kvp : eventCallbacks)
 	{
 		if (kvp.first.compare(eventId))
 			continue;
+
+		found = true;
 		for (auto callback : kvp.second)
 			callback(param);
 	}
+	if (!found)
+		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event not created!", eventId.c_str());
 }
 
 Pointer Engine::GetMainTls(size_t offset)

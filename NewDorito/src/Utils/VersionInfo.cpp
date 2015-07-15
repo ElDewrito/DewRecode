@@ -63,7 +63,7 @@ namespace Utils
 		{
 			static std::string versionStr;
 
-			if (versionStr.length() == 0)
+			if (versionStr.empty())
 			{
 				char version[256];
 				memset(version, 0, 256);

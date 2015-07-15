@@ -65,7 +65,7 @@ namespace
 
 		// Get command information
 		auto command = Arguments[1];
-		if (command.length() == 0)
+		if (command.empty())
 		{
 			returnInfo = "Invalid command";
 			return false;
@@ -133,7 +133,7 @@ namespace Modules
 		VarInputRawInput->ValueIntMax = 1;
 
 		AddCommand("Bind", "bind", "Binds a command to a key", eCommandFlagsNone, CommandBind, { "key", "[+]command", "arguments" });
-		engine->OnEvent("Core", "KeyboardUpdate", KeyboardUpdated);
+		engine->OnEvent("Core", "Input.KeyboardUpdate", KeyboardUpdated);
 	}
 }
 

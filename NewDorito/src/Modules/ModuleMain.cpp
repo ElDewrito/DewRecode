@@ -19,7 +19,7 @@ namespace
 				// try searching for it as a module
 				bool isModule = false;
 				for (auto it = console.Commands.begin(); it < console.Commands.end(); it++)
-					if (it->ModuleName.length() > 0 && !_stricmp(it->ModuleName.c_str(), cmdName.c_str()))
+					if (!it->ModuleName.empty() && !_stricmp(it->ModuleName.c_str(), cmdName.c_str()))
 					{
 						isModule = true;
 						break;

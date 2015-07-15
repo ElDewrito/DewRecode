@@ -2,6 +2,38 @@
 #include "Pointer.hpp"
 #include <chrono>
 
+/* 
+List of events registered by ED (eventModule/eventName seperated by a period):
+	Core.Engine.FirstTick - signalled when the game engine loop starts ticking, only signals once
+	Core.Engine.MainMenuShown - when the mainmenu is first being shown, only signals once after the game has inited etc
+	Core.Engine.TagsLoaded - when the tags have been reloaded
+	Core.Input.KeyboardUpdate - when a key is pressed (i think? haven't looked into keyboard code much)
+
+(soon):
+    Core.Direct3D.Present - when the game is about to call D3DDevice::Present
+	Core.Direct3D.EndScene - when the game is about to call D3DDevice::EndScene
+	Core.Round.Start - when a round has started
+	Core.Round.End - when a round has finished
+	Core.Game.Join - when the user joins a game
+	Core.Game.Leave - when the user leaves a game (ez)
+	Core.Game.Start - when a game has started
+	Core.Game.End - when a game has finished (ez)
+	Core.Server.Start - when the user has started a server (ez)
+	Core.Server.Stop - when the user has stopped the server (ez)
+	Core.Player.Join - when a user joins the game (signals for all users, not just host)
+	Core.Player.Leave - when a user leaves the game (signals for all users, not just host) (ez)
+	Core.Player.Kick - when a user has been kicked (host only) (ez)
+	Fore.Twenty - when the kush hits you
+
+later:
+	Core.Lobby.ChangeMap
+	Core.Lobby.ChangeGameMode
+	Core.Medals.DoubleKill
+	Core.Medals.TripleKill
+	Core.Medals.Overkill
+	(etc)
+*/
+
 typedef void(__cdecl* TickCallbackFunc)(const std::chrono::duration<double>& deltaTime);
 typedef void(__cdecl* EventCallbackFunc)(void* param);
 

@@ -10,7 +10,7 @@
 Command* GameConsole::FindCommand(const std::string& name)
 {
 	for (auto it = Commands.begin(); it < Commands.end(); it++)
-		if ((it->Name.length() > 0 && !_stricmp(it->Name.c_str(), name.c_str())) || (it->ShortName.length() > 0 && !_stricmp(it->ShortName.c_str(), name.c_str())))
+		if ((!it->Name.empty() && !_stricmp(it->Name.c_str(), name.c_str())) || (!it->ShortName.empty() && !_stricmp(it->ShortName.c_str(), name.c_str())))
 			return &(*it);
 
 	return nullptr;
@@ -185,7 +185,7 @@ std::string GameConsole::ExecuteCommand(std::string command, bool isUserInput)
 	if (!ret) // error, revert the variable
 		this->SetVariable(cmd, previousValue, std::string());
 
-	if (retVal.length() <= 0)
+	if (retVal.empty())
 		return previousValue + " -> " + cmd->ValueString;
 
 	return retVal;
@@ -285,12 +285,12 @@ VariableSetReturnValue GameConsole::SetVariable(Command* command, std::string& v
 		{
 		case CommandType::VariableString:
 			previousValue = command->ValueString;
-			if (value.length() > 0)
+			if (!value.empty())
 				command->ValueString = value;
 			break;
 		case CommandType::VariableInt:
 			previousValue = std::to_string(command->ValueInt);
-			if (value.length() > 0)
+			if (!value.empty())
 			{
 				auto newValue = std::stoul(value, 0, 0);
 				if ((command->ValueIntMin || command->ValueIntMax) && (newValue < command->ValueIntMin || newValue > command->ValueIntMax))
@@ -302,7 +302,7 @@ VariableSetReturnValue GameConsole::SetVariable(Command* command, std::string& v
 			break;
 		case CommandType::VariableInt64:
 			previousValue = std::to_string(command->ValueInt);
-			if (value.length() > 0)
+			if (!value.empty())
 			{
 				auto newValue = std::stoull(value, 0, 0);
 				if ((command->ValueInt64Min || command->ValueInt64Max) && (newValue < command->ValueInt64Min || newValue > command->ValueInt64Max))
@@ -314,7 +314,7 @@ VariableSetReturnValue GameConsole::SetVariable(Command* command, std::string& v
 			break;
 		case CommandType::VariableFloat:
 			previousValue = std::to_string(command->ValueFloat);
-			if (value.length() > 0)
+			if (!value.empty())
 			{
 				auto newValue = std::stof(value, 0);
 				if ((command->ValueFloatMin || command->ValueFloatMax) && (newValue < command->ValueFloatMin || newValue > command->ValueFloatMax))
@@ -369,7 +369,7 @@ std::string GameConsole::GenerateHelpText(std::string moduleFilter)
 
 		helpText += " - " + cmd.Description;
 
-		if (cmd.ModuleName.length() > 0)
+		if (!cmd.ModuleName.empty())
 			hasParent << helpText << std::endl;
 		else
 			ss << helpText << std::endl;

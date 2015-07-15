@@ -127,7 +127,7 @@ namespace Modules
 			for (auto arg : arguments)
 				command.CommandArgs.push_back(arg);
 
-			if (moduleName.length() <= 0)
+			if (moduleName.empty())
 				command.Name = name;
 
 			command.Flags = flags;
@@ -155,7 +155,7 @@ namespace Modules
 			command.ShortName = shortName;
 			command.Description = description;
 
-			if (moduleName.length() <= 0)
+			if (moduleName.empty())
 				command.Name = name;
 
 			command.Flags = flags;
@@ -186,7 +186,7 @@ namespace Modules
 			command.ShortName = shortName;
 			command.Description = description;
 
-			if (moduleName.length() <= 0)
+			if (moduleName.empty())
 				command.Name = name;
 
 			command.Flags = flags;
@@ -217,7 +217,7 @@ namespace Modules
 			command.ShortName = shortName;
 			command.Description = description;
 
-			if (moduleName.length() <= 0)
+			if (moduleName.empty())
 				command.Name = name;
 
 			command.Flags = flags;
@@ -248,7 +248,7 @@ namespace Modules
 			command.ShortName = shortName;
 			command.Description = description;
 
-			if (moduleName.length() <= 0)
+			if (moduleName.empty())
 				command.Name = name;
 
 			command.Flags = flags;

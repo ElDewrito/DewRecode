@@ -9,7 +9,7 @@ namespace
 		auto& dorito = ElDorito::Instance();
 		memset(swallowedKeys, 0, sizeof(swallowedKeys));
 
-		dorito.Engine.Event("Core", "KeyboardUpdate", &swallowedKeys);
+		dorito.Engine.Event("Core", "Input.KeyboardUpdate", &swallowedKeys);
 	}
 
 	// Hook for the keyboard update function to call our update handler after

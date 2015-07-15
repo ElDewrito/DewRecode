@@ -8,7 +8,7 @@ namespace
 	{
 		auto& engine = ElDorito::Instance().Engine;
 		if (!engine.HasMainMenuShown() && menuIdToLoad == 0x10083)
-			engine.Event("Core", "MainMenuShown");
+			engine.Event("Core", "Engine.MainMenuShown");
 
 		bool shouldUpdate = *(DWORD*)((uint8_t*)a1 + 0x10) >= 0x1E;
 
@@ -167,7 +167,7 @@ namespace Modules
 	{
 		// register our tick callbacks
 		engine->OnTick(UIPatches_TickCallback);
-		engine->OnEvent("Core", "FirstTick", UIPatches_ApplyMapNameFixes);
+		engine->OnEvent("Core", "Engine.FirstTick", UIPatches_ApplyMapNameFixes);
 
 		// add our patches
 		AddModulePatches(
