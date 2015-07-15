@@ -17,6 +17,8 @@ public:
 	bool RegisterInterface(std::string interfaceName, void* ptrToInterface);
 	void* CreateInterface(std::string interfaceName, int* returnCode);
 
+	ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer);
+
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 
 	HWND GetGameHWND() { return Pointer(0x199C014).Read<HWND>(); }
@@ -29,6 +31,11 @@ public:
 
 	std::string GetDoritoVersionString() { return Utils::Version::GetVersionString(); }
 	DWORD GetDoritoVersionInt() { return Utils::Version::GetVersionInt(); }
+
+	std::pair<int, int> GetGameResolution()
+	{
+		return std::pair<int, int>(Pointer(0x2301D08).Read<int>(), Pointer(0x2301D0C).Read<int>());
+	}
 
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);

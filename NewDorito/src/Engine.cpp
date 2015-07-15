@@ -1,5 +1,6 @@
 #include "Engine.hpp"
 #include "ElDorito.hpp"
+#include <d3d9.h>
 
 namespace
 {
@@ -91,6 +92,12 @@ namespace
 		Network_state_leaving_enterFunc Network_state_leaving_enter = reinterpret_cast<Network_state_leaving_enterFunc>(0x4933E0);
 		return Network_state_leaving_enter(thisPtr, a2, a3, a4);
 	}
+
+	HRESULT D3D9Device_EndSceneHook(IDirect3DDevice9* device)
+	{
+		ElDorito::Instance().Engine.Event("Core", "Direct3D.EndScene", device);
+		return device->EndScene();
+	}
 }
 
 /// <summary>
@@ -106,12 +113,14 @@ Engine::Engine()
 		Patch("WndProc", 0x42EB63, Utils::Misc::ConvertToVector<void*>(EngineWndProc)),
 		Patch("Network_EndGameWriteStats", 0x16183A0, Utils::Misc::ConvertToVector<void*>(Network_state_end_game_write_stats_enterHook)),
 		Patch("Network_Leaving", 0x16183BC, Utils::Misc::ConvertToVector<void*>(Network_state_leaving_enterHook)),
+		Patch("D3DEndScene1", 0xA2179B, { 0x90 })
 	},
 	{
 		Hook("GameTick", 0x505E64, GameTickHook, HookType::Call),
 		Hook("TagsLoaded", 0x5030EA, TagsLoadedHook, HookType::Jmp),
 		Hook("ServerSessionInfo", 0x482AAC, Network_managed_session_create_session_internalHook, HookType::Call),
-		Hook("PlayerKick", 0x437E17, Network_leader_request_boot_machineHook, HookType::Call)
+		Hook("PlayerKick", 0x437E17, Network_leader_request_boot_machineHook, HookType::Call),
+		Hook("D3DEndScene2", 0xA21796, D3D9Device_EndSceneHook, HookType::Call)
 	}));
 }
 
@@ -209,7 +218,7 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 	// TODO: find a way to optimize this?
 
 	std::string eventId = eventNamespace + "." + eventName;
-	if (eventId.compare("Core.Input.KeyboardUpdate")) // don't show keyboard update spam
+	if (eventId.compare("Core.Input.KeyboardUpdate") && eventId.compare("Core.Direct3D.EndScene")) // don't show keyboard update spam
 		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event triggered", eventId.c_str());
 
 	if (!eventId.compare("Core.MainMenuShown"))
@@ -222,7 +231,8 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 	auto it = eventCallbacks.find(eventId);
 	if (it == eventCallbacks.end())
 	{
-		ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event not created (nobody is listening for this event!)", eventId.c_str());
+		if (eventId.compare("Core.Input.KeyboardUpdate") && eventId.compare("Core.Direct3D.EndScene"))
+			ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event not created (nobody is listening for this event!)", eventId.c_str());
 		return;
 	}
 
@@ -290,6 +300,11 @@ void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
 
 	*returnCode = 1;
 	return nullptr;
+}
+
+ConsoleBuffer* Engine::AddConsoleBuffer(ConsoleBuffer buffer)
+{
+	return ElDorito::Instance().Modules.Console.AddBuffer(buffer);
 }
 
 /// <summary>

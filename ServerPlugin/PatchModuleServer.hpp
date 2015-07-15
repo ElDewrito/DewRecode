@@ -9,14 +9,21 @@ namespace Modules
 	class PatchModuleServer : public ModuleBase
 	{
 	public:
+		Command* VarServerName;
+		Command* VarServerPassword;
+		Command* VarServerShouldAnnounce;
+
 		PatchModuleServer();
 
-		LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+		void Announce();
+		void Unannounce();
 
 		void RemoteConsoleStart();
 
 		void InfoServerStart();
 		void InfoServerStop();
+
+		LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	private:
 		SOCKET rconSocket;

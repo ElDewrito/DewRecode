@@ -1,5 +1,6 @@
 #pragma once
 #include "ModuleCamera.hpp"
+#include "ModuleConsole.hpp"
 #include "ModuleForge.hpp"
 #include "ModuleGame.hpp"
 #include "ModuleGraphics.hpp"
@@ -23,9 +24,10 @@ namespace Modules
 	class ModuleMain : public ModuleBase
 	{
 	public:
+		ModuleGame Game; // game has to be created before all others
 		ModuleCamera Camera;
+		ModuleConsole Console;
 		ModuleForge Forge;
-		ModuleGame Game;
 		ModuleGraphics Graphics;
 		ModuleInput Input;
 		ModulePlayer Player;

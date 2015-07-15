@@ -39,15 +39,37 @@ later:
 	(etc)
 */
 
+typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
+typedef void(__cdecl* EventCallback)(void* param);
+
 struct PlayerKickInfo
 {
 	std::string Name;
 	uint64_t UID;
 };
 
-typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
-typedef void(__cdecl* EventCallback)(void* param);
+struct ConsoleBuffer
+{
+	std::string Name;
+	std::vector<std::string> Messages;
+	std::vector<std::string> InputHistory;
+	int InputHistoryIndex = -1;
+	unsigned int ScrollIndex;
+	int MaxDisplayLines;
+	EventCallback InputEventCallback;
+	bool Visible;
+	bool Focused;
 
+	ConsoleBuffer(std::string name, EventCallback inputEventCallback, bool visible = false)
+	{
+		Name = name;
+		InputEventCallback = inputEventCallback;
+		Visible = visible;
+		Focused = false;
+		ScrollIndex = 0;
+		MaxDisplayLines = 10;
+	}
+};
 /*
 if you want to make changes to this interface create a new IEngine002 class and make them there, then edit Engine class to inherit from the new class + this older one
 for backwards compatibility (with plugins compiled against an older ED SDK) we can't remove any methods, only add new ones to a new interface version
@@ -106,6 +128,13 @@ public:
 	virtual void* CreateInterface(std::string interfaceName, int* returnCode) = 0;
 
 	/// <summary>
+	/// Adds a new buffer/queue to the console UI.
+	/// </summary>
+	/// <param name="buffer">The buffer to add.</param>
+	/// <returns>A pointer to the added buffer.</returns>
+	virtual ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer) = 0;
+
+	/// <summary>
 	/// Returns true if the main menu has been shown, signifying that the game has initialized.
 	/// </summary>
 	/// <returns>true if the main menu has been shown.</returns>
@@ -157,6 +186,12 @@ public:
 	/// </summary>
 	/// <returns>The ElDorito dll version as an integer.</returns>
 	virtual DWORD GetDoritoVersionInt() = 0;
+
+	/// <summary>
+	/// Gets the games resolution.
+	/// </summary>
+	/// <returns>The resolution.</returns>
+	virtual std::pair<int, int> GetGameResolution() = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

@@ -4,6 +4,7 @@
 #include "../NewDorito/src/ThirdParty/rapidjson/stringbuffer.h"
 
 Modules::PatchModuleServer ServerPatches;
+IUtils001* PublicUtils;
 
 namespace
 {
@@ -41,16 +42,116 @@ namespace
 
 		return *(DWORD*)(sub_45C250(v2) + 0x10A0);
 	}
+
+	bool CommandServerKickPlayer(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		if (Arguments.size() <= 0)
+		{
+			returnInfo = "Invalid arguments";
+			return false;
+		}
+
+		std::string kickPlayerName = Arguments[0];
+
+		uint32_t uidBase = 0x1A4ED18;
+
+		uint64_t uid = 0;
+		wchar_t playerName[0x10];
+		for (int i = 0; i < 16; i++)
+		{
+			uint32_t uidOffset = uidBase + (0x1648 * i) + 0x50;
+
+			uid = Pointer(uidOffset).Read<uint64_t>();
+			std::stringstream uidStream;
+			uidStream << std::hex << uid;
+			auto uidString = uidStream.str();
+
+			memcpy(playerName, (char*)(uidOffset + 8), 0x10 * sizeof(wchar_t));
+			if (!PublicUtils->ThinString(playerName).compare(kickPlayerName) || !uidString.compare(kickPlayerName))
+			{
+				typedef bool(__cdecl *Network_squad_session_boot_playerPtr)(int playerIdx, int reason);
+				auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerPtr>(0x437D60);
+
+				if (Network_squad_session_boot_player(i, 4))
+				{
+					returnInfo = "Issued kick request for player " + kickPlayerName;
+					return true;
+				}
+			}
+		}
+		returnInfo = "Player " + kickPlayerName + " not found in game?";
+		return false;
+	}
+
+	bool CommandServerListPlayers(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		std::stringstream ss;
+
+		// TODO: check if player is in a lobby
+		// TODO: find an addr where we can find this data in clients memory
+		// so people could use it to find peoples UIDs and report them for cheating etc
+
+		uint32_t uidBase = 0x1A4ED18;
+
+		uint64_t uid = 0;
+		wchar_t playerName[0x10];
+		for (int i = 0; i < 16; i++)
+		{
+			uint32_t uidOffset = uidBase + (0x1648 * i) + 0x50;
+
+			uid = Pointer(uidOffset).Read<uint64_t>();
+			memcpy(playerName, (char*)(uidOffset + 8), 0x10 * sizeof(wchar_t));
+
+			std::string name = PublicUtils->ThinString(playerName);
+			if (uid == 0 && name.empty())
+				continue; // todo: proper way of checking if this index is populated
+
+			ss << std::dec << i << ": " << name << " (uid: " << std::hex << uid << ")" << std::endl;
+		}
+
+		returnInfo = ss.str();
+		return true;
+	}
+
+	bool VariableServerShouldAnnounceUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		if (!ServerPatches.VarServerShouldAnnounce->ValueInt) // if we're setting Server.ShouldAnnounce to false unannounce ourselves too
+			ServerPatches.Unannounce();
+
+		return true;
+	}
 }
 
 namespace Modules
 {
-	PatchModuleServer::PatchModuleServer() : ModuleBase("Plugins.Patches.Server")
+	PatchModuleServer::PatchModuleServer() : ModuleBase("Server")
 	{
+		PublicUtils = utils;
+
 		engine->OnWndProc(PluginWndProc);
 		engine->OnEvent("Core", "Engine.FirstTick", CallbackRemoteConsoleStart);
 		engine->OnEvent("Core", "Server.Start", CallbackInfoServerStart);
 		engine->OnEvent("Core", "Server.Stop", CallbackInfoServerStop);
+
+		VarServerName = AddVariableString("Name", "server_name", "The name of the server", eCommandFlagsArchived, "HaloOnline Server");
+		VarServerPassword = AddVariableString("Password", "password", "The server password", eCommandFlagsArchived, "");
+
+		VarServerShouldAnnounce = AddVariableInt("ShouldAnnounce", "should_announce", "Controls whether the server will be announced to the master servers", eCommandFlagsArchived, 1, VariableServerShouldAnnounceUpdate);
+		VarServerShouldAnnounce->ValueIntMin = 0;
+		VarServerShouldAnnounce->ValueIntMax = 1;
+
+		AddCommand("KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsHostOnly, CommandServerKickPlayer, { "playername/UID The name or UID of the player to kick" });
+		AddCommand("ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsHostOnly, CommandServerListPlayers);
+	}
+
+	void PatchModuleServer::Announce()
+	{
+		commands->Execute("Server.Announce"); // until we move announcement stuff to this plugin
+	}
+
+	void PatchModuleServer::Unannounce()
+	{
+		commands->Execute("Server.Unannounce"); // until we move announcement stuff to this plugin
 	}
 
 	LRESULT PatchModuleServer::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -58,21 +159,14 @@ namespace Modules
 		if (!infoSocketOpen)
 			return 0;
 
-		unsigned long shouldAnnounce = 0;
-		if (!commands->GetVariableInt("Server.ShouldAnnounce", shouldAnnounce))
-		{
-			logger->Log(LogLevel::Error, "ServerPlugin", "Failed to get Server.ShouldAnnounce variable?");
-			return 0;
-		}
-
-		if (shouldAnnounce)
+		if (VarServerShouldAnnounce->ValueInt == 1)
 		{
 			time_t curTime;
 			time(&curTime);
 			if (curTime - lastAnnounce > serverContactTimeLimit) // re-announce every "serverContactTimeLimit" seconds
 			{
 				lastAnnounce = curTime;
-				commands->Execute("Server.Announce");
+				Announce();
 			}
 		}
 
@@ -138,14 +232,10 @@ namespace Modules
 					std::string xnaddr;
 					std::string gameVersion((char*)Pointer(0x199C0F0));
 					std::string status = "InGame";
-					std::string serverName;
-					std::string serverPassword;
 					std::string playerName;
 					unsigned long maxPlayers;
 
 					// TODO: check return values of these? should be fine though
-					commands->GetVariableString("Server.Name", serverName);
-					commands->GetVariableString("Server.Password", serverPassword);
 					commands->GetVariableString("Player.Name", playerName);
 					commands->GetVariableInt("Server.MaxPlayers", maxPlayers);
 
@@ -173,7 +263,7 @@ namespace Modules
 					rapidjson::Writer<rapidjson::StringBuffer> writer(s);
 					writer.StartObject();
 					writer.Key("name");
-					writer.String(serverName.c_str());
+					writer.String(VarServerName->ValueString.c_str());
 					writer.Key("port");
 					writer.Int(Pointer(0x1860454).Read<uint32_t>());
 					writer.Key("hostPlayer");
@@ -199,9 +289,9 @@ namespace Modules
 					writer.Int(maxPlayers);
 
 					bool authenticated = true;
-					if (!serverPassword.empty())
+					if (!VarServerPassword->ValueString.empty())
 					{
-						std::string authString = "dorito:" + serverPassword;
+						std::string authString = "dorito:" + VarServerPassword->ValueString;
 						authString = "Authorization: Basic " + utils->Base64Encode((const unsigned char*)authString.c_str(), authString.length()) + "\r\n";
 						authenticated = std::string(inDataBuffer).find(authString) != std::string::npos;
 					}

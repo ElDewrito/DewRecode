@@ -399,14 +399,6 @@ namespace
 		return true;
 	}
 
-	bool VariableServerShouldAnnounceUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
-	{
-		if (!ElDorito::Instance().Modules.Server.VarServerShouldAnnounce->ValueInt) // if we're setting Server.ShouldAnnounce to false unannounce ourselves too
-			CommandServerUnannounce(Arguments, std::string());
-
-		return true;
-	}
-
 	bool CommandServerConnect(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
 		// TODO: move this into a thread so that non-responding hosts don't lag the game
@@ -590,78 +582,6 @@ namespace
 		return true;
 	}
 
-	bool CommandServerKickPlayer(const std::vector<std::string>& Arguments, std::string& returnInfo)
-	{
-		if (Arguments.size() <= 0)
-		{
-			returnInfo = "Invalid arguments";
-			return false;
-		}
-		auto& dorito = ElDorito::Instance();
-
-		std::string kickPlayerName = Arguments[0];
-
-		uint32_t uidBase = 0x1A4ED18;
-
-		uint64_t uid = 0;
-		wchar_t playerName[0x10];
-		for (int i = 0; i < 16; i++)
-		{
-			uint32_t uidOffset = uidBase + (0x1648 * i) + 0x50;
-
-			uid = Pointer(uidOffset).Read<uint64_t>();
-			std::stringstream uidStream;
-			uidStream << std::hex << uid;
-			auto uidString = uidStream.str();
-
-			memcpy(playerName, (char*)(uidOffset + 8), 0x10 * sizeof(wchar_t));
-			if (!dorito.Utils.ThinString(playerName).compare(kickPlayerName) || !uidString.compare(kickPlayerName))
-			{
-				typedef bool(__cdecl *Network_squad_session_boot_playerPtr)(int playerIdx, int reason);
-				auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerPtr>(0x437D60);
-
-				if (Network_squad_session_boot_player(i, 4))
-				{
-					returnInfo = "Issued kick request for player " + kickPlayerName;
-					return true;
-				}
-			}
-		}
-		returnInfo = "Player " + kickPlayerName + " not found in game?";
-		return false;
-	}
-
-	bool CommandServerListPlayers(const std::vector<std::string>& Arguments, std::string& returnInfo)
-	{
-		std::stringstream ss;
-		auto& dorito = ElDorito::Instance();
-
-		// TODO: check if player is in a lobby
-		// TODO: find an addr where we can find this data in clients memory
-		// so people could use it to find peoples UIDs and report them for cheating etc
-
-		uint32_t uidBase = 0x1A4ED18;
-
-		uint64_t uid = 0;
-		wchar_t playerName[0x10];
-		for (int i = 0; i < 16; i++)
-		{
-			uint32_t uidOffset = uidBase + (0x1648 * i) + 0x50;
-
-			uid = Pointer(uidOffset).Read<uint64_t>();
-			memcpy(playerName, (char*)(uidOffset + 8), 0x10 * sizeof(wchar_t));
-
-			std::string name = dorito.Utils.ThinString(playerName);
-			if (uid == 0 && name.empty())
-				continue; // todo: proper way of checking if this index is populated
-
-			ss << std::dec << i << ": " << name << " (uid: " << std::hex << uid << ")" << std::endl;
-		}
-
-		returnInfo = ss.str();
-		return true;
-	}
-
 	void CallbackEndGame(void* param)
 	{
 		// TODO: check if the user is hosting/joined a game (ie. make sure the game isn't just an offline game)
@@ -678,11 +598,7 @@ namespace Modules
 	ModuleServer::ModuleServer() : ModuleBase("Server")
 	{
 		engine->OnEvent("Core", "Game.End", CallbackEndGame);
-		// TODO: move [Name, Password, Port, Port, ShouldAnnounce, Announce, Unannounce, KickPlayer, ListPlayers] to ServerPlugin once HttpRequest is exposed via interface
-
-		VarServerName = AddVariableString("Name", "server_name", "The name of the server", eCommandFlagsArchived, "HaloOnline Server");
-
-		VarServerPassword = AddVariableString("Password", "password", "The server password", eCommandFlagsArchived, "");
+		// TODO: move [Port, Announce, Unannounce] to ServerPlugin once HttpRequest is exposed via interface
 
 		VarServerCountdown = AddVariableInt("Countdown", "countdown", "The number of seconds to wait at the start of the game", eCommandFlagsArchived, 5, VariableServerCountdownUpdate);
 		VarServerCountdown->ValueIntMin = 0;
@@ -696,17 +612,10 @@ namespace Modules
 		VarServerPort->ValueIntMin = 1;
 		VarServerPort->ValueIntMax = 0xFFFF;
 
-		VarServerShouldAnnounce = AddVariableInt("ShouldAnnounce", "should_announce", "Controls whether the server will be announced to the master servers", eCommandFlagsArchived, 1, VariableServerShouldAnnounceUpdate);
-		VarServerShouldAnnounce->ValueIntMin = 0;
-		VarServerShouldAnnounce->ValueIntMax = 1;
-
 		AddCommand("Connect", "connect", "Begins establishing a connection to a server", eCommandFlagsRunOnMainMenu, CommandServerConnect, { "host:port The server info to connect to", "password(string) The password for the server" });
 		AddCommand("Announce", "announce", "Announces this server to the master servers", eCommandFlagsHostOnly, CommandServerAnnounce);
 		AddCommand("Unannounce", "unannounce", "Notifies the master servers to remove this server", eCommandFlagsHostOnly, CommandServerUnannounce);
 
 		AddCommand("AnnounceStats", "announcestats", "Announces the players stats to the masters at the end of the game", eCommandFlagsNone, CommandServerAnnounceStats);
-
-		AddCommand("KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsHostOnly, CommandServerKickPlayer, { "playername/UID The name or UID of the player to kick" });
-		AddCommand("ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsHostOnly, CommandServerListPlayers);
 	}
 }

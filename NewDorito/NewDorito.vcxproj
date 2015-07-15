@@ -54,13 +54,17 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DORITO_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>version.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>version.lib;ws2_32.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib/x86/</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>Copy /Y "$(TargetDir)$(TargetFileName)" "C:\Halo\$(TargetFileName)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -71,15 +75,19 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DORITO_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>version.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>version.lib;ws2_32.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib/x86/</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>Copy /Y "$(TargetDir)$(TargetFileName)" "C:\Halo\$(TargetFileName)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Blam\BitStream.cpp" />
@@ -89,6 +97,7 @@
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\ElDorito.cpp" />
     <ClCompile Include="src\Modules\ModuleCamera.cpp" />
+    <ClCompile Include="src\Modules\ModuleConsole.cpp" />
     <ClCompile Include="src\Modules\ModuleForge.cpp" />
     <ClCompile Include="src\Modules\ModuleGame.cpp" />
     <ClCompile Include="src\Modules\ModuleGraphics.cpp" />
@@ -121,6 +130,7 @@
     <ClInclude Include="include\ElDorito\IUtils.hpp" />
     <ClInclude Include="include\ElDorito\ModuleBase.hpp" />
     <ClInclude Include="include\ElDorito\Pointer.hpp" />
+    <ClInclude Include="src\Modules\ModuleConsole.hpp" />
     <ClInclude Include="src\Modules\ModuleForge.hpp" />
     <ClInclude Include="src\Modules\Patches\PlayerUid.hpp" />
     <ClInclude Include="src\Modules\Patches\VirtualKeyboard.hpp" />
