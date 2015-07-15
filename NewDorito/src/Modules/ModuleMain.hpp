@@ -1,5 +1,6 @@
 #pragma once
 #include "ModuleCamera.hpp"
+#include "ModuleForge.hpp"
 #include "ModuleGame.hpp"
 #include "ModuleGraphics.hpp"
 #include "ModuleInput.hpp"
@@ -23,6 +24,7 @@ namespace Modules
 	{
 	public:
 		ModuleCamera Camera;
+		ModuleForge Forge;
 		ModuleGame Game;
 		ModuleGraphics Graphics;
 		ModuleInput Input;

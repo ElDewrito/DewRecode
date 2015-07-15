@@ -80,6 +80,12 @@ namespace
 	{
 		auto& dorito = ElDorito::Instance();
 
+		// Disable mouse input if a controller is plugged in (this needs to be done
+		// even if raw input is off)
+		auto controllerEnabled = Pointer(0x244DE98).Read<bool>();
+		if (controllerEnabled)
+			return true;
+
 		if (!dorito.Modules.Input.VarInputRawInput->ValueInt)
 			return false;
 		if (rwInput->header.dwType != RIM_TYPEMOUSE)

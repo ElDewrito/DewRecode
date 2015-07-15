@@ -32,8 +32,8 @@ namespace
 		return ElDorito::Instance().Modules.PlayerUidPatches.GetUid();
 	}
 
-	Pointer UidValidPtr = Pointer::Base(0x15AB728); // true if the UID is set
-	Pointer UidPtr = Pointer::Base(0x15AB730);      // The local player's UID
+	Pointer UidValidPtr = Pointer(0x19AB728); // true if the UID is set
+	Pointer UidPtr = Pointer(0x19AB730);      // The local player's UID
 }
 
 namespace Modules
@@ -69,7 +69,7 @@ namespace Modules
 		auto& dorito = ElDorito::Instance();
 		// Try to pull the UID from preferences
 		std::string pubKey = dorito.Modules.Player.VarPlayerPubKey->ValueString;
-		uint64_t uid;
+		uint64_t uid = 0;
 		if (pubKey.length() <= 0)
 		{
 			// TODO: run this code before the game, and pop up a message box "Generating keypair..." before the game starts, so players know what's going on
