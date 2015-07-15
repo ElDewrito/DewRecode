@@ -80,7 +80,6 @@ namespace
 	{
 		auto& dorito = ElDorito::Instance();
 
-		// TODO: this
 		if (!dorito.Modules.Input.VarInputRawInput->ValueInt)
 			return false;
 		if (rwInput->header.dwType != RIM_TYPEMOUSE)

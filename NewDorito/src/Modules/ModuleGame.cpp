@@ -10,6 +10,91 @@
 
 namespace
 {
+	void dbglog(const char* module, char* format, ...)
+	{
+		char* backupFormat = "";
+		if (!format)
+			format = backupFormat;
+
+		if (module != 0 && strcmp(module, "game_tick") == 0)
+			return; // filter game_tick spam
+
+		va_list ap;
+		va_start(ap, format);
+
+		char buff[4096];
+		vsprintf_s(buff, 4096, format, ap);
+		va_end(ap);
+
+		ElDorito::Instance().Logger.Log(LogLevel::Info, module, "%s", buff);
+	}
+
+	void debuglog_string(char* name, char* value)
+	{
+		ElDorito::Instance().Logger.Log(LogLevel::Info, "Debug", "%s: %s", name, value);
+	}
+
+	void debuglog_int(char* name, int value)
+	{
+		ElDorito::Instance().Logger.Log(LogLevel::Info, "Debug", "%s: %d", name, value);
+	}
+
+	void debuglog_float(char* name, float value)
+	{
+		ElDorito::Instance().Logger.Log(LogLevel::Info, "Debug", "%s: %f", name, value);
+	}
+
+	int networkLogHook(char* format, ...)
+	{
+		auto& dorito = ElDorito::Instance();
+
+		// fix strings using broken printf statements
+		std::string formatStr(format);
+		dorito.Utils.ReplaceString(formatStr, "%LX", "%llX");
+
+		char dstBuf[4096];
+		memset(dstBuf, 0, 4096);
+
+		va_list args;
+		va_start(args, format);
+		vsnprintf_s(dstBuf, 4096, 4096, formatStr.c_str(), args);
+		va_end(args);
+
+		dorito.Logger.Log(LogLevel::Info, "Network", "%s", dstBuf);
+
+		return 1;
+	}
+
+	void __cdecl sslLogHook(char a1, int a2, void* a3, void* a4, char a5)
+	{
+		char* logData1 = (*(char**)(a3));
+		char* logData2 = (*(char**)((DWORD_PTR)a3 + 0x8));
+		if (logData1 == 0)
+			logData1 = "";
+		else
+			logData1 += 0xC;
+
+		if (logData2 == 0)
+			logData2 = "";
+		else
+			logData2 += 0xC;
+
+		ElDorito::Instance().Logger.Log(LogLevel::Info, (const char*)logData1, (char*)logData2);
+		return;
+	}
+
+	void __cdecl uiLogHook(char a1, int a2, void* a3, void* a4, char a5)
+	{
+		char* logData1 = (*(char**)(a3));
+		if (logData1 == 0)
+			logData1 = "";
+		else
+			logData1 += 0xC;
+
+		ElDorito::Instance().Logger.Log(LogLevel::Info, "UiLog", (char*)logData1);
+		return;
+	}
+
 	bool CommandGameLogMode(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
 		auto& dorito = ElDorito::Instance();
@@ -24,11 +109,11 @@ namespace
 					// Disable it.
 					newFlags = 0;
 
-					/* TODO1: Patches::Logging::EnableNetworkLog(false);
-					Patches::Logging::EnableSslLog(false);
-					Patches::Logging::EnableUiLog(false);
-					Patches::Logging::EnableGame1Log(false);
-					Patches::Logging::EnableGame2Log(false);*/
+					dorito.Patches.EnableHook(dorito.Modules.Game.NetworkLogHook, false);
+					dorito.Patches.EnableHook(dorito.Modules.Game.SSLLogHook, false);
+					dorito.Patches.EnableHook(dorito.Modules.Game.UILogHook, false);
+					dorito.Patches.EnableHook(dorito.Modules.Game.Game1LogHook, false);
+					dorito.Patches.EnablePatchSet(dorito.Modules.Game.Game2LogHook, false);
 				}
 				else
 				{
@@ -40,35 +125,35 @@ namespace
 					if (arg.compare("all") == 0 || arg.compare("on") == 0)
 						hookNetwork = hookSSL = hookUI = hookGame1 = hookGame2 = true;
 
-					/* TODO1: if (hookNetwork)
+					if (hookNetwork)
 					{
 						newFlags |= DebugLoggingModes::eDebugLoggingModeNetwork;
-						Patches::Logging::EnableNetworkLog(true);
+						dorito.Patches.EnableHook(dorito.Modules.Game.NetworkLogHook, true);
 					}
 
 					if (hookSSL)
 					{
 						newFlags |= DebugLoggingModes::eDebugLoggingModeSSL;
-						Patches::Logging::EnableSslLog(true);
+						dorito.Patches.EnableHook(dorito.Modules.Game.SSLLogHook, true);
 					}
 
 					if (hookUI)
 					{
 						newFlags |= DebugLoggingModes::eDebugLoggingModeUI;
-						Patches::Logging::EnableUiLog(true);
+						dorito.Patches.EnableHook(dorito.Modules.Game.UILogHook, true);
 					}
 
 					if (hookGame1)
 					{
 						newFlags |= DebugLoggingModes::eDebugLoggingModeGame1;
-						Patches::Logging::EnableGame1Log(true);
+						dorito.Patches.EnableHook(dorito.Modules.Game.Game1LogHook, true);
 					}
 
 					if (hookGame2)
 					{
 						newFlags |= DebugLoggingModes::eDebugLoggingModeGame2;
-						Patches::Logging::EnableGame2Log(true);
-					}*/
+						dorito.Patches.EnablePatchSet(dorito.Modules.Game.Game2LogHook, true);
+					}
 				}
 			}
 		}
@@ -82,7 +167,7 @@ namespace
 		else
 		{
 			ss << "enabled: ";
-			/* TODO1: if (newFlags & DebugLoggingModes::eDebugLoggingModeNetwork)
+			if (newFlags & DebugLoggingModes::eDebugLoggingModeNetwork)
 				ss << "Network ";
 			if (newFlags & DebugLoggingModes::eDebugLoggingModeSSL)
 				ss << "SSL ";
@@ -91,7 +176,7 @@ namespace
 			if (newFlags & DebugLoggingModes::eDebugLoggingModeGame1)
 				ss << "Game1 ";
 			if (newFlags & DebugLoggingModes::eDebugLoggingModeGame2)
-				ss << "Game2 ";*/
+				ss << "Game2 ";
 		}
 		if (Arguments.size() <= 0)
 		{
@@ -722,6 +807,15 @@ namespace Modules
 
 		VarLogName = AddVariableString("LogName", "debug_logname", "Filename to store debug log messages", eCommandFlagsArchived, "dorito.log");
 
+		NetworkLogHook = patches->AddHook("NetworkLog", 0x9858D0, networkLogHook, HookType::Jmp);
+		SSLLogHook = patches->AddHook("SSLLog", 0xA7FE10, sslLogHook, HookType::Jmp);
+		UILogHook = patches->AddHook("UILog", 0xAED600, uiLogHook, HookType::Jmp);
+		Game1LogHook = patches->AddHook("Game1Log", 0x106FB0, dbglog, HookType::Jmp);
+		Game2LogHook = patches->AddPatchSet("Game2Log", {}, {
+			Hook("DebugLogFloat", 0x2189F0, debuglog_float, HookType::Jmp),
+			Hook("DebugLogIntHook", 0x218A10, debuglog_int, HookType::Jmp),
+			Hook("DebugLogStringHook", 0x218A30, debuglog_string, HookType::Jmp)
+		});
 
 		//populate map list on load
 		WIN32_FIND_DATAA Finder;
