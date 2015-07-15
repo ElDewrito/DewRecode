@@ -106,6 +106,7 @@
     <ClCompile Include="src\PatchManager.cpp" />
     <ClCompile Include="src\Utils\Assert.cpp" />
     <ClCompile Include="src\Utils\Cryptography.cpp" />
+    <ClCompile Include="src\Utils\HttpRequest.cpp" />
     <ClCompile Include="src\Utils\String.cpp" />
     <ClCompile Include="src\Utils\VersionInfo.cpp" />
   </ItemGroup>
@@ -147,6 +148,7 @@
     <ClInclude Include="src\Utils\Assert.hpp" />
     <ClInclude Include="src\Utils\Bits.hpp" />
     <ClInclude Include="src\Utils\Cryptography.hpp" />
+    <ClInclude Include="src\Utils\HttpRequest.hpp" />
     <ClInclude Include="src\Utils\Macros.hpp" />
     <ClInclude Include="src\Utils\String.hpp" />
     <ClInclude Include="src\Utils\Utils.hpp" />

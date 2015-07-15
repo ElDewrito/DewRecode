@@ -5,3 +5,4 @@
 #include "VersionInfo.hpp"
 #include "Bits.hpp"
 #include "Cryptography.hpp"
+#include "HttpRequest.hpp"

@@ -65,7 +65,7 @@ bool Engine::OnTick(TickCallbackFunc callback)
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
 bool Engine::OnEvent(EngineEvent evt, EventCallbackFunc callback)
 {
-	eventCallbacks.insert(std::pair<EventCallbackFunc, EngineEvent>(callback, evt));
+	eventCallbacks[(int)evt].push_back(callback);
 	return true; // todo: check if this callback is already registered
 }
 
@@ -105,12 +105,8 @@ void Engine::Event(EngineEvent evt, void* param)
 {
 	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%d", evt); // TODO: string event names
 
-	for (auto kvp : eventCallbacks)
-	{
-		if (kvp.second != evt)
-			continue;
-		kvp.first(param);
-	}
+	for (auto callback : eventCallbacks[(int)evt])
+		callback(param);
 }
 
 Pointer Engine::GetMainTls(size_t offset)

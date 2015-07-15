@@ -52,5 +52,5 @@ private:
 	bool mainMenuHasShown = false;
 	bool hasFirstTickTocked = false;
 	std::vector<TickCallbackFunc> tickCallbacks;
-	std::map<EventCallbackFunc, EngineEvent> eventCallbacks;
+	std::vector<EventCallbackFunc> eventCallbacks[(int)EngineEvent::Count];
 };

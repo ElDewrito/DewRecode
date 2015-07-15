@@ -87,17 +87,16 @@ namespace
 
 		GetEndpoints(announceEndpoints, "announce");
 
-		// TODO2: 
-		/*
 		for (auto server : announceEndpoints)
 		{
-			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()), L"", L"");
+			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()));
 
 			try
 			{
-				if (!req.SendRequest(Utils::String::WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString), L"GET", L"", L"", L"", NULL, 0))
+				auto error = req.SendRequest(Utils::String::WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString), L"GET", L"", L"", L"", NULL, 0);
+				if (error != HttpRequestError::None)
 				{
-					ss << "Unable to connect to master server " << server << " (error: " << req.lastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
+					ss << "Unable to connect to master server " << server << " (error: " << (int)error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
 					continue;
 				}
 			}
@@ -109,19 +108,20 @@ namespace
 
 			// make sure the server replied with 200 OK
 			std::wstring expected = L"HTTP/1.1 200 OK";
-			if (req.responseHeader.length() < expected.length())
+			if (req.ResponseHeader.length() < expected.length())
 			{
 				ss << "Invalid master server announce response from " << server << std::endl << std::endl;
 				continue;
 			}
 
-			auto respHdr = req.responseHeader.substr(0, expected.length());
+			auto respHdr = req.ResponseHeader.substr(0, expected.length());
 			if (respHdr.compare(expected))
 			{
 				ss << "Invalid master server announce response from " << server << std::endl << std::endl;
 				continue;
 			}
 
+			/* TODO2: 
 			// parse the json response
 			std::string resp = std::string(req.responseBody.begin(), req.responseBody.end());
 			rapidjson::Document json;
@@ -142,8 +142,8 @@ namespace
 			{
 				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
 				continue;
-			}
-		}*/
+			}*/
+		}
 
 		std::string errors = ss.str();
 		if (errors.length() > 0)
@@ -160,17 +160,16 @@ namespace
 
 		GetEndpoints(announceEndpoints, "announce");
 
-		// TODO2:
-		/*
 		for (auto server : announceEndpoints)
 		{
-			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()), L"", L"");
+			HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()));
 
 			try
 			{
-				if (!req.SendRequest(Utils::String::WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString + "&shutdown=true"), L"GET", L"", L"", L"", NULL, 0))
+				auto error = req.SendRequest(Utils::String::WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString + "&shutdown=true"), L"GET", L"", L"", L"", NULL, 0);
+				if (error != HttpRequestError::None)
 				{
-					ss << "Unable to connect to master server " << server << " (error: " << req.lastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
+					ss << "Unable to connect to master server " << server << " (error: " << (int)error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
 					continue;
 				}
 			}
@@ -182,19 +181,20 @@ namespace
 
 			// make sure the server replied with 200 OK
 			std::wstring expected = L"HTTP/1.1 200 OK";
-			if (req.responseHeader.length() < expected.length())
+			if (req.ResponseHeader.length() < expected.length())
 			{
 				ss << "Invalid master server unannounce response from " << server << std::endl << std::endl;
 				continue;
 			}
 
-			auto respHdr = req.responseHeader.substr(0, expected.length());
+			auto respHdr = req.ResponseHeader.substr(0, expected.length());
 			if (respHdr.compare(expected))
 			{
 				ss << "Invalid master server unannounce response from " << server << std::endl << std::endl;
 				continue;
 			}
 
+			/* TODO2:
 			// parse the json response
 			std::string resp = std::string(req.responseBody.begin(), req.responseBody.end());
 			rapidjson::Document json;
@@ -215,8 +215,8 @@ namespace
 			{
 				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
 				continue;
-			}
-		}*/
+			}*/
+		}
 
 		std::string errors = ss.str();
 		if (errors.length() > 0)
@@ -475,9 +475,9 @@ namespace
 			returnInfo = "Unable to lookup " + address + ": No records found.";;
 			return false;
 		}
-		/*
+		
 		// query the server
-		HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()), L"", L"");
+		HttpRequest req(L"ElDewrito/" + Utils::String::WidenString(Utils::Version::GetVersionString()));
 
 		std::wstring usernameStr = L"";
 		std::wstring passwordStr = L"";
@@ -487,21 +487,22 @@ namespace
 			passwordStr = Utils::String::WidenString(password);
 		}
 
-		if (!req.SendRequest(Utils::String::WidenString("http://" + host + ":" + std::to_string(httpPort) + "/"), L"GET", usernameStr, passwordStr, L"", NULL, 0))
+		auto error = req.SendRequest(Utils::String::WidenString("http://" + host + ":" + std::to_string(httpPort) + "/"), L"GET", usernameStr, passwordStr, L"", NULL, 0);
+		if (error != HttpRequestError::None)
 		{
-			returnInfo = "Unable to connect to server. (error: " + std::to_string(req.lastError) + "/" + std::to_string(GetLastError()) + ")";
+			returnInfo = "Unable to connect to server. (error: " + std::to_string((int)error) + "/" + std::to_string(req.LastError) + "/" + std::to_string(GetLastError()) + ")";
 			return false;
 		}
 
 		// make sure the server replied with 200 OK
 		std::wstring expected = L"HTTP/1.1 200 OK";
-		if (req.responseHeader.length() < expected.length())
+		if (req.ResponseHeader.length() < expected.length())
 		{
 			returnInfo = "Invalid server query response.";
 			return false;
 		}
 
-		auto respHdr = req.responseHeader.substr(0, expected.length());
+		auto respHdr = req.ResponseHeader.substr(0, expected.length());
 		if (respHdr.compare(expected))
 		{
 			returnInfo = "Invalid server query header response.";
@@ -509,7 +510,8 @@ namespace
 		}
 
 		// parse the json response
-		std::string resp = std::string(req.responseBody.begin(), req.responseBody.end());
+		std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
+		/* TODO2:
 		rapidjson::Document json;
 		if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
 		{

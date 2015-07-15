@@ -8,6 +8,7 @@ enum class EngineEvent
 	MainMenuShown,
 	TagsLoaded,
 	KeyboardUpdate,
+	Count
 };
 
 typedef void(__cdecl* TickCallbackFunc)(const std::chrono::duration<double>& deltaTime);
