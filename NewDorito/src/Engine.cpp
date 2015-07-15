@@ -10,8 +10,8 @@ namespace
 		ElDorito::Instance().Engine.Tick(std::chrono::duration<double>(deltaTime));
 
 		// Tick the game
-		typedef void(*GameTickFunc)(int frames, float *deltaTimeInfo);
-		auto GameTick = reinterpret_cast<GameTickFunc>(0x5336F0);
+		typedef void(*GameTickPtr)(int frames, float *deltaTimeInfo);
+		auto GameTick = reinterpret_cast<GameTickPtr>(0x5336F0);
 		GameTick(frames, deltaTimeInfo);
 	}
 
@@ -30,6 +30,12 @@ namespace
 			ret
 		}
 	}
+
+	LRESULT __stdcall EngineWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return ElDorito::Instance().Engine.WndProc(hWnd, msg, wParam, lParam);
+	}
+
 }
 
 /// <summary>
@@ -39,10 +45,14 @@ Engine::Engine()
 {
 	auto& patches = ElDorito::Instance().Patches;
 
-	patches.TogglePatchSet(patches.AddPatchSet("Engine", {},
+	// hook our engine events
+	patches.TogglePatchSet(patches.AddPatchSet("Engine",
+	{
+		Patch("WndProc", 0x42EB63, Utils::Misc::ConvertToVector<void*>(EngineWndProc))
+	},
 	{
 		Hook("GameTick", 0x505E64, GameTickHook, HookType::Call),
-		Hook("TagsLoaded", 0x5030EA, TagsLoadedHook, HookType::Jmp)
+		Hook("TagsLoaded", 0x5030EA, TagsLoadedHook, HookType::Jmp),
 	}));
 }
 
@@ -51,10 +61,22 @@ Engine::Engine()
 /// </summary>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
-bool Engine::OnTick(TickCallbackFunc callback)
+bool Engine::OnTick(TickCallback callback)
 {
 	tickCallbacks.push_back(callback);
 	return true; // todo: check if this callback is already registered
+}
+
+/// <summary>
+/// Registers a callback which is called when a WM message is received (registers another WNDPROC)
+/// If the callback returns 1 then the games WNDPROC won't be called.
+/// </summary>
+/// <param name="callback">The callback.</param>
+/// <returns>True if the callback was added, false if the callback is already registered.</returns>
+bool Engine::OnWndProc(WNDPROC callback)
+{
+	wndProcCallbacks.push_back(callback);
+	return true;
 }
 
 /// <summary>
@@ -65,7 +87,7 @@ bool Engine::OnTick(TickCallbackFunc callback)
 /// <param name="eventName">The name of the event.</param>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
-bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCallbackFunc callback)
+bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback)
 {
 	std::string eventId = eventNamespace + "." + eventName;
 	for (auto kvp : eventCallbacks)
@@ -80,7 +102,7 @@ bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCal
 
 	// callback wasn't found, create a new one!
 	ElDorito::Instance().Logger.Log(LogLevel::Debug, "EngineEvent", "%s event created", eventId.c_str());
-	eventCallbacks.insert(std::pair<std::string, std::vector<EventCallbackFunc>>(eventId, std::vector<EventCallbackFunc>{ callback }));
+	eventCallbacks.insert(std::pair<std::string, std::vector<EventCallback>>(eventId, std::vector<EventCallback>{ callback }));
 	return true;
 }
 
@@ -97,6 +119,26 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 	}
 	for (auto callback : tickCallbacks)
 		callback(deltaTime);
+}
+
+/// <summary>
+/// Calls each of the registered tick callbacks.
+/// </summary>
+LRESULT Engine::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	bool callGame = true;
+	for (auto callback : wndProcCallbacks)
+	{
+		if (callback(hWnd, msg, wParam, lParam) != 0)
+			callGame = false;
+	}
+
+	if (!callGame)
+		return 0;
+
+	typedef int(__stdcall *Game_WndProcPtr)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	auto Game_WndProc = reinterpret_cast<Game_WndProcPtr>(0x42E6A0);
+	return Game_WndProc(hWnd, msg, wParam, lParam);
 }
 
 /// <summary>

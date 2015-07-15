@@ -34,8 +34,8 @@ later:
 	(etc)
 */
 
-typedef void(__cdecl* TickCallbackFunc)(const std::chrono::duration<double>& deltaTime);
-typedef void(__cdecl* EventCallbackFunc)(void* param);
+typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
+typedef void(__cdecl* EventCallback)(void* param);
 
 /*
 if you want to make changes to this interface create a new IEngine002 class and make them there, then edit Engine class to inherit from the new class + this older one
@@ -50,7 +50,15 @@ public:
 	/// </summary>
 	/// <param name="callback">The callback.</param>
 	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
-	virtual bool OnTick(TickCallbackFunc callback) = 0;
+	virtual bool OnTick(TickCallback callback) = 0;
+
+	/// <summary>
+	/// Registers a callback which is called when a WM message is received (registers another WNDPROC)
+	/// If the callback returns 1 then the games WNDPROC won't be called.
+	/// </summary>
+	/// <param name="callback">The callback.</param>
+	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
+	virtual bool OnWndProc(WNDPROC callback) = 0;
 
 	/// <summary>
 	/// Adds a callback to be called when the specified event occurs. If the eventNamespace/eventName combination doesn't exist a new event will be created.
@@ -60,7 +68,7 @@ public:
 	/// <param name="eventName">The name of the event.</param>
 	/// <param name="callback">The callback.</param>
 	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
-	virtual bool OnEvent(std::string eventNamespace, std::string eventName, EventCallbackFunc callback) = 0;
+	virtual bool OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback) = 0;
 
 	/// <summary>
 	/// Calls each of the registered callbacks for the specified event.

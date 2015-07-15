@@ -17,8 +17,8 @@ struct ElDoritoPluginInfo
 };
 
 /* exports from plugin dlls */
-typedef ElDoritoPluginInfo*(__cdecl* GetPluginInfoFunc)();
-typedef bool(__cdecl* InitializePluginFunc)();
+typedef ElDoritoPluginInfo*(__cdecl* GetPluginInfoPtr)();
+typedef bool(__cdecl* InitializePluginPtr)();
 
 /* exports from eldorito */
 DORITO_API int GetEDVersion();

@@ -120,8 +120,8 @@ void ElDorito::loadPlugins()
 			Logger.Log(LogLevel::Error, "Plugins", "Failed to load plugin library %s: LoadLibrary failed!", path.c_str());
 			continue;
 		}
-		auto GetPluginInfo = reinterpret_cast<GetPluginInfoFunc>(GetProcAddress(dllHandle, "GetPluginInfo"));
-		auto InitializePlugin = reinterpret_cast<InitializePluginFunc>(GetProcAddress(dllHandle, "InitializePlugin"));
+		auto GetPluginInfo = reinterpret_cast<GetPluginInfoPtr>(GetProcAddress(dllHandle, "GetPluginInfo"));
+		auto InitializePlugin = reinterpret_cast<InitializePluginPtr>(GetProcAddress(dllHandle, "InitializePlugin"));
 
 		if (!GetPluginInfo || !InitializePlugin)
 		{

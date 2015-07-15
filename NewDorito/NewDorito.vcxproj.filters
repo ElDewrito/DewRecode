@@ -27,19 +27,10 @@
     <ClCompile Include="src\PatchManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Modules\ModuleGame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Modules\ModuleMain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\DebugLog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Modules\ModulePlayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Utils\Assert.cpp">
@@ -54,10 +45,10 @@
     <ClCompile Include="src\Utils\VersionInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Modules\Patches\PlayerPropertiesExtension.cpp">
+    <ClCompile Include="src\Blam\BitStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Blam\BitStream.cpp">
+    <ClCompile Include="src\Utils\HttpRequest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Modules\Patches\Armor.cpp">
@@ -69,16 +60,28 @@
     <ClCompile Include="src\Modules\Patches\Core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Modules\Patches\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\Modules\Patches\Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Patches\PlayerPropertiesExtension.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\Patches\Scoreboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Modules\Patches\UI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Modules\Patches\Input.cpp">
+    <ClCompile Include="src\Modules\Patches\VirtualKeyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Modules\ModuleCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\ModuleGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Modules\ModuleGraphics.cpp">
@@ -87,19 +90,16 @@
     <ClCompile Include="src\Modules\ModuleInput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Modules\ModuleMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Modules\ModulePlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\Modules\ModuleServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Modules\ModuleTime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Modules\Patches\Scoreboard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Modules\Patches\VirtualKeyboard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Utils\HttpRequest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,12 +128,6 @@
     <ClInclude Include="include\ElDorito\ModuleBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Modules\ModuleGame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Modules\ModuleMain.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ElDorito\IEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,9 +138,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\DebugLog.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Modules\ModulePlayer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Utils\Assert.hpp">
@@ -170,9 +161,6 @@
     <ClInclude Include="src\Utils\VersionInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Modules\Patches\PlayerPropertiesExtension.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Blam\BitStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -185,6 +173,12 @@
     <ClInclude Include="src\Blam\Tags\Tags.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\HttpRequest.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\Modules\Patches\Armor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -194,16 +188,28 @@
     <ClInclude Include="src\Modules\Patches\Core.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Modules\Patches\Input.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\Modules\Patches\Network.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Patches\PlayerPropertiesExtension.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\Patches\Scoreboard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\Patches\UI.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Modules\Patches\Input.hpp">
+    <ClInclude Include="src\Modules\Patches\VirtualKeyboard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\ModuleCamera.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\ModuleGame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\ModuleGraphics.hpp">
@@ -212,22 +218,19 @@
     <ClInclude Include="src\Modules\ModuleInput.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Modules\ModuleMain.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\ModulePlayer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\Modules\ModuleServer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\ModuleTime.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Modules\Patches\Scoreboard.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Modules\Patches\VirtualKeyboard.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Utils\HttpRequest.hpp">
+    <ClInclude Include="src\Utils\Misc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

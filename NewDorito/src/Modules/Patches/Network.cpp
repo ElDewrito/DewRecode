@@ -55,8 +55,8 @@ namespace
 			}
 		}
 
-		typedef char(*Network_XnAddrToInAddrFunc)(void* pxna, void* pxnkid, void* in_addr);
-		auto XnAddrToInAddr = reinterpret_cast<Network_XnAddrToInAddrFunc>(0x52D840);
+		typedef char(*Network_XnAddrToInAddrPtr)(void* pxna, void* pxnkid, void* in_addr);
+		auto XnAddrToInAddr = reinterpret_cast<Network_XnAddrToInAddrPtr>(0x52D840);
 		return XnAddrToInAddr(pxna, pxnkid, in_addr);
 	}
 
@@ -86,8 +86,8 @@ namespace
 			}
 		}
 
-		typedef char(*Network_InAddrToXnAddrFunc)(void* ina, void * pxna, void * pxnkid);
-		auto InAddrToXnAddr = reinterpret_cast<Network_InAddrToXnAddrFunc>(0x52D840);
+		typedef char(*Network_InAddrToXnAddrPtr)(void* ina, void * pxna, void * pxnkid);
+		auto InAddrToXnAddr = reinterpret_cast<Network_InAddrToXnAddrPtr>(0x52D840);
 		return InAddrToXnAddr(ina, pxna, pxnkid);
 	}
 

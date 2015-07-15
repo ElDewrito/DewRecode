@@ -12,6 +12,15 @@ struct Patch
 	size_t Address;
 	std::vector<unsigned char> Data, Orig;
 	bool Enabled;
+	Patch(std::string name, size_t address, std::vector<unsigned char> data)
+	{
+		Name = name;
+		Address = address;
+		Data = data;
+		Orig = {};
+		Enabled = false;
+	}
+
 	Patch(std::string name, size_t address, PatchInitializerListType data)
 	{
 		Name = name;

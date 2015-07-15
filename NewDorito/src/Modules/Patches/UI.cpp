@@ -12,9 +12,9 @@ namespace
 
 		bool shouldUpdate = *(DWORD*)((uint8_t*)a1 + 0x10) >= 0x1E;
 
-		typedef void(__thiscall *UIMenuUpdateFunc)(void* a1, int menuIdToLoad);
-		auto UIMenuUpdate = reinterpret_cast<UIMenuUpdateFunc>(0xADF6E0);
-		UIMenuUpdate(a1, menuIdToLoad);
+		typedef void(__thiscall *UI_MenuUpdatePtr)(void* a1, int menuIdToLoad);
+		auto UI_MenuUpdate = reinterpret_cast<UI_MenuUpdatePtr>(0xADF6E0);
+		UI_MenuUpdate(a1, menuIdToLoad);
 
 		if (shouldUpdate)
 		{
@@ -226,20 +226,20 @@ namespace Modules
 		{
 			if (!UIData) // the game can also free this mem at any time afaik, but it also looks like it resets this ptr to 0, so we can just alloc it again
 			{
-				typedef void*(__cdecl * UIAllocFunc)(int size);
-				auto UIAlloc = reinterpret_cast<UIAllocFunc>(0xAB4ED0);
-				UIData = UIAlloc(0x40);
+				typedef void*(__cdecl * UI_AllocPtr)(int size);
+				auto UI_Alloc = reinterpret_cast<UI_AllocPtr>(0xAB4ED0);
+				UIData = UI_Alloc(0x40);
 			}
 
 			// fill UIData with proper data
-			typedef void*(__thiscall * OpenUIDialogByIdFunc)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
-			auto OpenUIDialogById = reinterpret_cast<OpenUIDialogByIdFunc>(0xA92780);
-			OpenUIDialogById(&UIData, DialogStringId, DialogArg1, DialogFlags, DialogParentStringId);
+			typedef void*(__thiscall * UI_OpenDialogByIdPtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
+			auto UI_OpenDialogById = reinterpret_cast<UI_OpenDialogByIdPtr>(0xA92780);
+			UI_OpenDialogById(&UIData, DialogStringId, DialogArg1, DialogFlags, DialogParentStringId);
 
 			// send UI notification
-			typedef int(*SendUINotificationFunc)(void* uiDataStruct);
-			auto SendUINotification = reinterpret_cast<SendUINotificationFunc>(0xA93450);
-			SendUINotification(&UIData);
+			typedef int(*UI_SendNotificationPtr)(void* uiDataStruct);
+			auto UI_SendNotification = reinterpret_cast<UI_SendNotificationPtr>(0xA93450);
+			UI_SendNotification(&UIData);
 
 			DialogShow = false;
 		}

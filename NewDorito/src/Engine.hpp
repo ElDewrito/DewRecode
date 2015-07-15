@@ -7,8 +7,9 @@
 class Engine : public IEngine001
 {
 public:
-	bool OnTick(TickCallbackFunc callback);
-	bool OnEvent(std::string eventNamespace, std::string eventName, EventCallbackFunc callback);
+	bool OnTick(TickCallback callback);
+	bool OnWndProc(WNDPROC callback);
+	bool OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback);
 
 	void Event(std::string eventNamespace, std::string eventName, void* param = 0);
 
@@ -25,8 +26,9 @@ public:
 	HMODULE GetDoritoModule() { return doritoModule; }
 	void SetDoritoModule(HMODULE module) { doritoModule = module; }
 
-	// not exposed over IEngine interface
+	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);
+	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	Engine();
 private:
@@ -34,7 +36,8 @@ private:
 	size_t mainThreadID;
 	bool mainMenuHasShown = false;
 	bool hasFirstTickTocked = false;
-	std::vector<TickCallbackFunc> tickCallbacks;
-	std::map<std::string, std::vector<EventCallbackFunc>> eventCallbacks;
+	std::vector<TickCallback> tickCallbacks;
+	std::vector<WNDPROC> wndProcCallbacks;
+	std::map<std::string, std::vector<EventCallback>> eventCallbacks;
 	std::map<std::string, void*> interfaces;
 };

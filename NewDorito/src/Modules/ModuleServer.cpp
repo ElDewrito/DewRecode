@@ -229,8 +229,8 @@ namespace
 
 		GetEndpoints(statsEndpoints, "stats");
 
-		//typedef int(__cdecl *Game_GetLocalPlayerDatumIdxFunc)(int localPlayerIdx);
-		//Game_GetLocalPlayerDatumIdxFunc Game_GetLocalPlayerDatumIdx = reinterpret_cast<Game_GetLocalPlayerDatumIdxFunc>(0x589C30);
+		//typedef int(__cdecl *Game_GetLocalPlayerDatumIdxPtr)(int localPlayerIdx);
+		//auto Game_GetLocalPlayerDatumIdx = reinterpret_cast<Game_GetLocalPlayerDatumIdxPtr>(0x589C30);
 		//uint16_t playerIdx = (uint16_t)(Game_GetLocalPlayerDatumIdx(0) & 0xFFFF);
 		// above wont work since we're on a different thread without the proper TLS data :(
 
@@ -616,8 +616,8 @@ namespace
 			memcpy(playerName, (char*)(uidOffset + 8), 0x10 * sizeof(wchar_t));
 			if (!Utils::String::ThinString(playerName).compare(kickPlayerName) || !uidString.compare(kickPlayerName))
 			{
-				typedef bool(__cdecl *Network_squad_session_boot_playerFunc)(int playerIdx, int reason);
-				auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerFunc>(0x437D60);
+				typedef bool(__cdecl *Network_squad_session_boot_playerPtr)(int playerIdx, int reason);
+				auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerPtr>(0x437D60);
 
 				if (Network_squad_session_boot_player(i, 4))
 				{

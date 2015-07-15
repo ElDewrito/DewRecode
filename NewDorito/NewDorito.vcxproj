@@ -150,6 +150,7 @@
     <ClInclude Include="src\Utils\Cryptography.hpp" />
     <ClInclude Include="src\Utils\HttpRequest.hpp" />
     <ClInclude Include="src\Utils\Macros.hpp" />
+    <ClInclude Include="src\Utils\Misc.hpp" />
     <ClInclude Include="src\Utils\String.hpp" />
     <ClInclude Include="src\Utils\Utils.hpp" />
     <ClInclude Include="src\Utils\VersionInfo.hpp" />
