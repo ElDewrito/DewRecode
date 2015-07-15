@@ -11,9 +11,9 @@ namespace Modules
 		{
 			this->moduleName = moduleName;
 			int retCode = 0;
-			console = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &retCode));
+			commands = reinterpret_cast<ICommands001*>(CreateInterface(COMMANDS_INTERFACE_VERSION001, &retCode));
 			if (retCode != 0)
-				throw std::runtime_error("Failed to create console interface");
+				throw std::runtime_error("Failed to create commands interface");
 
 			logger = reinterpret_cast<IDebugLog001*>(CreateInterface(DEBUGLOG_INTERFACE_VERSION001, &retCode));
 			if (retCode != 0)
@@ -40,7 +40,7 @@ namespace Modules
 		/// <returns>true if the variable was found and is an integer.</returns>
 		bool GetVariableInt(const std::string& name, unsigned long& value)
 		{
-			return console->GetVariableInt(moduleName + "." + name, value);
+			return commands->GetVariableInt(moduleName + "." + name, value);
 		}
 
 		/// <summary>
@@ -51,7 +51,7 @@ namespace Modules
 		/// <returns>true if the variable was found and is a 64bit integer.</returns>
 		bool GetVariableInt64(const std::string& name, unsigned long long& value)
 		{
-			return console->GetVariableInt64(moduleName + "." + name, value);
+			return commands->GetVariableInt64(moduleName + "." + name, value);
 		}
 
 		/// <summary>
@@ -62,7 +62,7 @@ namespace Modules
 		/// <returns>true if the variable was found and is a float.</returns>
 		bool GetVariableFloat(const std::string& name, float& value)
 		{
-			return console->GetVariableFloat(moduleName + "." + name, value);
+			return commands->GetVariableFloat(moduleName + "." + name, value);
 		}
 
 		/// <summary>
@@ -73,7 +73,7 @@ namespace Modules
 		/// <returns>true if the variable was found and is a string.</returns>
 		bool GetVariableString(const std::string& name, std::string& value)
 		{
-			return console->GetVariableString(moduleName + "." + name, value);
+			return commands->GetVariableString(moduleName + "." + name, value);
 		}
 
 		/// <summary>
@@ -86,7 +86,7 @@ namespace Modules
 		}
 
 	protected:
-		IConsole001* console;
+		ICommands001* commands;
 		IEngine001* engine;
 		IDebugLog001* logger;
 		IPatchManager001* patches;
@@ -139,7 +139,7 @@ namespace Modules
 			command.Type = CommandType::Command;
 			command.UpdateEvent = updateEvent;
 
-			return console->AddCommand(command);
+			return commands->Add(command);
 		}
 
 		/// <summary>
@@ -170,7 +170,7 @@ namespace Modules
 			command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
 			command.UpdateEvent = updateEvent;
 
-			return console->AddCommand(command);
+			return commands->Add(command);
 		}
 
 		/// <summary>
@@ -201,7 +201,7 @@ namespace Modules
 			command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
 			command.UpdateEvent = updateEvent;
 
-			return console->AddCommand(command);
+			return commands->Add(command);
 		}
 
 		/// <summary>
@@ -232,7 +232,7 @@ namespace Modules
 			command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
 			command.UpdateEvent = updateEvent;
 
-			return console->AddCommand(command);
+			return commands->Add(command);
 		}
 
 		/// <summary>
@@ -262,7 +262,7 @@ namespace Modules
 			command.ValueString = defaultValue;
 			command.UpdateEvent = updateEvent;
 
-			return console->AddCommand(command);
+			return commands->Add(command);
 		}
 
 	private:

@@ -85,7 +85,7 @@
     <ClCompile Include="src\Blam\BitStream.cpp" />
     <ClCompile Include="src\DebugLog.cpp" />
     <ClCompile Include="src\Engine.cpp" />
-    <ClCompile Include="src\GameConsole.cpp" />
+    <ClCompile Include="src\Commands.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\ElDorito.cpp" />
     <ClCompile Include="src\Modules\ModuleCamera.cpp" />
@@ -114,7 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ElDorito\ElDorito.hpp" />
-    <ClInclude Include="include\ElDorito\IConsole.hpp" />
+    <ClInclude Include="include\ElDorito\ICommands.hpp" />
     <ClInclude Include="include\ElDorito\IDebugLog.hpp" />
     <ClInclude Include="include\ElDorito\IEngine.hpp" />
     <ClInclude Include="include\ElDorito\IPatchManager.hpp" />
@@ -131,7 +131,7 @@
     <ClInclude Include="src\Blam\Tags\Tags.hpp" />
     <ClInclude Include="src\DebugLog.hpp" />
     <ClInclude Include="src\Engine.hpp" />
-    <ClInclude Include="src\GameConsole.hpp" />
+    <ClInclude Include="src\Commands.hpp" />
     <ClInclude Include="src\ElDorito.hpp" />
     <ClInclude Include="src\Modules\ModuleCamera.hpp" />
     <ClInclude Include="src\Modules\ModuleGame.hpp" />

@@ -7,17 +7,17 @@ namespace
 }
 
 // if you make any changes to this class make sure to update the exported interface (create a new interface + inherit from it if the interface already shipped)
-class GameConsole : public IConsole001
+class Commands : public ICommands001
 {
 public:
-	Command* AddCommand(Command command);
-	void FinishAddCommands();
-	Command* FindCommand(const std::string& name);
+	Command* Add(Command command);
+	void FinishAdd();
+	Command* Find(const std::string& name);
 
-	std::string ExecuteCommand(std::vector<std::string> command, bool isUserInput = false);
-	std::string ExecuteCommand(std::string command, bool isUserInput = false);
-	std::string ExecuteCommands(std::string& commands, bool isUserInput = false);
-	bool ExecuteCommandWithStatus(std::string command, bool isUserInput = false);
+	std::string Execute(std::vector<std::string> command, bool isUserInput = false);
+	std::string Execute(std::string command, bool isUserInput = false);
+	std::string ExecuteList(std::string& commands, bool isUserInput = false);
+	bool ExecuteWithStatus(std::string command, bool isUserInput = false);
 	std::string ExecuteQueue();
 
 	bool GetVariableInt(const std::string& name, unsigned long& value);
@@ -32,7 +32,7 @@ public:
 
 	std::string SaveVariables();
 
-	std::deque<Command> Commands;
+	std::deque<Command> List;
 private:
 	std::vector<std::string> queuedCommands;
 };

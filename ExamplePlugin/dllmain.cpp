@@ -29,12 +29,12 @@ PLUGIN_API bool __cdecl InitializePlugin()
 {
 	int version = GetEDVersion();
 
-	IConsole001* console001 = reinterpret_cast<IConsole001*>(CreateInterface(CONSOLE_INTERFACE_VERSION001, &version));
-	console001->ExecuteCommand("Command001-plugin");
+	ICommands001* commands = reinterpret_cast<ICommands001*>(CreateInterface(COMMANDS_INTERFACE_VERSION001, &version));
+	commands->Execute("Command001-plugin");
 
 	IPatchManager001* patches001 = reinterpret_cast<IPatchManager001*>(CreateInterface(PATCHMANAGER_INTERFACE_VERSION001, &version));
 
-	auto ret = console001->ExecuteCommand("Help");
+	auto ret = commands->Execute("Help");
 	return true;
 }
 

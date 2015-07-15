@@ -240,7 +240,7 @@ bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
 {
 	auto& dorito = ElDorito::Instance();
 
-	if (!interfaceName.compare(CONSOLE_INTERFACE_VERSION001) ||
+	if (!interfaceName.compare(COMMANDS_INTERFACE_VERSION001) ||
 		!interfaceName.compare(ENGINE_INTERFACE_VERSION001) ||
 		!interfaceName.compare(DEBUGLOG_INTERFACE_VERSION001) ||
 		!interfaceName.compare(PATCHMANAGER_INTERFACE_VERSION001) ||
@@ -273,8 +273,8 @@ void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
 	auto& dorito = ElDorito::Instance();
 
 	*returnCode = 0;
-	if (!interfaceName.compare(CONSOLE_INTERFACE_VERSION001))
-		return &dorito.Console;
+	if (!interfaceName.compare(COMMANDS_INTERFACE_VERSION001))
+		return &dorito.Commands;
 	if (!interfaceName.compare(ENGINE_INTERFACE_VERSION001))
 		return &dorito.Engine;
 	if (!interfaceName.compare(DEBUGLOG_INTERFACE_VERSION001))

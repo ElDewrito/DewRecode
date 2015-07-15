@@ -86,13 +86,13 @@ namespace Modules
 			dorito.Utils.ReplaceString(pubKey, "-----BEGIN PUBLIC KEY-----", "");
 			dorito.Utils.ReplaceString(pubKey, "-----END PUBLIC KEY-----", "");
 
-			console->SetVariable(dorito.Modules.Player.VarPlayerPrivKey, privKey, std::string());
-			console->SetVariable(dorito.Modules.Player.VarPlayerPubKey, pubKey, std::string());
+			commands->SetVariable(dorito.Modules.Player.VarPlayerPrivKey, privKey, std::string());
+			commands->SetVariable(dorito.Modules.Player.VarPlayerPubKey, pubKey, std::string());
 
 			// TODO3: console.consoleQueue.pushLineFromGameToUI("Done!");
 
 			// save the keypair
-			console->ExecuteCommand("WriteConfig");
+			commands->Execute("WriteConfig");
 		}
 
 		// TODO2:

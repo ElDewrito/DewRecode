@@ -59,7 +59,7 @@ namespace Modules
 			return 0;
 
 		unsigned long shouldAnnounce = 0;
-		if (!console->GetVariableInt("Server.ShouldAnnounce", shouldAnnounce))
+		if (!commands->GetVariableInt("Server.ShouldAnnounce", shouldAnnounce))
 		{
 			logger->Log(LogLevel::Error, "ServerPlugin", "Failed to get Server.ShouldAnnounce variable?");
 			return 0;
@@ -72,7 +72,7 @@ namespace Modules
 			if (curTime - lastAnnounce > serverContactTimeLimit) // re-announce every "serverContactTimeLimit" seconds
 			{
 				lastAnnounce = curTime;
-				console->ExecuteCommand("Server.Announce");
+				commands->Execute("Server.Announce");
 			}
 		}
 
@@ -121,7 +121,7 @@ namespace Modules
 			{
 				if (msg == WM_RCON)
 				{
-					auto ret = console->ExecuteCommand(inDataBuffer, true);
+					auto ret = commands->Execute(inDataBuffer, true);
 					if (ret.length() > 0)
 					{
 						utils->ReplaceString(ret, "\n", "\r\n");
@@ -142,11 +142,12 @@ namespace Modules
 					std::string serverPassword;
 					std::string playerName;
 					unsigned long maxPlayers;
+
 					// TODO: check return values of these? should be fine though
-					console->GetVariableString("Server.Name", serverName);
-					console->GetVariableString("Server.Password", serverPassword);
-					console->GetVariableString("Player.Name", playerName);
-					console->GetVariableInt("Server.MaxPlayers", maxPlayers);
+					commands->GetVariableString("Server.Name", serverName);
+					commands->GetVariableString("Server.Password", serverPassword);
+					commands->GetVariableString("Player.Name", playerName);
+					commands->GetVariableInt("Server.MaxPlayers", maxPlayers);
 
 					utils->BytesToHexString((char*)Pointer(0x2247b80), 0x10, xnkid);
 					utils->BytesToHexString((char*)Pointer(0x2247b90), 0x10, xnaddr);
@@ -321,7 +322,7 @@ namespace Modules
 		bindAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 		unsigned long serverPort = 0;
-		if (!console->GetVariableInt("Server.Port", serverPort))
+		if (!commands->GetVariableInt("Server.Port", serverPort))
 		{
 			logger->Log(LogLevel::Error, "ServerPlugin", "Failed to get Server.Port variable?");
 			return;
@@ -348,7 +349,7 @@ namespace Modules
 				return;
 			}
 		}
-		console->SetVariable("Server.Port", std::to_string(port), std::string());
+		commands->SetVariable("Server.Port", std::to_string(port), std::string());
 		WSAAsyncSelect(infoSocket, engine->GetGameHWND(), WM_INFOSERVER, FD_ACCEPT | FD_CLOSE);
 		listen(infoSocket, 5);
 		infoSocketOpen = true;
@@ -363,11 +364,11 @@ namespace Modules
 		int istrue = 1;
 		setsockopt(infoSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&istrue, sizeof(int));
 		unsigned long shouldAnnounce = 0;
-		if (!console->GetVariableInt("Server.ShouldAnnounce", shouldAnnounce))
+		if (!commands->GetVariableInt("Server.ShouldAnnounce", shouldAnnounce))
 			logger->Log(LogLevel::Error, "ServerPlugin", "Failed to get Server.ShouldAnnounce variable?");
 
 		if (shouldAnnounce)
-			console->ExecuteCommand("Server.Unannounce");
+			commands->Execute("Server.Unannounce");
 
 		infoSocketOpen = false;
 		lastAnnounce = 0;

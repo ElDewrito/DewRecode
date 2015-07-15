@@ -117,7 +117,7 @@ namespace
 			}
 			
 			// Execute the command and print its result
-			auto result = dorito.Console.ExecuteCommand(command, true);
+			auto result = dorito.Commands.Execute(command, true);
 			// TODO1: GameConsole::Instance().consoleQueue.pushLineFromGameToUIMultipleLines(result);
 		}
 	}

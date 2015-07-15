@@ -9,16 +9,16 @@ namespace
 {
 	bool CommandHelp(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		auto& console = ElDorito::Instance().Console;
+		auto& commands = ElDorito::Instance().Commands;
 		if (Arguments.size() > 0)
 		{
 			auto cmdName = Arguments[0];
-			auto* cmd = console.FindCommand(cmdName);
+			auto* cmd = commands.Find(cmdName);
 			if (!cmd)
 			{
 				// try searching for it as a module
 				bool isModule = false;
-				for (auto it = console.Commands.begin(); it < console.Commands.end(); it++)
+				for (auto it = commands.List.begin(); it < commands.List.end(); it++)
 					if (!it->ModuleName.empty() && !_stricmp(it->ModuleName.c_str(), cmdName.c_str()))
 					{
 						isModule = true;
@@ -26,7 +26,7 @@ namespace
 					}
 
 				if (isModule)
-					returnInfo = console.GenerateHelpText(cmdName);
+					returnInfo = commands.GenerateHelpText(cmdName);
 				else
 					returnInfo = "Command/Variable not found";
 
@@ -35,7 +35,7 @@ namespace
 			// TODO1: returnInfo = cmd->GenerateHelpText();
 			return true;
 		}
-		returnInfo = console.GenerateHelpText();
+		returnInfo = commands.GenerateHelpText();
 		return true;
 	}
 
@@ -55,7 +55,7 @@ namespace
 			in.seekg(0, std::ios::beg);
 			in.read(&contents[0], contents.size());
 			in.close();
-			returnInfo = ElDorito::Instance().Console.ExecuteCommands(contents, true);
+			returnInfo = ElDorito::Instance().Commands.ExecuteList(contents, true);
 			return true;
 		}
 		returnInfo = "Unable to open file " + Arguments[0] + " for reading.";
@@ -74,7 +74,7 @@ namespace
 			returnInfo = "Failed to write config to " + prefsName + "!";
 			return false;
 		}
-		outFile << ElDorito::Instance().Console.SaveVariables();
+		outFile << ElDorito::Instance().Commands.SaveVariables();
 
 		returnInfo = "Wrote config to " + prefsName;
 		return true;

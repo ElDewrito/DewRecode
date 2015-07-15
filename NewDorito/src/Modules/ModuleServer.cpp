@@ -678,6 +678,7 @@ namespace Modules
 	ModuleServer::ModuleServer() : ModuleBase("Server")
 	{
 		engine->OnEvent("Core", "Game.End", CallbackEndGame);
+		// TODO: move [Name, Password, Port, Port, ShouldAnnounce, Announce, Unannounce, KickPlayer, ListPlayers] to ServerPlugin once HttpRequest is exposed via interface
 
 		VarServerName = AddVariableString("Name", "server_name", "The name of the server", eCommandFlagsArchived, "HaloOnline Server");
 

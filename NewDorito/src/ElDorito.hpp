@@ -2,7 +2,7 @@
 #include <map>
 #include <Windows.h>
 
-#include "GameConsole.hpp"
+#include "Commands.hpp"
 #include "PatchManager.hpp"
 #include "Engine.hpp"
 #include "DebugLog.hpp"
@@ -17,7 +17,7 @@ class ElDorito
 public:
 	DebugLog Logger;
 	PatchManager Patches;
-	GameConsole Console;
+	Commands Commands;
 	PublicUtils Utils;
 	Engine Engine;
 	Modules::ModuleMain Modules;

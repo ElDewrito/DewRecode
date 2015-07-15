@@ -24,7 +24,7 @@ typedef bool(__cdecl* InitializePluginPtr)();
 DORITO_API int GetEDVersion();
 DORITO_API void* CreateInterface(const char *name, int *returnCode);
 
-#include "IConsole.hpp"
+#include "ICommands.hpp"
 #include "IDebugLog.hpp"
 #include "IEngine.hpp"
 #include "IPatchManager.hpp"

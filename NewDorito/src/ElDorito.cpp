@@ -26,13 +26,13 @@ void ElDorito::Initialize()
 	loadPlugins();
 
 	Logger.Log(LogLevel::Debug, "ElDorito", "Console.FinishAddCommands()...");
-	Console.FinishAddCommands(); // call this so that the default values can be applied to the game
+	Commands.FinishAdd(); // call this so that the default values can be applied to the game
 	
 	Logger.Log(LogLevel::Debug, "ElDorito", "Execute dewrito_prefs.cfg...");
-	Console.ExecuteCommand("Execute dewrito_prefs.cfg");
+	Commands.Execute("Execute dewrito_prefs.cfg");
 
 	Logger.Log(LogLevel::Debug, "ElDorito", "Execute autoexec.cfg...");
-	Console.ExecuteCommand("Execute autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
+	Commands.Execute("Execute autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
 	// add and toggle(enable) the language patch, can't be done in a module since we have to patch this after cfg files are read
 	Patches.TogglePatch(Patches.AddPatch("GameLanguage", 0x6333FD, { (unsigned char)Modules.Game.VarLanguageID->ValueInt }));
@@ -77,7 +77,7 @@ void ElDorito::Initialize()
 			std::string argname = converter.to_bytes(arg.substr(1, pos - 1));
 			std::string argvalue = converter.to_bytes(arg.substr(pos + 1));
 
-			Console.ExecuteCommand(argname + " \"" + argvalue + "\"", true);
+			Commands.Execute(argname + " \"" + argvalue + "\"", true);
 		}
 	}
 

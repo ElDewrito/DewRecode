@@ -78,7 +78,7 @@ if you want to make changes to this interface create a new IConsole002 class and
 for backwards compatibility (with plugins compiled against an older ED SDK) we can't remove any methods, only add new ones to a new interface version
 */
 
-class IConsole001
+class ICommands001
 {
 public:
 	/// <summary>
@@ -86,19 +86,19 @@ public:
 	/// </summary>
 	/// <param name="command">The command to add.</param>
 	/// <returns>A pointer to the command, if added successfully.</returns>
-	virtual Command* AddCommand(Command command) = 0;
+	virtual Command* Add(Command command) = 0;
 
 	/// <summary>
 	/// Finalizes adding all commands: calls the update event for each command, ensuring default values are applied.
 	/// </summary>
-	virtual void FinishAddCommands() = 0;
+	virtual void FinishAdd() = 0;
 
 	/// <summary>
 	/// Finds a command based on its name.
 	/// </summary>
 	/// <param name="name">The name of the command.</param>
 	/// <returns>A pointer to the command, if found.</returns>
-	virtual Command* FindCommand(const std::string& name) = 0;
+	virtual Command* Find(const std::string& name) = 0;
 
 	/// <summary>
 	/// Executes a command string (vector splits spaces?)
@@ -106,7 +106,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>The output of the executed command.</returns>
-	virtual std::string ExecuteCommand(std::vector<std::string> command, bool isUserInput = false) = 0;
+	virtual std::string Execute(std::vector<std::string> command, bool isUserInput = false) = 0;
 
 	/// <summary>
 	/// Executes a command string
@@ -114,7 +114,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>The output of the executed command.</returns>
-	virtual std::string ExecuteCommand(std::string command, bool isUserInput = false) = 0;
+	virtual std::string Execute(std::string command, bool isUserInput = false) = 0;
 
 	/// <summary>
 	/// Executes a list of commands, seperated by new lines
@@ -122,7 +122,7 @@ public:
 	/// <param name="commands">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual std::string ExecuteCommands(std::string& commands, bool isUserInput = false) = 0;
+	virtual std::string ExecuteList(std::string& commands, bool isUserInput = false) = 0;
 
 	/// <summary>
 	/// Executes a command string, returning a bool indicating success.
@@ -130,7 +130,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual bool ExecuteCommandWithStatus(std::string command, bool isUserInput = false) = 0;
+	virtual bool ExecuteWithStatus(std::string command, bool isUserInput = false) = 0;
 
 	/// <summary>
 	/// Executes the command queue.
@@ -202,4 +202,4 @@ public:
 	virtual std::string SaveVariables() = 0;
 };
 
-#define CONSOLE_INTERFACE_VERSION001 "GameConsole001"
+#define COMMANDS_INTERFACE_VERSION001 "Commands001"

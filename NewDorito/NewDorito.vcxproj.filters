@@ -21,9 +21,6 @@
     <ClCompile Include="src\ElDorito.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GameConsole.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\PatchManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -102,18 +99,15 @@
     <ClCompile Include="src\Modules\ModuleForge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Commands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ElDorito.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ElDorito\IConsole.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ElDorito\ElDorito.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\GameConsole.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PatchManager.hpp">
@@ -234,6 +228,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\ModuleForge.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Commands.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ElDorito\ICommands.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

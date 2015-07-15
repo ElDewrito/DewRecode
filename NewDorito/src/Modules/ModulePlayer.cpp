@@ -82,6 +82,6 @@ namespace Modules
 		};
 
 		srand((unsigned int)time(0));
-		ElDorito::Instance().Console.SetVariable(VarPlayerName, std::string(defaultNames[rand() % 41]), std::string());
+		ElDorito::Instance().Commands.SetVariable(VarPlayerName, std::string(defaultNames[rand() % 41]), std::string());
 	}
 }
