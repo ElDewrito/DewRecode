@@ -14,6 +14,7 @@
 #include "Patches/Network.hpp"
 #include "Patches/Scoreboard.hpp"
 #include "Patches/UI.hpp"
+#include "Patches/VirtualKeyboard.hpp"
 
 namespace Modules
 {
@@ -35,6 +36,7 @@ namespace Modules
 		PatchModuleNetwork NetworkPatches;
 		PatchModuleScoreboard ScoreboardPatches;
 		PatchModuleUI UIPatches;
+		PatchModuleVirtualKeyboard VirtualKeyboardPatches;
 
 		ModuleMain();
 	};
