@@ -277,13 +277,12 @@ namespace
 		std::string statsObject = statsBuff.GetString();
 		// todo: look into using JSON Web Tokens (JWT) that use JSON Web Signature (JWS), instead of using our own signature stuff
 		std::string statsSignature;
-		// TODO2:
-		/*if (!Utils::Cryptography::CreateRSASignature(Patches::PlayerUid::GetFormattedPrivKey(), (void*)statsObject.c_str(), statsObject.length(), statsSignature))
+		if (!dorito.Utils.RSACreateSignature(dorito.Modules.PlayerUidPatches.GetFormattedPrivKey(), (void*)statsObject.c_str(), statsObject.length(), statsSignature))
 		{
 			ss << "Failed to create stats RSA signature!";
 			dorito.Logger.Log(LogSeverity::Error, "AnnounceStats", ss.str());
 			return 0;
-		}*/
+		}
 
 		rapidjson::StringBuffer s;
 		rapidjson::Writer<rapidjson::StringBuffer> writer(s);

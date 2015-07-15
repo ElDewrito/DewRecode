@@ -8,6 +8,11 @@
 #include <codecvt>
 #include <iomanip>
 
+#include <openssl/rsa.h>
+#include <openssl/bn.h>
+#include <openssl/pem.h>
+#include <openssl/sha.h>
+
 #include "ElDorito.hpp"
 
 static const std::string base64_chars =
@@ -42,20 +47,116 @@ std::string PublicUtils::RSAReformatKey(bool isPrivateKey, std::string key)
 
 bool PublicUtils::RSACreateSignature(std::string privateKey, void* data, size_t dataSize, std::string& signature)
 {
-	// TODO3:
-	return false;
+	// privateKey has to be reformatted with -----RSA PRIVATE KEY----- header/footer and newlines after every 64 chars
+	// before calling this function
+
+	BIO* privKeyBuff = BIO_new_mem_buf((void*)privateKey.c_str(), privateKey.length());
+	if (!privKeyBuff)
+		return false;
+
+	RSA* rsa = PEM_read_bio_RSAPrivateKey(privKeyBuff, 0, 0, 0);
+	if (!rsa)
+		return false;
+
+	unsigned char hash[SHA256_DIGEST_LENGTH];
+	SHA256_CTX sha;
+	SHA256_Init(&sha);
+	SHA256_Update(&sha, data, dataSize);
+	SHA256_Final(hash, &sha);
+
+	void* sigret = malloc(RSA_size(rsa));
+	unsigned int siglen = 0;
+	int retVal = RSA_sign(NID_sha256, (unsigned char*)hash, SHA256_DIGEST_LENGTH, (unsigned char*)sigret, &siglen, rsa);
+
+	RSA_free(rsa);
+	BIO_free_all(privKeyBuff);
+
+	if (retVal != 1)
+		return false;
+
+	signature = Base64Encode((unsigned char*)sigret, siglen);
+	return true;
 }
 
 bool PublicUtils::RSAVerifySignature(std::string pubKey, std::string signature, void* data, size_t dataSize)
 {
-	// TODO3:
-	return false;
+	BIO* pubKeyBuff = BIO_new_mem_buf((void*)pubKey.c_str(), pubKey.length());
+	if (!pubKeyBuff)
+		return false;
+
+	RSA* rsa = PEM_read_bio_RSA_PUBKEY(pubKeyBuff, 0, 0, 0);
+	if (!rsa)
+		return false;
+
+	unsigned char hash[SHA256_DIGEST_LENGTH];
+	SHA256_CTX sha;
+	SHA256_Init(&sha);
+	SHA256_Update(&sha, data, dataSize);
+	SHA256_Final(hash, &sha);
+
+	size_t length = 0;
+	if (Base64DecodeBinary((char*)signature.c_str(), NULL, &length) != 1 || length == 0)
+		return false;
+
+	unsigned char* sigBuf = (unsigned char*)malloc(length);
+	if (Base64DecodeBinary((char*)signature.c_str(), sigBuf, &length) != 0)
+		return false;
+
+	int retVal = RSA_verify(NID_sha256, (unsigned char*)hash, SHA256_DIGEST_LENGTH, sigBuf, length, rsa);
+	free(sigBuf);
+	RSA_free(rsa);
+	BIO_free_all(pubKeyBuff);
+
+	return retVal == 1;
+}
+
+static int genrsa_cb(int p, int n, BN_GENCB *cb)
+{
+	char c = '*';
+
+	if (p == 0)
+		c = '.';
+	if (p == 1)
+		c = '+';
+	if (p == 2)
+		c = '*';
+	if (p == 3)
+		c = '\n';
+	BIO_write((BIO*)cb->arg, &c, 1);
+	(void)BIO_flush((BIO*)cb->arg);
+
+	return 1;
 }
 
 bool PublicUtils::RSAGenerateKeyPair(int numBits, std::string& privKey, std::string& pubKey)
 {
-	// TODO3:
-	return false;
+	// TODO: add some error checking
+	RSA* rsa = RSA_new();
+	BIGNUM* bn = BN_new();
+	BN_GENCB cb;
+	BIO* bio_err = NULL;
+	BN_GENCB_set(&cb, genrsa_cb, bio_err);
+	BN_set_word(bn, RSA_F4);
+	RSA_generate_key_ex(rsa, numBits, bn, &cb);
+
+	BIO* privKeyBuff = BIO_new(BIO_s_mem());
+	BIO* pubKeyBuff = BIO_new(BIO_s_mem());
+	PEM_write_bio_RSAPrivateKey(privKeyBuff, rsa, 0, 0, 0, 0, 0);
+	PEM_write_bio_RSA_PUBKEY(pubKeyBuff, rsa); // RSA_PUBKEY includes some data that RSAPublicKey doesn't have
+
+	char* privKeyData;
+	char* pubKeyData;
+	auto privKeySize = BIO_get_mem_data(privKeyBuff, &privKeyData);
+	auto pubKeySize = BIO_get_mem_data(pubKeyBuff, &pubKeyData);
+
+	privKey = std::string(privKeyData, privKeySize);
+	pubKey = std::string(pubKeyData, pubKeySize);
+
+	BIO_free_all(privKeyBuff);
+	BIO_free_all(pubKeyBuff);
+	BN_free(bn);
+	RSA_free(rsa);
+	return true;
 }
 
 std::string PublicUtils::Base64Encode(unsigned char const* bytes_to_encode, unsigned int in_len)
@@ -148,12 +249,6 @@ std::string PublicUtils::Base64Decode(std::string const& encoded_string)
 	return ret;
 }
 
-int PublicUtils::Base64DecodeBinary(char* b64message, unsigned char* buffer, size_t* length)
-{
-	// TODO3:
-	return 0;
-}
-
 // Calculates the length of a decoded string
 size_t calcDecodeLength(const char* b64input)
 {
@@ -170,7 +265,7 @@ size_t calcDecodeLength(const char* b64input)
 
 // Decodes a base64 encoded string, buffer should be allocated before calling
 // If buffer is null it'll just give the decoded data length
-/*int PublicUtils::Base64DecodeBinary(char* b64message, unsigned char* buffer, size_t* length)
+int PublicUtils::Base64DecodeBinary(char* b64message, unsigned char* buffer, size_t* length)
 {
 	int decodeLen = calcDecodeLength(b64message);
 	if (!buffer)
@@ -191,7 +286,7 @@ size_t calcDecodeLength(const char* b64input)
 	BIO_free_all(bio);
 
 	return 0;
-}*/
+}
 
 void PublicUtils::RemoveCharsFromString(std::string &str, char* charsToRemove)
 {

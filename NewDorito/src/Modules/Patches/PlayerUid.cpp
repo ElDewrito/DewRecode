@@ -1,6 +1,8 @@
 #include "PlayerUid.hpp"
 #include "../../ElDorito.hpp"
 
+#include <openssl/sha.h>
+
 namespace
 {
 	// Player properties packet extension to send player UID
@@ -95,14 +97,12 @@ namespace Modules
 			commands->Execute("WriteConfig");
 		}
 
-		// TODO2:
-		/*
 		unsigned char hash[SHA256_DIGEST_LENGTH];
 		SHA256_CTX sha256;
 		SHA256_Init(&sha256);
 		SHA256_Update(&sha256, pubKey.c_str(), pubKey.length());
 		SHA256_Final(hash, &sha256);
-		memcpy(&uid, hash, sizeof(uint64_t)); // use first 8 bytes of SHA256(pubKey) as UID*/
+		memcpy(&uid, hash, sizeof(uint64_t)); // use first 8 bytes of SHA256(pubKey) as UID
 
 		UidPtr.Write<uint64_t>(uid);
 		UidValidPtr.Write(true);
