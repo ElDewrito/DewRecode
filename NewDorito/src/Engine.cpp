@@ -74,6 +74,23 @@ namespace
 		return retVal;
 	}
 
+	char __fastcall Network_state_end_game_write_stats_enterHook(void* thisPtr, int unused, int a2, int a3, int a4)
+	{
+		ElDorito::Instance().Engine.Event("Core", "Game.End");
+
+		typedef char(__thiscall *Network_state_end_game_write_stats_enterFunc)(void* thisPtr, int a2, int a3, int a4);
+		Network_state_end_game_write_stats_enterFunc Network_state_end_game_write_stats_enter = reinterpret_cast<Network_state_end_game_write_stats_enterFunc>(0x492B50);
+		return Network_state_end_game_write_stats_enter(thisPtr, a2, a3, a4);
+	}
+
+	char __fastcall Network_state_leaving_enterHook(void* thisPtr, int unused, int a2, int a3, int a4)
+	{
+		ElDorito::Instance().Engine.Event("Core", "Game.Leave");
+
+		typedef char(__thiscall *Network_state_leaving_enterFunc)(void* thisPtr, int a2, int a3, int a4);
+		Network_state_leaving_enterFunc Network_state_leaving_enter = reinterpret_cast<Network_state_leaving_enterFunc>(0x4933E0);
+		return Network_state_leaving_enter(thisPtr, a2, a3, a4);
+	}
 }
 
 /// <summary>
@@ -86,7 +103,9 @@ Engine::Engine()
 	// hook our engine events
 	patches.TogglePatchSet(patches.AddPatchSet("Engine",
 	{
-		Patch("WndProc", 0x42EB63, Utils::Misc::ConvertToVector<void*>(EngineWndProc))
+		Patch("WndProc", 0x42EB63, Utils::Misc::ConvertToVector<void*>(EngineWndProc)),
+		Patch("Network_EndGameWriteStats", 0x16183A0, Utils::Misc::ConvertToVector<void*>(Network_state_end_game_write_stats_enterHook)),
+		Patch("Network_Leaving", 0x16183BC, Utils::Misc::ConvertToVector<void*>(Network_state_leaving_enterHook)),
 	},
 	{
 		Hook("GameTick", 0x505E64, GameTickHook, HookType::Call),

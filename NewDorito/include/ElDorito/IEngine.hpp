@@ -14,6 +14,10 @@ List of events registered by ED (eventNamespace/eventName seperated by a period)
 	Core.Server.Stop - when the user has stopped the server
 	Core.Server.PlayerKick - when a user has been kicked (host only)
 
+	Core.Game.Joining - when the user is joining a game (direct connect cmd issued)
+	Core.Game.Leave - when the user leaves a game
+	Core.Game.End - when a game has finished (ez)
+
 
 (soon):
     Core.Direct3D.Present - when the game is about to call D3DDevice::Present
@@ -21,9 +25,7 @@ List of events registered by ED (eventNamespace/eventName seperated by a period)
 	Core.Round.Start - when a round has started
 	Core.Round.End - when a round has finished
 	Core.Game.Join - when the user joins a game
-	Core.Game.Leave - when the user leaves a game (ez)
 	Core.Game.Start - when a game has started
-	Core.Game.End - when a game has finished (ez)
 	Core.Player.Join - when a user joins the game (signals for all users, not just host)
 	Core.Player.Leave - when a user leaves the game (signals for all users, not just host) (ez)
 	Fore.Twenty - when the kush hits you

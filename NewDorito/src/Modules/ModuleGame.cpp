@@ -807,14 +807,14 @@ namespace Modules
 
 		VarLogName = AddVariableString("LogName", "debug_logname", "Filename to store debug log messages", eCommandFlagsArchived, "dorito.log");
 
-		NetworkLogHook = patches->AddHook("NetworkLog", 0x9858D0, networkLogHook, HookType::Jmp);
-		SSLLogHook = patches->AddHook("SSLLog", 0xA7FE10, sslLogHook, HookType::Jmp);
-		UILogHook = patches->AddHook("UILog", 0xAED600, uiLogHook, HookType::Jmp);
-		Game1LogHook = patches->AddHook("Game1Log", 0x106FB0, dbglog, HookType::Jmp);
+		NetworkLogHook = patches->AddHook("NetworkLog", 0xD858D0, networkLogHook, HookType::Jmp);
+		SSLLogHook = patches->AddHook("SSLLog", 0xE7FE10, sslLogHook, HookType::Jmp);
+		UILogHook = patches->AddHook("UILog", 0xEED600, uiLogHook, HookType::Jmp);
+		Game1LogHook = patches->AddHook("Game1Log", 0x506FB0, dbglog, HookType::Jmp);
 		Game2LogHook = patches->AddPatchSet("Game2Log", {}, {
-			Hook("DebugLogFloat", 0x2189F0, debuglog_float, HookType::Jmp),
-			Hook("DebugLogIntHook", 0x218A10, debuglog_int, HookType::Jmp),
-			Hook("DebugLogStringHook", 0x218A30, debuglog_string, HookType::Jmp)
+			Hook("DebugLogFloat", 0x6189F0, debuglog_float, HookType::Jmp),
+			Hook("DebugLogIntHook", 0x618A10, debuglog_int, HookType::Jmp),
+			Hook("DebugLogStringHook", 0x618A30, debuglog_string, HookType::Jmp)
 		});
 
 		//populate map list on load
