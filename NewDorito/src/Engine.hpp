@@ -25,11 +25,6 @@ public:
 
 	HWND GetGameHWND() { return Pointer(0x199C014).Read<HWND>(); }
 	Pointer GetMainTls(size_t offset = 0);
-	size_t GetMainThreadID() { return mainThreadID; }
-	void SetMainThreadID(size_t threadID) { mainThreadID = threadID; }
-
-	HMODULE GetDoritoModule() { return doritoModule; }
-	void SetDoritoModule(HMODULE module) { doritoModule = module; }
 
 	std::string GetDoritoVersionString() { return Utils::Version::GetVersionString(); }
 	DWORD GetDoritoVersionInt() { return Utils::Version::GetVersionInt(); }
@@ -48,8 +43,6 @@ public:
 
 	Engine();
 private:
-	HMODULE doritoModule;
-	size_t mainThreadID;
 	bool mainMenuHasShown = false;
 	bool hasFirstTickTocked = false;
 	std::vector<TickCallback> tickCallbacks;

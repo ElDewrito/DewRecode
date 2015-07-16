@@ -171,28 +171,6 @@ public:
 	virtual Pointer GetMainTls(size_t offset = 0) = 0;
 
 	/// <summary>
-	/// Gets the main thread ID for the game.
-	/// </summary>
-	/// <returns>The main thread ID for the game.</returns>
-	virtual size_t GetMainThreadID() = 0;
-
-	/// <summary>
-	/// Sets the main thread ID for the game.
-	/// </summary>
-	virtual void SetMainThreadID(size_t threadID) = 0;
-
-	/// <summary>
-	/// Gets the module handle for the ElDorito dll.
-	/// </summary>
-	/// <returns>The module handle for the ElDorito dll.</returns>
-	virtual HMODULE GetDoritoModule() = 0;
-
-	/// <summary>
-	/// Sets the module handle for the ElDorito dll.
-	/// </summary>
-	virtual void SetDoritoModule(HMODULE module) = 0;
-
-	/// <summary>
 	/// Gets the ElDorito dll version as a string.
 	/// </summary>
 	/// <returns>The ElDorito dll version as a string.</returns>

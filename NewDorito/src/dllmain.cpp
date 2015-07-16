@@ -2,13 +2,17 @@
 #include <Windows.h>
 #include "ElDorito.hpp"
 
+DWORD gameThreadID = 0;
+HMODULE doritoModuleHandle = 0;
+
 bool InitInstance(HINSTANCE module)
 {
 	DisableThreadLibraryCalls(module);
 
+	gameThreadID = GetCurrentThreadId();
+	doritoModuleHandle = module;
+
 	auto& dorito = ElDorito::Instance();
-	dorito.Engine.SetMainThreadID(GetCurrentThreadId());
-	dorito.Engine.SetDoritoModule(module);
 
 	dorito.Initialize();
 
@@ -26,7 +30,17 @@ DORITO_API int GetAdaptersInfo()
 	return 1337;
 }
 
-DORITO_API int GetEDVersion()
+DORITO_API DWORD GetGameThreadID()
+{
+	return gameThreadID;
+}
+
+DORITO_API HMODULE GetDoritoModuleHandle()
+{
+	return doritoModuleHandle;
+}
+
+DORITO_API int GetDoritoVersion()
 {
 	return Utils::Version::GetVersionInt();
 }

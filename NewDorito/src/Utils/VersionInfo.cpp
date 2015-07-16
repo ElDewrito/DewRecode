@@ -10,7 +10,7 @@ namespace Utils
 		{
 			DWORD retVer = 0;
 
-			HMODULE module = ElDorito::Instance().Engine.GetDoritoModule();
+			HMODULE module = GetDoritoModuleHandle();
 
 			HRSRC hVersion = FindResource(module,
 				MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
@@ -82,7 +82,7 @@ namespace Utils
 		{
 			std::string csRet;
 
-			HMODULE module = ElDorito::Instance().Engine.GetDoritoModule();
+			HMODULE module = GetDoritoModuleHandle();
 
 			HRSRC hVersion = FindResource(module,
 				MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);

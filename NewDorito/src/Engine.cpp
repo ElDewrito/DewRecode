@@ -353,9 +353,9 @@ std::string Engine::GetPlayerName()
 Pointer Engine::GetMainTls(size_t offset)
 {
 	static Pointer ThreadLocalStorage;
-	if (!ThreadLocalStorage && GetMainThreadID())
+	if (!ThreadLocalStorage && GetGameThreadID())
 	{
-		size_t MainThreadID = GetMainThreadID();
+		size_t MainThreadID = GetGameThreadID();
 
 		HANDLE MainThreadHandle = OpenThread(THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, false, MainThreadID);
 

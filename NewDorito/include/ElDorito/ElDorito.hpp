@@ -1,4 +1,5 @@
 #pragma once
+#include <Windows.h>
 #ifdef DORITO_EXPORTS
 #define DORITO_API extern "C" __declspec(dllexport)
 #define DORITO_CPP_API __declspec(dllexport)
@@ -21,7 +22,9 @@ typedef ElDoritoPluginInfo*(__cdecl* GetPluginInfoPtr)();
 typedef bool(__cdecl* InitializePluginPtr)();
 
 /* exports from eldorito */
-DORITO_API int GetEDVersion();
+DORITO_API DWORD GetGameThreadID();
+DORITO_API HMODULE GetDoritoModuleHandle();
+DORITO_API int GetDoritoVersion();
 DORITO_API void* CreateInterface(const char *name, int *returnCode);
 
 #include "ICommands.hpp"

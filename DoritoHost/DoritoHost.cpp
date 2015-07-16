@@ -6,7 +6,7 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	int version = GetEDVersion();
+	int version = GetDoritoVersion();
 
 	ICommands001* commands = reinterpret_cast<ICommands001*>(CreateInterface(COMMANDS_INTERFACE_VERSION001, &version));
 	commands->Execute("Command001");

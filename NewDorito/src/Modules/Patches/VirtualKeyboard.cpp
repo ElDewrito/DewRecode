@@ -107,7 +107,7 @@ namespace
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 		std::wstring converted = converter.from_bytes(inputLineText);
 
-		DialogBoxParam(ElDorito::Instance().Engine.GetDoritoModule(), MAKEINTRESOURCE(IDD_DIALOG1), ElDorito::Instance().Engine.GetGameHWND(), &DialogProc, 0);
+		DialogBoxParam(GetDoritoModuleHandle(), MAKEINTRESOURCE(IDD_DIALOG1), ElDorito::Instance().Engine.GetGameHWND(), &DialogProc, 0);
 		wcscpy_s(keyboard->text, converted.c_str());
 		delete inputLineText;
 

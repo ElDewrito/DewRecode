@@ -25,7 +25,7 @@ PLUGIN_API ElDoritoPluginInfo* __cdecl GetPluginInfo()
 
 PLUGIN_API bool __cdecl InitializePlugin()
 {
-	int version = GetEDVersion();
+	int version = GetDoritoVersion();
 
 	int retCode = 0;
 	IDebugLog001* logger = reinterpret_cast<IDebugLog001*>(CreateInterface(DEBUGLOG_INTERFACE_VERSION001, &retCode));
