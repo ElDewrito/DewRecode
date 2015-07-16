@@ -12,6 +12,10 @@ public:
 	bool OnWndProc(WNDPROC callback);
 	bool OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback);
 
+	bool RemoveOnTick(TickCallback callback);
+	bool RemoveOnWndProc(WNDPROC callback);
+	bool RemoveOnEvent(std::string eventNamespace, std::string eventName, EventCallback callback);
+
 	void Event(std::string eventNamespace, std::string eventName, void* param = 0);
 
 	bool RegisterInterface(std::string interfaceName, void* ptrToInterface);
@@ -42,6 +46,7 @@ public:
 	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	Engine();
+	~Engine();
 private:
 	bool mainMenuHasShown = false;
 	bool hasFirstTickTocked = false;
@@ -49,4 +54,6 @@ private:
 	std::vector<WNDPROC> wndProcCallbacks;
 	std::map<std::string, std::vector<EventCallback>> eventCallbacks;
 	std::map<std::string, void*> interfaces;
+
+	PatchSet* enginePatchSet;
 };

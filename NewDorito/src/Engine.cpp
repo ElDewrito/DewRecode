@@ -1,6 +1,7 @@
 #include "Engine.hpp"
 #include "ElDorito.hpp"
 #include <d3d9.h>
+#include <algorithm> 
 
 namespace
 {
@@ -108,7 +109,7 @@ Engine::Engine()
 	auto& patches = ElDorito::Instance().Patches;
 
 	// hook our engine events
-	patches.TogglePatchSet(patches.AddPatchSet("Engine",
+	enginePatchSet = patches.AddPatchSet("Engine",
 	{
 		Patch("WndProc", 0x42EB63, Utils::Misc::ConvertToVector<void*>(EngineWndProc)),
 		Patch("Network_EndGameWriteStats", 0x16183A0, Utils::Misc::ConvertToVector<void*>(Network_state_end_game_write_stats_enterHook)),
@@ -121,7 +122,13 @@ Engine::Engine()
 		Hook("ServerSessionInfo", 0x482AAC, Network_managed_session_create_session_internalHook, HookType::Call),
 		Hook("PlayerKick", 0x437E17, Network_leader_request_boot_machineHook, HookType::Call),
 		Hook("D3DEndScene2", 0xA21796, D3D9Device_EndSceneHook, HookType::Call)
-	}));
+	});
+	patches.TogglePatchSet(enginePatchSet);
+}
+
+Engine::~Engine()
+{
+	ElDorito::Instance().Patches.EnablePatchSet(enginePatchSet, false);
 }
 
 /// <summary>
@@ -169,6 +176,45 @@ bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCal
 	// callback wasn't found, create a new one!
 	ElDorito::Instance().Logger.Log(LogSeverity::Debug, "EngineEvent", "%s event created", eventId.c_str());
 	eventCallbacks.insert(std::pair<std::string, std::vector<EventCallback>>(eventId, std::vector<EventCallback>{ callback }));
+	return true;
+}
+
+/// <summary>
+/// Unregisters a TickCallback.
+/// </summary>
+/// <param name="callback">The callback.</param>
+/// <returns>True if the callback was removed.</returns>
+bool Engine::RemoveOnTick(TickCallback callback)
+{
+	tickCallbacks.erase(std::remove(tickCallbacks.begin(), tickCallbacks.end(), callback), tickCallbacks.end());
+	return true;
+}
+
+/// <summary>
+/// Unregisters a WNDPROC callback.
+/// </summary>
+/// <param name="callback">The callback.</param>
+/// <returns>True if the callback was removed.</returns>
+bool Engine::RemoveOnWndProc(WNDPROC callback)
+{
+	wndProcCallbacks.erase(std::remove(wndProcCallbacks.begin(), wndProcCallbacks.end(), callback), wndProcCallbacks.end());
+	return true;
+}
+
+/// <summary>
+/// Unregisters an EventCallback.
+/// </summary>
+/// <param name="eventNamespace">The namespace the event belongs to.</param>
+/// <param name="eventName">The name of the event.</param>
+/// <param name="callback">The callback.</param>
+/// <returns>True if the callback was removed.</returns>
+bool Engine::RemoveOnEvent(std::string eventNamespace, std::string eventName, EventCallback callback)
+{
+	std::string eventId = eventNamespace + "." + eventName;
+	auto it = eventCallbacks.find(eventId);
+	if (it != eventCallbacks.end())
+		(*it).second.erase(std::remove((*it).second.begin(), (*it).second.end(), callback), (*it).second.end());
+
 	return true;
 }
 

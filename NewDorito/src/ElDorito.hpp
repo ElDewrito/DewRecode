@@ -14,6 +14,12 @@
 
 class ElDorito
 {
+private:
+	bool inited = false;
+	std::map<std::string, HMODULE> plugins;
+
+	void loadPlugins();
+
 public:
 	DebugLog Logger;
 	PatchManager Patches;
@@ -29,12 +35,6 @@ public:
 		static ElDorito inst;
 		return inst;
 	}
-
-private:
-	bool inited = false;
-	std::map<std::string, HMODULE> plugins;
-
-	void loadPlugins();
 
 protected:
 	ElDorito(); // Prevent construction

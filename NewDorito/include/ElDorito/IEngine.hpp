@@ -108,6 +108,29 @@ public:
 	virtual bool OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback) = 0;
 
 	/// <summary>
+	/// Unregisters a TickCallback.
+	/// </summary>
+	/// <param name="callback">The callback.</param>
+	/// <returns>True if the callback was removed.</returns>
+	virtual bool RemoveOnTick(TickCallback callback) = 0;
+
+	/// <summary>
+	/// Unregisters a WNDPROC callback.
+	/// </summary>
+	/// <param name="callback">The callback.</param>
+	/// <returns>True if the callback was removed.</returns>
+	virtual bool RemoveOnWndProc(WNDPROC callback) = 0;
+
+	/// <summary>
+	/// Unregisters an EventCallback.
+	/// </summary>
+	/// <param name="eventNamespace">The namespace the event belongs to.</param>
+	/// <param name="eventName">The name of the event.</param>
+	/// <param name="callback">The callback.</param>
+	/// <returns>True if the callback was removed.</returns>
+	virtual bool RemoveOnEvent(std::string eventNamespace, std::string eventName, EventCallback callback) = 0;
+
+	/// <summary>
 	/// Calls each of the registered callbacks for the specified event.
 	/// </summary>
 	/// <param name="eventNamespace">The namespace the event belongs to.</param>

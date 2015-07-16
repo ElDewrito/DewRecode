@@ -42,7 +42,8 @@ namespace Modules
 		PatchModulePlayerUid PlayerUidPatches;
 		PatchModuleScoreboard ScoreboardPatches;
 		PatchModuleUI UIPatches;
-		PatchModuleVirtualKeyboard VirtualKeyboardPatches;
+		// TODO1: find why VirtualKeyboard crashes game on exit
+		//PatchModuleVirtualKeyboard VirtualKeyboardPatches;
 
 		ModuleMain();
 	};

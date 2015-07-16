@@ -32,6 +32,17 @@ namespace Modules
 				throw std::runtime_error("Failed to create utils interface");
 		}
 
+		~ModuleBase()
+		{
+			int retCode = 0;
+			patches = reinterpret_cast<IPatchManager001*>(CreateInterface(PATCHMANAGER_INTERFACE_VERSION001, &retCode));
+			if (modulePatches)
+			{
+				patches->EnablePatchSet(modulePatches, false);
+				modulePatches = nullptr;
+			}
+		}
+
 		/// <summary>
 		/// Retrieves the value of an integer variable.
 		/// </summary>

@@ -69,7 +69,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -106,16 +106,15 @@
     <ClCompile Include="src\Modules\ModulePlayer.cpp" />
     <ClCompile Include="src\Modules\ModuleServer.cpp" />
     <ClCompile Include="src\Modules\ModuleTime.cpp" />
-    <ClCompile Include="src\Modules\Patches\Input.cpp" />
     <ClCompile Include="src\Modules\Patches\Armor.cpp" />
     <ClCompile Include="src\Modules\Patches\ContentItems.cpp" />
     <ClCompile Include="src\Modules\Patches\Core.cpp" />
+    <ClCompile Include="src\Modules\Patches\Input.cpp" />
     <ClCompile Include="src\Modules\Patches\Network.cpp" />
+    <ClCompile Include="src\Modules\Patches\PlayerPropertiesExtension.cpp" />
     <ClCompile Include="src\Modules\Patches\PlayerUid.cpp" />
     <ClCompile Include="src\Modules\Patches\Scoreboard.cpp" />
     <ClCompile Include="src\Modules\Patches\UI.cpp" />
-    <ClCompile Include="src\Modules\Patches\PlayerPropertiesExtension.cpp" />
-    <ClCompile Include="src\Modules\Patches\VirtualKeyboard.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
     <ClCompile Include="src\Utils.cpp" />
     <ClCompile Include="src\Utils\HttpRequest.cpp" />
