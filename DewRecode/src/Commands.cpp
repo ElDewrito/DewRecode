@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <sstream>
 #include "ElDorito.hpp"
+#include "Modules/ModuleInput.hpp"
 
 /// <summary>
 /// Adds a command to the console commands list.
@@ -489,6 +490,23 @@ std::string Commands::SaveVariables()
 			continue;
 
 		ss << cmd.Name << " \"" << cmd.ValueString << "\"" << std::endl;
+	}
+	ss << std::endl;
+
+	for (int i = 0; i < Blam::eKeyCodes_Count; i++)
+	{
+		auto& bind = bindings[i];
+		if (bind.command.empty() || bind.key.empty())
+			continue;
+
+		ss << "Input.Bind " << bind.key << " ";
+		if (bind.isHold)
+			ss << "+";
+
+		ss << bind.command[0];
+		for (size_t i = 1; i < bind.command.size(); i++)
+			ss << " " << bind.command.at(i);
+		ss << std::endl;
 	}
 	return ss.str();
 }

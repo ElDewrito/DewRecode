@@ -21,17 +21,6 @@ namespace
 	// Maps key names to key code values
 	extern std::map<std::string, Blam::KeyCodes> keyCodes;
 
-	// Holds information about a command bound to a key
-	struct KeyBinding
-	{
-		std::vector<std::string> command; // If this is empty, no command is bound
-		bool isHold; // True if the command binds to a boolean variable
-		bool active; // True if this is a hold command and the key is down
-	};
-
-	// Bindings for each key
-	KeyBinding bindings[Blam::eKeyCodes_Count];
-
 	bool CommandBind(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
 		if (Arguments.size() < 1)
@@ -77,6 +66,7 @@ namespace
 		}
 
 		// Set the binding
+		binding->key = key;
 		binding->isHold = isHold;
 		binding->command.clear();
 		binding->command.push_back(command);
