@@ -1,0 +1,55 @@
+Most of ED is now exposed to plugins over interfaces, plugins can do "CreateInterface(CONSOLE_INTERFACE_VERSION001)" to get an interface to the console command stuff
+These return special "interface" (pure virtual) versions of classes, which are inside a include folder seperate from the src, so now we have an ElDewrito SDK :D
+(The classes themselves inherit from these interfaces and implement the functions inside.)
+These interfaces are backward compatible too, if any changes are made a new interface version can be defined allowing plugins compiled with an older SDK to remain compatible.
+
+There's also a new event system where code/plugins can register a callback for an event (eg a plugin can do Engine.OnTick(MyTickHandler) to register a tick callback, tick callbacks are different to normal events though)
+Code/plugins can also register their own events, and other plugins can sign up for those events too, eg:
+  AdminTools.dll calls Engine.OnEvent("Chat", "ChatMessage", ChatMessageHander) to register a chat message event handler
+  Chat.dll calls Engine.Event("Chat", "ChatMessage", &messageDetails) whenever a new message is received
+  Whenever Chat.dll gets a message and signals the event ED will call each of the callbacks for the event, so AdminTools will have it's callback called
+
+Doesn't matter which order the dlls are loaded neither as it's the OnEvent() call that creates the event.
+You could load Chat.dll at any time (eg. with a Plugin.Load command at runtime) and AdminTools will still get the event whenever Chat triggers it
+
+Plugins can register their own interfaces with ED too, as long as the plugin author makes their SDK public other plugins can use that interface fine.
+They also export a small info struct which defines the plugin name/author/description/version, plugin management module soon!
+
+Patches and hooks are handled differently now too, a PatchManager class handles patching/hooking them, modules register their patches with the PatchManager.
+This way lets us detect if more than one plugin tries to patch/hook the same spot, and we can warn or exit until the user fixes their plugins.
+Since patches/hooks are also named now too, once a patch is added you can just call patchMgr.TogglePatch("DebugLogSSL") from anywhere to toggle it.
+Patches/hooks can also be grouped into PatchSets, which can be toggled like a patch.
+Module patches are added into a PatchSet in the background, which lets us enable/disable modules at runtime if we want to :)
+
+The "core" patches (patches inside the src/Patches/ folder in old-ED) have been rewritten into modules ("PatchModules"), almost the same as a normal module except patch modules don't add any console commands.
+
+The console UI also had a backend revamp too: tabs can be now be added by any plugin, and can also be grouped by groupName. Calling Console.Show "groupName" will show all the tabs under that group.
+This not only lets us decouple the chat UI code, but also lets plugins create their own input methods, without needing to rely on console commands.
+Maybe in the future there'll be plugins to let you RCON into a remote server from the ED console window :)
+
+Oh and also, Singleton.hpp is removed :D The only singleton in use is for the ElDorito class, to make it easier for console commands to interact with it.
+
+Things that are included in the ElDewrito SDK:
+  ElDorito.hpp
+    Exposes our exports (CreateInterface, GetEDVersion), some structs and also includes the other SDK includes.
+
+  ICommands.hpp
+    Interface to the Commands class, handles console commands/variables registration and execution etc
+
+  IDebugLog.hpp
+    Interface to DebugLog class, lets plugins log to the ED log file
+
+  IEngine.hpp
+    Interface to the Engine class which handles events and other game engine stuff
+
+  IPatchManager.hpp
+    Interface to the PatchManager class, to add patches/hooks and detect conflicts etc
+
+  IUtils.hpp
+    Interface to the PublicUtils class, contains a lot of handy util functions (majority of the Utils:: namespace been moved here)
+
+  ModuleBase.hpp
+    Base class for modules to inherit from (about the same as ModuleBase in ED), lets you register commands/variables easily, also provides interfaces to all of the above without needing the coder to call CreateInterface
+
+  Pointer.hpp
+    Pointer class to read/write from pointers (same as Pointer.hpp in ED), chose to use this instead of raw casting the address since this helps us easily see where things are being written to/read from the game
