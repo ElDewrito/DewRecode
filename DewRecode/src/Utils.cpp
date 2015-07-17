@@ -8,6 +8,7 @@
 #include <codecvt>
 #include <iomanip>
 #include <winhttp.h>
+#include <Natupnp.h>
 
 #include <openssl/rsa.h>
 #include <openssl/bn.h>
@@ -664,4 +665,72 @@ HttpRequest PublicUtils::HttpSendRequest(const std::wstring &uri, const std::wst
 	retVal.LastError = GetLastError();
 	retVal.Error = HttpRequestError::HttpDownloadFailed;
 	return retVal;
+}
+
+UPnPResult PublicUtils::UPnPForwardPort(bool tcp, int externalport, int internalport, std::string ipaddress, std::string ruleName)
+{
+	// Initialize COM itself so this thread can use it 
+	HRESULT result = CoInitialize(NULL); // Must be NULL
+	if (FAILED(result))
+		return UPnPResult(UPnPError::CoInitializeFailed, result);
+
+	// Access the IUPnPNAT COM interface, has Windows send UPnP messages to the NAT router 
+	IUPnPNAT* nat;
+	result = CoCreateInstance(__uuidof(UPnPNAT), NULL, CLSCTX_ALL, __uuidof(IUPnPNAT), (void **)&nat);
+	if (FAILED(result))
+		return UPnPResult(UPnPError::CoCreateInstanceFailed, result);
+	else if (!nat)
+		return UPnPResult(UPnPError::NatNull, -1);
+
+	// Get the collection of forwarded ports from it, has Windows send UPnP messages to the NAT router 
+	IStaticPortMappingCollection* collection;
+	result = nat->get_StaticPortMappingCollection(&collection); // Won't work if the NAT has UPnP turned off
+	if (FAILED(result))
+	{
+		nat->Release();
+		return UPnPResult(UPnPError::StaticPortMappingCollectionFailed, result);
+	}
+	else if (!collection)
+	{
+		nat->Release();
+		return UPnPResult(UPnPError::CollectionNull, -1);
+	}
+
+	// Express the name and description as BSTRs 
+	std::wstring ipaddress_wide = WidenString(ipaddress);
+	std::wstring name_wide = WidenString(ruleName);
+
+	BSTR ipAddr = SysAllocStringLen(ipaddress_wide.data(), ipaddress_wide.size());
+	BSTR name = SysAllocStringLen(name_wide.data(), name_wide.size());
+
+	std::wstring protocol = tcp ? L"TCP" : L"UDP";
+	BSTR proto = SysAllocStringLen(protocol.data(), protocol.size());
+
+	IStaticPortMapping* mapping;
+	result = collection->Add( // Create a new port mapping, and add it to the collection 
+		externalport, // The port to forward 
+		proto,          // The protocol as the text "TCP" or "UDP" in a BSTR 
+		internalport, // This computer's internal LAN port to forward to, like 192.168.1.100:internalport 
+		ipAddr,          // Internal IP address to forward to, like "192.168.1.100" 
+		true,         // True to start forwarding now 
+		name,          // Description text the router can show in its Web configuration interface 
+		&mapping);    // Access to the IStaticPortMapping interface, if this works 
+
+	SysFreeString(ipAddr);
+	SysFreeString(name);
+	SysFreeString(proto);
+
+	bool mappingIsNull = !mapping;
+	if (!mappingIsNull)
+		mapping->Release();
+
+	collection->Release();
+	nat->Release();
+
+	if (FAILED(result))
+		return UPnPResult(UPnPError::CollectionAddFailed, result);
+	else if (mappingIsNull)
+		return UPnPResult(UPnPError::MappingNull, result);
+
+	return UPnPResult(UPnPError::None, 0);
 }

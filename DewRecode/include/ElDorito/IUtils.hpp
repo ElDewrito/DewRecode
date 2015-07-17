@@ -21,6 +21,30 @@ struct HttpRequest
 	std::vector<BYTE> ResponseBody;
 };
 
+enum class UPnPError
+{
+	None,
+	CoInitializeFailed,
+	CoCreateInstanceFailed,
+	NatNull,
+	StaticPortMappingCollectionFailed,
+	CollectionNull,
+	CollectionAddFailed,
+	MappingNull
+};
+
+struct UPnPResult
+{
+	UPnPError Error;
+	HRESULT ErrorCode;
+
+	UPnPResult(UPnPError error, HRESULT errorCode)
+	{
+		Error = error;
+		ErrorCode = errorCode;
+	}
+};
+
 /*
 if you want to make changes to this interface create a new IUtils002 class and make them there, then edit Utils class to inherit from the new class + this older one
 for backwards compatibility (with plugins compiled against an older ED SDK) we can't remove any methods, only add new ones to a new interface version
@@ -56,6 +80,7 @@ public:
 	virtual std::vector<std::string> Wrap(const std::string &string, size_t lineLength) = 0;
 
 	virtual HttpRequest HttpSendRequest(const std::wstring &uri, const std::wstring &method, const std::wstring& userAgent, const std::wstring &username, const std::wstring &password, const std::wstring &headers, void *body, DWORD bodySize) = 0;
+	virtual UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, std::string ipaddress, std::string ruleName) = 0;
 };
 
 #define UTILS_INTERFACE_VERSION001 "Utils001"

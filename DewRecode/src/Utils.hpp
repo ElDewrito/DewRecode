@@ -32,4 +32,5 @@ public:
 	std::vector<std::string> Wrap(const std::string &string, size_t lineLength);
 
 	HttpRequest HttpSendRequest(const std::wstring &uri, const std::wstring &method, const std::wstring& userAgent, const std::wstring &username, const std::wstring &password, const std::wstring &headers, void *body, DWORD bodySize);
+	UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, std::string ipaddress, std::string ruleName);
 };
