@@ -1,7 +1,7 @@
 #include "PatchModuleServer.hpp"
-#include "../NewDorito/src/Blam/BlamTypes.hpp"
-#include "../NewDorito/src/ThirdParty/rapidjson/writer.h"
-#include "../NewDorito/src/ThirdParty/rapidjson/stringbuffer.h"
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+#include <ElDorito/Blam/BlamTypes.hpp>
 
 Modules::PatchModuleServer ServerPatches;
 IUtils001* PublicUtils;

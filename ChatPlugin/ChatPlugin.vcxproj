@@ -65,12 +65,12 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CHATPLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../NewDorito/include/;ThirdParty/teamspeak/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../DewRecode/include/;../ThirdParty/teamspeak/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../Debug/;ThirdParty/teamspeak/lib/</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Debug/;../ThirdParty/teamspeak/lib/</AdditionalLibraryDirectories>
       <AdditionalDependencies>mtndew.lib;Ws2_32.lib;ts3client_win32.lib;ts3server_win32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -86,14 +86,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CHATPLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../NewDorito/include/;ThirdParty/teamspeak/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../DewRecode/include/;../ThirdParty/teamspeak/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../Release/;ThirdParty/teamspeak/lib/</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Release/;../ThirdParty/teamspeak/lib/</AdditionalLibraryDirectories>
       <AdditionalDependencies>mtndew.lib;Ws2_32.lib;ts3client_win32.lib;ts3server_win32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>

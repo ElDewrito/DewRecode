@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "../NewDorito/include/ElDorito/ElDorito.hpp"
+#include <ElDorito/ElDorito.hpp>
 
 int _tmain(int argc, _TCHAR* argv[])
 {
