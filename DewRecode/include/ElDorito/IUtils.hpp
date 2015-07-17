@@ -21,27 +21,48 @@ struct HttpRequest
 	std::vector<BYTE> ResponseBody;
 };
 
-enum class UPnPError
+enum class UPnPErrorType
 {
 	None,
-	CoInitializeFailed,
-	CoCreateInstanceFailed,
-	NatNull,
-	StaticPortMappingCollectionFailed,
-	CollectionNull,
-	CollectionAddFailed,
-	MappingNull
+	DiscoveryError,
+	IGDError,
+	PortMapError
+};
+
+enum UPnPDiscoveryErrors
+{
+	UPNPDISCOVER_SUCCESS = 0,
+	UPNPDISCOVER_UNKNOWN_ERROR = -1,
+	UPNPDISCOVER_SOCKET_ERROR = -101,
+	UPNPDISCOVER_MEMORY_ERROR = -102
+};
+
+enum UPnPIGDErrors
+{
+	UPNP_IGD_NONE = 0,
+	UPNP_IGD_VALID_CONNECTED = 1,
+	UPNP_IGD_VALID_NOT_CONNECTED = 2,
+	UPNP_IGD_INVALID = 3
+};
+
+enum UPnPPortMapErrors
+{
+	UPNPCOMMAND_SUCCESS = 0,
+	UPNPCOMMAND_UNKNOWN_ERROR = -1,
+	UPNPCOMMAND_INVALID_ARGS = -2,
+	UPNPCOMMAND_HTTP_ERROR = -3,
+	UPNPCOMMAND_INVALID_RESPONSE = -4,
 };
 
 struct UPnPResult
 {
-	UPnPError Error;
-	HRESULT ErrorCode;
+	UPnPErrorType ErrorType;
+	int ErrorCode;
 
-	UPnPResult(UPnPError error, HRESULT errorCode)
+	UPnPResult(UPnPErrorType type, int code)
 	{
-		Error = error;
-		ErrorCode = errorCode;
+		ErrorType = type;
+		ErrorCode = code;
 	}
 };
 
@@ -80,7 +101,7 @@ public:
 	virtual std::vector<std::string> Wrap(const std::string &string, size_t lineLength) = 0;
 
 	virtual HttpRequest HttpSendRequest(const std::wstring &uri, const std::wstring &method, const std::wstring& userAgent, const std::wstring &username, const std::wstring &password, const std::wstring &headers, void *body, DWORD bodySize) = 0;
-	virtual UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, std::string ipaddress, std::string ruleName) = 0;
+	virtual UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, std::string ruleName) = 0;
 };
 
 #define UTILS_INTERFACE_VERSION001 "Utils001"

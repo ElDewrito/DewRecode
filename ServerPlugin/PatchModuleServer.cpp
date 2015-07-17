@@ -188,7 +188,7 @@ namespace Modules
 		{
 		case FD_ACCEPT:
 			// accept the connection and send our motd
-			clientSocket = accept(wParam, NULL, NULL);
+			clientSocket = accept((SOCKET)wParam, NULL, NULL);
 			WSAAsyncSelect(clientSocket, hWnd, msg, FD_READ | FD_WRITE | FD_CLOSE);
 			if (msg == WM_RCON)
 			{
@@ -457,6 +457,17 @@ namespace Modules
 			}
 		}
 		commands->SetVariable("Server.Port", std::to_string(port), std::string());
+
+		auto err1 = utils->UPnPForwardPort(true, port, port, "DewritoInfoServer");
+		uint32_t gamePort = Pointer(0x1860454).Read<uint32_t>();
+		auto err2 = utils->UPnPForwardPort(false, gamePort, gamePort, "DewritoGameServer");
+
+		if (err1.ErrorType != UPnPErrorType::None)
+			engine->PrintToConsole("Failed to open info server port via UPnP!"); // TODO: print in log instead
+
+		if (err2.ErrorType != UPnPErrorType::None)
+			engine->PrintToConsole("Failed to open game server port via UPnP!"); // TODO: print in log instead
+
 		WSAAsyncSelect(infoSocket, engine->GetGameHWND(), WM_INFOSERVER, FD_ACCEPT | FD_CLOSE);
 		listen(infoSocket, 5);
 		infoSocketOpen = true;

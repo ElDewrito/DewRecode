@@ -276,6 +276,9 @@ DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
 	if (retCode != 0)
 		throw std::runtime_error("Failed to create commands interface");
 
+	IUtils001* utils = reinterpret_cast<IUtils001*>(CreateInterface(UTILS_INTERFACE_VERSION001, &retCode));
+	if (retCode != 0)
+		throw std::runtime_error("Failed to create utils interface");
 
 	if (sEngine != nullptr)
 		sEngine->PrintToConsole("Starting VoIP server...");
@@ -355,6 +358,12 @@ DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
 		}
 		if (commands != nullptr)
 			commands->SetVariable(voipModule.VarVoIPServerPort, std::to_string(port), std::string());
+		if (utils != nullptr && commands != nullptr && sEngine != nullptr)
+		{
+			auto err = utils->UPnPForwardPort(true, port, port, "DewritoVoIPServer");
+			if (err.ErrorType != UPnPErrorType::None)
+				sEngine->PrintToConsole("Failed to open VoIP server port via UPnP!"); // TODO: print in log instead
+		}
 		if (sEngine != nullptr)
 			sEngine->PrintToConsole("VoIP server listening on port " + std::to_string(port));
 		break;

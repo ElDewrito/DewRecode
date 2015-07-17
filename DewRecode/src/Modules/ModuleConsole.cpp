@@ -104,6 +104,12 @@ namespace Modules
 
 	void ModuleConsole::PrintToConsole(std::string str)
 	{
+		if (str.find('\n') == std::string::npos)
+		{
+			this->consoleBuffer->Messages.push_back(str);
+			return;
+		}
+
 		std::stringstream ss(str);
 		std::string item;
 		while (std::getline(ss, item, '\n'))
