@@ -104,6 +104,8 @@ namespace Modules
 
 	void ModuleConsole::PrintToConsole(std::string str)
 	{
+		logger->Log(LogSeverity::Debug, "Console", str); // log everything
+
 		if (str.find('\n') == std::string::npos)
 		{
 			this->consoleBuffer->Messages.push_back(str);

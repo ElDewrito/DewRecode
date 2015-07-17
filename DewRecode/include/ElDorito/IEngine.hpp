@@ -3,40 +3,36 @@
 #include <chrono>
 
 /* 
-List of events registered by ED (eventNamespace/eventName seperated by a period):
+List of events registered by ED (eventNamespace/eventName seperated by a period, parameter in parens):
 	Core.Engine.FirstTick - signalled when the game engine loop starts ticking, only signals once
 	Core.Engine.MainMenuShown - when the mainmenu is first being shown, only signals once after the game has inited etc
 	Core.Engine.TagsLoaded - when the tags have been reloaded
 	Core.Input.KeyboardUpdate - when a key is pressed (i think? haven't looked into keyboard code much)
 
-
 	Core.Server.Start - when the user has started a server
 	Core.Server.Stop - when the user has stopped the server
-	Core.Server.PlayerKick - when a user has been kicked (host only)
+	Core.Server.PlayerKick(PlayerInfo) - when a user has been kicked (host only)
 
 	Core.Game.Joining - when the user is joining a game (direct connect cmd issued)
 	Core.Game.Leave - when the user leaves a game
 	Core.Game.End - when a game has finished (ez)
 
+	Core.Direct3D.EndScene - when the game is about to call D3DDevice::EndScene
 
 (soon):
     Core.Direct3D.Present - when the game is about to call D3DDevice::Present
-	Core.Direct3D.EndScene - when the game is about to call D3DDevice::EndScene
 	Core.Round.Start - when a round has started
 	Core.Round.End - when a round has finished
-	Core.Game.Join - when the user joins a game
+	Core.Game.Join - when the user has joined a game successfully
 	Core.Game.Start - when a game has started
-	Core.Player.Join - when a user joins the game (signals for all users, not just host)
-	Core.Player.Leave - when a user leaves the game (signals for all users, not just host) (ez)
+	Core.Player.Join(PlayerInfo) - when a user joins the game (signals for all users, not just host)
+	Core.Player.Leave(PlayerInfo) - when a user leaves the game (signals for all users, not just host) (ez)
 	Fore.Twenty - when the kush hits you
 
 later:
 	Core.Lobby.ChangeMap
 	Core.Lobby.ChangeGameMode
-	Core.Medals.DoubleKill
-	Core.Medals.TripleKill
-	Core.Medals.Overkill
-	(etc)
+	Core.Game.Event(EventID) - stuff like double kills etc, might include normal kills too
 */
 
 struct ConsoleBuffer;
@@ -44,7 +40,7 @@ typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTi
 typedef void(__cdecl* EventCallback)(void* param);
 typedef void(__cdecl* ConsoleInputCallback)(const std::string& input, ConsoleBuffer* buffer);
 
-struct PlayerKickInfo
+struct PlayerInfo
 {
 	std::string Name;
 	uint64_t UID;
@@ -155,6 +151,12 @@ public:
 	virtual void* CreateInterface(std::string interfaceName, int* returnCode) = 0;
 
 	/// <summary>
+	/// Prints a string to the console UI.
+	/// </summary>
+	/// <param name="str">The string to print.</param>
+	virtual void PrintToConsole(std::string str) = 0;
+
+	/// <summary>
 	/// Adds a new buffer/queue to the console UI.
 	/// </summary>
 	/// <param name="buffer">The buffer to add.</param>
@@ -167,12 +169,6 @@ public:
 	/// <param name="buffer">The buffer to set as active.</param>
 	/// <returns>true if the buffer was set active.</returns>
 	virtual bool SetActiveConsoleBuffer(ConsoleBuffer* buffer) = 0;
-	
-	/// <summary>
-	/// Prints a string to the console UI.
-	/// </summary>
-	/// <param name="str">The string to print.</param>
-	virtual void PrintToConsole(std::string str) = 0;
 
 	/// <summary>
 	/// Returns true if the main menu has been shown, signifying that the game has initialized.

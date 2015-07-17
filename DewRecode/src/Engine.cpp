@@ -69,7 +69,7 @@ namespace
 		typedef bool(__thiscall *Network_leader_request_boot_machineFunc)(void *thisPtr, void* playerAddr, int reason);
 		const Network_leader_request_boot_machineFunc Network_leader_request_boot_machine = reinterpret_cast<Network_leader_request_boot_machineFunc>(0x45D4A0);
 		bool retVal = Network_leader_request_boot_machine(thisPtr, playerAddr, reason);
-		PlayerKickInfo info = { ElDorito::Instance().Utils.ThinString(playerName), uid };
+		PlayerInfo info = { ElDorito::Instance().Utils.ThinString(playerName), uid };
 		if (retVal)
 			ElDorito::Instance().Engine.Event("Core", "Server.PlayerKick", &info);
 
@@ -349,6 +349,15 @@ void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
 }
 
 /// <summary>
+/// Prints a string to the console UI.
+/// </summary>
+/// <param name="str">The string to print.</param>
+void Engine::PrintToConsole(std::string str)
+{
+	ElDorito::Instance().Modules.Console.PrintToConsole(str);
+}
+
+/// <summary>
 /// Adds a new buffer/queue to the console UI.
 /// </summary>
 /// <param name="buffer">The buffer to add.</param>
@@ -366,15 +375,6 @@ ConsoleBuffer* Engine::AddConsoleBuffer(ConsoleBuffer buffer)
 bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
 {
 	return ElDorito::Instance().Modules.Console.SetActiveBuffer(buffer);
-}
-
-/// <summary>
-/// Prints a string to the console UI.
-/// </summary>
-/// <param name="str">The string to print.</param>
-void Engine::PrintToConsole(std::string str)
-{
-	ElDorito::Instance().Modules.Console.PrintToConsole(str);
 }
 
 /// <summary>

@@ -21,9 +21,9 @@ public:
 	bool RegisterInterface(std::string interfaceName, void* ptrToInterface);
 	void* CreateInterface(std::string interfaceName, int* returnCode);
 
+	void PrintToConsole(std::string str);
 	ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer);
 	bool SetActiveConsoleBuffer(ConsoleBuffer* buffer);
-	void PrintToConsole(std::string str);
 
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 

@@ -40,7 +40,7 @@ namespace
 
 	void CallbackServerPlayerKick(void* param)
 	{
-		PlayerKickInfo* playerInfo = reinterpret_cast<PlayerKickInfo*>(param);
+		PlayerInfo* playerInfo = reinterpret_cast<PlayerInfo*>(param);
 		IRCModule.UserKick(IRCModule.GenerateIRCNick(playerInfo->Name, playerInfo->UID));
 	}
 
