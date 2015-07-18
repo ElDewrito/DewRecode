@@ -28,7 +28,7 @@ PLUGIN_API bool __cdecl InitializePlugin()
 	int version = GetDoritoVersion();
 
 	int retCode = 0;
-	IDebugLog001* logger = reinterpret_cast<IDebugLog001*>(CreateInterface(DEBUGLOG_INTERFACE_VERSION001, &retCode));
+	IDebugLog* logger = reinterpret_cast<IDebugLog*>(CreateInterface(DEBUGLOG_INTERFACE_LATEST, &retCode));
 	if (retCode != 0)
 		return false;
 

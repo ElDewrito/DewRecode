@@ -29,3 +29,17 @@ public:
 };
 
 #define DEBUGLOG_INTERFACE_VERSION001 "DebugLog001"
+
+/* use this class if you're updating IDebugLog after we've released a build
+also update the IDebugLog typedef and DEBUGLOG_INTERFACE_LATEST define
+and edit Engine::CreateInterface to include this interface */
+
+/*class IDebugLog002 : public IDebugLog001
+{
+
+};
+
+#define DEBUGLOG_INTERFACE_VERSION002 "DebugLog002"*/
+
+typedef IDebugLog001 IDebugLog;
+#define DEBUGLOG_INTERFACE_LATEST DEBUGLOG_INTERFACE_VERSION001

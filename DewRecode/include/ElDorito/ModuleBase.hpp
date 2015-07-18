@@ -11,23 +11,23 @@ namespace Modules
 		{
 			this->moduleName = moduleName;
 			int retCode = 0;
-			commands = reinterpret_cast<ICommands001*>(CreateInterface(COMMANDS_INTERFACE_VERSION001, &retCode));
+			commands = reinterpret_cast<ICommands*>(CreateInterface(COMMANDS_INTERFACE_LATEST, &retCode));
 			if (retCode != 0)
 				throw std::runtime_error("Failed to create commands interface");
 
-			logger = reinterpret_cast<IDebugLog001*>(CreateInterface(DEBUGLOG_INTERFACE_VERSION001, &retCode));
+			logger = reinterpret_cast<IDebugLog*>(CreateInterface(DEBUGLOG_INTERFACE_LATEST, &retCode));
 			if (retCode != 0)
 				throw std::runtime_error("Failed to create debug log interface");
 
-			engine = reinterpret_cast<IEngine001*>(CreateInterface(ENGINE_INTERFACE_VERSION001, &retCode));
+			engine = reinterpret_cast<IEngine*>(CreateInterface(ENGINE_INTERFACE_LATEST, &retCode));
 			if (retCode != 0)
 				throw std::runtime_error("Failed to create engine interface");
 
-			patches = reinterpret_cast<IPatchManager001*>(CreateInterface(PATCHMANAGER_INTERFACE_VERSION001, &retCode));
+			patches = reinterpret_cast<IPatchManager*>(CreateInterface(PATCHMANAGER_INTERFACE_LATEST, &retCode));
 			if (retCode != 0)
 				throw std::runtime_error("Failed to create patch manager interface");
 
-			utils = reinterpret_cast<IUtils001*>(CreateInterface(UTILS_INTERFACE_VERSION001, &retCode));
+			utils = reinterpret_cast<IUtils*>(CreateInterface(UTILS_INTERFACE_LATEST, &retCode));
 			if (retCode != 0)
 				throw std::runtime_error("Failed to create utils interface");
 		}
@@ -35,7 +35,7 @@ namespace Modules
 		~ModuleBase()
 		{
 			int retCode = 0;
-			patches = reinterpret_cast<IPatchManager001*>(CreateInterface(PATCHMANAGER_INTERFACE_VERSION001, &retCode));
+			patches = reinterpret_cast<IPatchManager*>(CreateInterface(PATCHMANAGER_INTERFACE_LATEST, &retCode));
 			if (modulePatches)
 			{
 				patches->EnablePatchSet(modulePatches, false);
@@ -97,11 +97,11 @@ namespace Modules
 		}
 
 	protected:
-		ICommands001* commands;
-		IEngine001* engine;
-		IDebugLog001* logger;
-		IPatchManager001* patches;
-		IUtils001* utils;
+		ICommands* commands;
+		IEngine* engine;
+		IDebugLog* logger;
+		IPatchManager* patches;
+		IUtils* utils;
 
 		/// <summary>
 		/// Adds the default patches for this module (automatically enabled).

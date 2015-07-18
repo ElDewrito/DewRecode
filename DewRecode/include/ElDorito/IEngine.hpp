@@ -222,3 +222,17 @@ public:
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"
+
+/* use this class if you're updating IEngine after we've released a build
+also update the IEngine typedef and ENGINE_INTERFACE_LATEST define
+and edit Engine::CreateInterface to include this interface */
+
+/*class IEngine002 : public IEngine001
+{
+
+};
+
+#define ENGINE_INTERFACE_VERSION002 "Engine002"*/
+
+typedef IEngine001 IEngine;
+#define ENGINE_INTERFACE_LATEST ENGINE_INTERFACE_VERSION001

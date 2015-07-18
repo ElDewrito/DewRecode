@@ -213,3 +213,17 @@ public:
 };
 
 #define COMMANDS_INTERFACE_VERSION001 "Commands001"
+
+/* use this class if you're updating ICommands after we've released a build
+also update the ICommands typedef and COMMANDS_INTERFACE_LATEST define
+and edit Engine::CreateInterface to include this interface */
+
+/*class ICommands002 : public ICommands001
+{
+
+};
+
+#define COMMANDS_INTERFACE_VERSION002 "Commands002"*/
+
+typedef ICommands001 ICommands;
+#define COMMANDS_INTERFACE_LATEST COMMANDS_INTERFACE_VERSION001

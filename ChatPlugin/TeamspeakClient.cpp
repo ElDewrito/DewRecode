@@ -30,7 +30,7 @@
 #include <teamspeak/clientlib_publicdefinitions.h>
 #include <teamspeak/clientlib.h>
 
-IEngine001* engine = nullptr;
+IEngine* engine = nullptr;
 
 #include "TeamspeakClient.hpp"
 #include <cstdint>
@@ -1158,7 +1158,7 @@ DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP& voipModule)
 	if (engine == nullptr)
 	{
 		int retCode = 0;
-		engine = reinterpret_cast<IEngine001*>(CreateInterface(ENGINE_INTERFACE_VERSION001, &retCode));
+		engine = reinterpret_cast<IEngine*>(CreateInterface(ENGINE_INTERFACE_LATEST, &retCode));
 		if (retCode != 0)
 			throw std::runtime_error("Failed to create engine interface");
 	}

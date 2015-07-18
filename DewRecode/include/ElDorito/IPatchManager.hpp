@@ -253,3 +253,17 @@ public:
 };
 
 #define PATCHMANAGER_INTERFACE_VERSION001 "PatchManager001"
+
+/* use this class if you're updating IPatchManager after we've released a build
+also update the IPatchManager typedef and PATCHMANAGER_INTERFACE_LATEST define
+and edit Engine::CreateInterface to include this interface */
+
+/*class IPatchManager002 : public IPatchManager001
+{
+
+};
+
+#define PATCHMANAGER_INTERFACE_VERSION002 "PatchManager002"*/
+
+typedef IPatchManager001 IPatchManager;
+#define PATCHMANAGER_INTERFACE_LATEST PATCHMANAGER_INTERFACE_VERSION001

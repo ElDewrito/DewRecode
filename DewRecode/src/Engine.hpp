@@ -5,7 +5,7 @@
 
 // handles game events and callbacks for different modules/plugins
 // if you make any changes to this class make sure to update the exported interface (create a new interface + inherit from it if the interface already shipped)
-class Engine : public IEngine001
+class Engine : public IEngine
 {
 public:
 	bool OnTick(TickCallback callback);

@@ -4,7 +4,7 @@
 #include <algorithm>
 
 Modules::ModuleIRC IRCModule;
-IUtils001* PublicUtils;
+IUtils* PublicUtils;
 
 namespace
 {

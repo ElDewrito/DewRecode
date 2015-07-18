@@ -4,7 +4,7 @@
 #include <ElDorito/Blam/BlamTypes.hpp>
 
 Modules::PatchModuleServer ServerPatches;
-IUtils001* PublicUtils;
+IUtils* PublicUtils;
 
 namespace
 {

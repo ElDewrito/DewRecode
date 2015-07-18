@@ -2,7 +2,7 @@
 #include <ElDorito/ElDorito.hpp>
 
 // can't be called Utils because we use that for a namespace.. ugh
-class PublicUtils : public IUtils001
+class PublicUtils : public IUtils
 {
 public:
 	std::string RSAReformatKey(bool isPrivateKey, std::string key);

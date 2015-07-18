@@ -105,3 +105,17 @@ public:
 };
 
 #define UTILS_INTERFACE_VERSION001 "Utils001"
+
+/* use this class if you're updating IUtils after we've released a build
+also update the IUtils typedef and UTILS_INTERFACE_LATEST define
+and edit Engine::CreateInterface to include this interface */
+
+/*class IUtils002 : public IUtils001
+{
+
+};
+
+#define UTILS_INTERFACE_VERSION002 "Utils002"*/
+
+typedef IUtils001 IUtils;
+#define UTILS_INTERFACE_LATEST UTILS_INTERFACE_VERSION001

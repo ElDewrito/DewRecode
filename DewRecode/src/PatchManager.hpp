@@ -4,7 +4,7 @@
 #include <map>
 
 // if you make any changes to this class make sure to update the exported interface (create a new interface + inherit from it if the interface already shipped)
-class PatchManager : public IPatchManager001
+class PatchManager : public IPatchManager
 {
 public:
 	Patch* AddPatch(std::string name, size_t address, const PatchInitializerListType& data);

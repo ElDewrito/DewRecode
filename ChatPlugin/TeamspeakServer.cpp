@@ -25,7 +25,7 @@
 #include <teamspeak/serverlib_publicdefinitions.h>
 #include <teamspeak/serverlib.h>
 
-IEngine001* sEngine = nullptr;
+IEngine* sEngine = nullptr;
 
 
 #ifdef _WIN32
@@ -267,16 +267,16 @@ DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
 	int retCode = 0;
 	if (sEngine == nullptr)
 	{
-		sEngine = reinterpret_cast<IEngine001*>(CreateInterface(ENGINE_INTERFACE_VERSION001, &retCode));
+		sEngine = reinterpret_cast<IEngine*>(CreateInterface(ENGINE_INTERFACE_LATEST, &retCode));
 		if (retCode != 0)
 			throw std::runtime_error("Failed to create engine interface");
 	}
 
-	ICommands001* commands = reinterpret_cast<ICommands001*>(CreateInterface(COMMANDS_INTERFACE_VERSION001, &retCode));
+	ICommands* commands = reinterpret_cast<ICommands*>(CreateInterface(COMMANDS_INTERFACE_LATEST, &retCode));
 	if (retCode != 0)
 		throw std::runtime_error("Failed to create commands interface");
 
-	IUtils001* utils = reinterpret_cast<IUtils001*>(CreateInterface(UTILS_INTERFACE_VERSION001, &retCode));
+	IUtils* utils = reinterpret_cast<IUtils*>(CreateInterface(UTILS_INTERFACE_LATEST, &retCode));
 	if (retCode != 0)
 		throw std::runtime_error("Failed to create utils interface");
 
