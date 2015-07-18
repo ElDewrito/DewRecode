@@ -599,7 +599,7 @@ namespace Modules
 		VarServerMaxPlayers->ValueIntMin = 1;
 		VarServerMaxPlayers->ValueIntMax = 16;
 
-		VarServerPort = AddVariableInt("Port", "server_port", "The port number the HTTP server runs on, game uses different one", eCommandFlagsArchived, 11775);
+		VarServerPort = AddVariableInt("Port", "server_port", "The port number the HTTP server runs on, game uses different one", eCommandFlagsArchived, 11784);
 		VarServerPort->ValueIntMin = 1;
 		VarServerPort->ValueIntMax = 0xFFFF;
 

@@ -673,35 +673,41 @@ HttpRequest PublicUtils::HttpSendRequest(const std::wstring &uri, const std::wst
 
 UPnPResult PublicUtils::UPnPForwardPort(bool tcp, int externalport, int internalport, std::string ruleName)
 {
-	struct UPNPDev * device;
 	struct UPNPUrls urls;
 	struct IGDdatas data;
 	char lanaddr[16];
 
-	int err = UPNPDISCOVER_SUCCESS;
-	device = upnpDiscover(2000, NULL, NULL, 0, 0, &err);
+	if (upnpDiscoverError != UPNPDISCOVER_SUCCESS || upnpDevice == nullptr)
+		return UPnPResult(UPnPErrorType::DiscoveryError, upnpDiscoverError);
 
-	if (err != UPNPDISCOVER_SUCCESS)
-		return UPnPResult(UPnPErrorType::DiscoveryError, err);
-
-	int ret = UPNP_GetValidIGD(device, &urls, &data,
+	int ret = UPNP_GetValidIGD(upnpDevice, &urls, &data,
 		lanaddr, sizeof(lanaddr));
 
 	if (ret != UPNP_IGD_VALID_CONNECTED)
-	{
-		freeUPNPDevlist(device);
 		return UPnPResult(UPnPErrorType::IGDError, ret);
-	}
 
 	ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype, 
 		std::to_string(externalport).c_str(), std::to_string(internalport).c_str(), 
 		lanaddr, ruleName.c_str(), tcp ? "TCP" : "UDP", NULL, NULL);
-
-	freeUPNPDevlist(device);
 
 	UPnPErrorType type = UPnPErrorType::None;
 	if (ret != UPNPCOMMAND_SUCCESS)
 		type = UPnPErrorType::PortMapError;
 
 	return UPnPResult(type, ret);
+}
+
+PublicUtils::PublicUtils()
+{
+	WSADATA wsaData;
+
+	WSAStartup(MAKEWORD(2, 0), &wsaData);
+	// do the discovery in the constructor (ie. when the game starts)
+	upnpDevice = upnpDiscover(2000, NULL, NULL, 0, 0, &upnpDiscoverError);
+}
+
+PublicUtils::~PublicUtils()
+{
+	if (upnpDevice)
+		freeUPNPDevlist(upnpDevice);
 }

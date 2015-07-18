@@ -33,4 +33,10 @@ public:
 
 	HttpRequest HttpSendRequest(const std::wstring &uri, const std::wstring &method, const std::wstring& userAgent, const std::wstring &username, const std::wstring &password, const std::wstring &headers, void *body, DWORD bodySize);
 	UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, std::string ruleName);
+
+	PublicUtils();
+	~PublicUtils();
+private:
+	int upnpDiscoverError;
+	struct UPNPDev * upnpDevice = nullptr;
 };
