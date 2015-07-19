@@ -24,6 +24,7 @@ namespace Modules
 	{
 	public:
 		Command* VarInputRawInput;
+		Command* VarInputControllerIndex;
 
 		ModuleInput();
 	};

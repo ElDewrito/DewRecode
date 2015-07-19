@@ -5,6 +5,8 @@
 
 namespace
 {
+	int controllerIndex = 0;
+
 	bool VariableInputRawInputUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
 		unsigned long value = ElDorito::Instance().Modules.Input.VarInputRawInput->ValueInt;
@@ -16,6 +18,26 @@ namespace
 
 		returnInfo = "Raw input " + status;
 		return true;
+	}
+
+	bool VariableInputControllerIndexUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		unsigned long value = ElDorito::Instance().Modules.Input.VarInputControllerIndex->ValueInt;
+		controllerIndex = value;
+		return true;
+	}
+
+
+	__declspec(naked) void Input_ControllerIndexHook()
+	{
+		__asm
+		{
+			mov edi, controllerIndex
+			mov esi, eax
+			mov ebx, 0x238E714
+			push 0x5128F4
+			ret
+		}
 	}
 
 	// Maps key names to key code values
@@ -119,6 +141,18 @@ namespace Modules
 		VarInputRawInput = AddVariableInt("RawInput", "rawinput", "Enables raw mouse input with no acceleration applied", eCommandFlagsArchived, 1, VariableInputRawInputUpdate);
 		VarInputRawInput->ValueIntMin = 0;
 		VarInputRawInput->ValueIntMax = 1;
+
+		VarInputControllerIndex = AddVariableInt("ControllerIndex", "controllerindex", "Which controller index should be used for player 1", eCommandFlagsArchived, 0, VariableInputControllerIndexUpdate);
+		VarInputControllerIndex->ValueIntMin = 0;
+		VarInputControllerIndex->ValueIntMax = 3;
+
+		AddModulePatches(
+		{
+			Patch("ControllerIndexNop", 0x5128F0, 0x90, 4)
+		},
+		{
+			Hook("ControllerIndex", 0x5128EB, Input_ControllerIndexHook, HookType::Jmp)
+		});
 
 		AddCommand("Bind", "bind", "Binds a command to a key", eCommandFlagsNone, CommandBind, { "key", "[+]command", "arguments" });
 		engine->OnEvent("Core", "Input.KeyboardUpdate", KeyboardUpdated);
