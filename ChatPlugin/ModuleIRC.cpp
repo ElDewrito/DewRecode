@@ -76,7 +76,7 @@ namespace
 		preparedLine = preparedLine.substr(preparedLine.find_first_of("|") + 1, std::string::npos);
 		preparedLine += ": ";
 		preparedLine += input;
-		buffer->Messages.push_back(preparedLine);
+		buffer->PushLine(preparedLine);
 	}
 
 	std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems, bool keepDelimiter)
@@ -134,14 +134,14 @@ namespace Modules
 		{
 			if (i >= 2)
 			{
-				globalBuffer->Messages.push_back("Error: failed to connect to IRC.");
+				globalBuffer->PushLine("Error: failed to connect to IRC.");
 				closesocket(winSocket);
 				Connected = false;
 				return;
 			}
 			else
 			{
-				globalBuffer->Messages.push_back("Error: failed to connect to IRC. Retrying in 5 seconds.");
+				globalBuffer->PushLine("Error: failed to connect to IRC. Retrying in 5 seconds.");
 				Sleep(5000);
 			}
 		}
@@ -152,12 +152,12 @@ namespace Modules
 
 			if (i >= 2)
 			{
-				globalBuffer->Messages.push_back("Error: failed to loop in IRC.");
+				globalBuffer->PushLine("Error: failed to loop in IRC.");
 				break;
 			}
 			else
 			{
-				globalBuffer->Messages.push_back("Error: failed to loop in IRC. Retrying in 5 seconds.");
+				globalBuffer->PushLine("Error: failed to loop in IRC. Retrying in 5 seconds.");
 				Sleep(5000);
 			}
 		}
@@ -177,13 +177,13 @@ namespace Modules
 
 		if (retVal = getaddrinfo(VarIRCServer->ValueString.c_str(), VarIRCServerPort->ValueString.c_str(), &hints, &ai))
 		{
-			globalBuffer->Messages.push_back("IRC GAI error: " + std::string(gai_strerrorA(retVal)) + " (" + std::to_string(retVal) + "/" + std::to_string(WSAGetLastError()) + ")");
+			globalBuffer->PushLine("IRC GAI error: " + std::string(gai_strerrorA(retVal)) + " (" + std::to_string(retVal) + "/" + std::to_string(WSAGetLastError()) + ")");
 			return false;
 		}
 		winSocket = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 		if (retVal = connect(winSocket, ai->ai_addr, ai->ai_addrlen))
 		{
-			globalBuffer->Messages.push_back("IRC connect error: " + std::string(gai_strerrorA(retVal)) + " (" + std::to_string(retVal) + "/" + std::to_string(WSAGetLastError()) + ")");
+			globalBuffer->PushLine("IRC connect error: " + std::string(gai_strerrorA(retVal)) + " (" + std::to_string(retVal) + "/" + std::to_string(WSAGetLastError()) + ")");
 			return false;
 		}
 		freeaddrinfo(ai);
@@ -222,7 +222,7 @@ namespace Modules
 				if (receivedWelcomeMessage(bufferSplitBySpace))
 				{
 					ChannelJoin(VarIRCGlobalChannel->ValueString, true);
-					globalBuffer->Messages.push_back("Connected to global chat!");
+					globalBuffer->PushLine("Connected to global chat!");
 				}
 				else if (receivedChannelTopic(bufferSplitBySpace))
 				{
@@ -240,7 +240,7 @@ namespace Modules
 				}
 				else if (bufferSplitByNewLines.at(i).find("Erroneous Nickname") != std::string::npos)
 				{
-					globalBuffer->Messages.push_back("Error: invalid username.");
+					globalBuffer->PushLine("Error: invalid username.");
 				}
 			}
 		}
@@ -248,7 +248,7 @@ namespace Modules
 		int nError = WSAGetLastError();
 		std::string errorString("Winsock error code: ");
 		errorString.append(std::to_string(nError));
-		globalBuffer->Messages.push_back(errorString);
+		globalBuffer->PushLine(errorString);
 	}
 
 	void ModuleIRC::ChannelSendMsg(std::string channel, std::string line)
@@ -346,7 +346,7 @@ namespace Modules
 		if (topic)
 			preparedLineForUI = "Channel topic: " + message;
 
-		buffer->Messages.push_back(preparedLineForUI);
+		buffer->PushLine(preparedLineForUI);
 	}
 
 	std::string ModuleIRC::GenerateIRCNick(std::string name, uint64_t uid)

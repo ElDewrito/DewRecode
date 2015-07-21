@@ -35,7 +35,14 @@ public:
 
 	std::string SaveVariables();
 
+	BindingReturnValue AddBinding(std::string key, std::string command);
+	KeyBinding* GetBinding(std::string key);
+	KeyBinding* GetBinding(int keyCode);
+
 	std::deque<Command> List;
 private:
 	std::vector<std::string> queuedCommands;
+
+	// Bindings for each key
+	KeyBinding bindings[Blam::eKeyCodes_Count];
 };

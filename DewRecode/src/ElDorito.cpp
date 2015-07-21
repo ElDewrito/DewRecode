@@ -34,6 +34,10 @@ void ElDorito::Initialize()
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Execute autoexec.cfg...");
 	Commands.Execute("Execute autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
+	// HACKY - As we need a draw call in between this message and the actual generation, check it ahead of it actually generating
+	if (Modules.Player.VarPlayerPubKey->ValueString.empty())
+		Modules.Console.PrintToConsole("Generating player keypair, this may take a moment...");
+
 	// add and toggle(enable) the language patch, can't be done in a module since we have to patch this after cfg files are read
 	Patches.TogglePatch(Patches.AddPatch("GameLanguage", 0x6333FD, { (unsigned char)Modules.Game.VarLanguageID->ValueInt }));
 

@@ -30,6 +30,8 @@ DORITO_API HMODULE GetDoritoModuleHandle();
 DORITO_API int GetDoritoVersion();
 DORITO_API void* CreateInterface(const char *name, int *returnCode);
 
+#include "Blam/BlamTypes.hpp"
+#include "Blam/Tags/GameEngineSettingsDefinition.hpp"
 #include "ICommands.hpp"
 #include "IDebugLog.hpp"
 #include "IEngine.hpp"

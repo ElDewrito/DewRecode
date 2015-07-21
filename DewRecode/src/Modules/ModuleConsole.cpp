@@ -52,9 +52,6 @@ namespace Modules
 
 		consoleBuffer = AddBuffer(consoleBuff);
 		PrintToConsole("ElDewrito Version: " + Utils::Version::GetVersionString() + " Build Date: " + __DATE__ + " " + __TIME__);
-		// TODO2: fade in on new msgs
-
-		Show();
 	}
 
 	void ModuleConsole::Show(std::string group)
@@ -90,6 +87,7 @@ namespace Modules
 
 		inputBox.Clear();
 		visible = false;
+		buffers.at(getSelectedIdx()).TimeLastShown = GetTickCount();
 
 		// Enables game keyboard input and disables our keyboard hook
 		RAWINPUTDEVICE Rid;
@@ -108,7 +106,7 @@ namespace Modules
 
 		if (str.find('\n') == std::string::npos)
 		{
-			this->consoleBuffer->Messages.push_back(str);
+			this->consoleBuffer->PushLine(str);
 			return;
 		}
 
@@ -116,7 +114,7 @@ namespace Modules
 		std::string item;
 		while (std::getline(ss, item, '\n'))
 			if (!item.empty())
-				this->consoleBuffer->Messages.push_back(item);
+				this->consoleBuffer->PushLine(item);
 	}
 
 	ConsoleBuffer* ModuleConsole::AddBuffer(ConsoleBuffer buffer)
@@ -154,7 +152,8 @@ namespace Modules
 
 	void ModuleConsole::Draw(IDirect3DDevice9* device)
 	{
-		if (!visible)
+		auto& selectedBuffer = buffers.at(getSelectedIdx());
+		if (GetTickCount() - selectedBuffer.TimeLastShown > 10000 && !visible)
 			return;
 
 		initFonts(device);
@@ -176,61 +175,63 @@ namespace Modules
 		int verticalSpacingBetweenTopOfInputBoxAndFont = (inputTextBoxHeight - normalSizeFontHeight) / 2;
 		size_t maxCharsPerLine = 105;
 
-		int tempX = x;
-		for (size_t i = 0; i < buffers.size(); i++)
+		if (visible) // only show the input box / tab selection if the console is actually open
 		{
-			auto& buffer = buffers.at(i);
-			if (!buffer.Visible || utils->ToLower(buffer.Group).compare(activeGroup))
-				continue;
-
-			std::string displayName = buffer.Name;
-			if (i == getSelectedIdx() && getNumBuffersInGroup(activeGroup) > 1)
-				displayName = ">" + displayName + "<";
-
-			drawBox(device, tempX, y, getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
-			drawText(displayName.c_str(), tempX + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
-			tempX += getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing;
-		}
-
-		// TODO4: make this text fade out after a while
-		if (getNumBuffersInGroup(activeGroup) > 1)
-			drawText("Press tab to switch tabs. Press ` or F1 to open the console.", x, y + verticalSpacingBetweenTopOfInputBoxAndFont + verticalSpacingBetweenLinesAndInputBox, COLOR_WHITE, normalSizeFont);
-
-		y -= verticalSpacingBetweenLinesAndInputBox;
-
-		// Display current input (TODO4: scroll input thats longer than the input box)
-		drawBox(device, x, y, inputTextBoxWidth, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
-		drawText(inputBox.Text.c_str(), x + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
-
-		// Line showing where the user currently is in the input field.
-		{
-			if (getMsSinceLastConsoleBlink() > 300)
+			int tempX = x;
+			for (size_t i = 0; i < buffers.size(); i++)
 			{
-				consoleBlinking = !consoleBlinking;
-				lastTimeConsoleBlink = GetTickCount();
+				auto& buffer = buffers.at(i);
+				if (!buffer.Visible || utils->ToLower(buffer.Group).compare(activeGroup))
+					continue;
+
+				std::string displayName = buffer.Name;
+				if (i == getSelectedIdx() && getNumBuffersInGroup(activeGroup) > 1)
+					displayName = ">" + displayName + "<";
+
+				drawBox(device, tempX, y, getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
+				drawText(displayName.c_str(), tempX + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+				tempX += getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing;
 			}
 
-			if (!consoleBlinking)
+			// TODO4: make this text fade out after a while
+			if (getNumBuffersInGroup(activeGroup) > 1)
+				drawText("Press tab to switch tabs. Press ` or F1 to open the console.", x, y + verticalSpacingBetweenTopOfInputBoxAndFont + verticalSpacingBetweenLinesAndInputBox, COLOR_WHITE, normalSizeFont);
+
+			y -= verticalSpacingBetweenLinesAndInputBox;
+
+			// Display current input (TODO4: scroll input thats longer than the input box)
+			drawBox(device, x, y, inputTextBoxWidth, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
+			drawText(inputBox.Text.c_str(), x + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+
+			// Line showing where the user currently is in the input field.
 			{
-				std::string currentInput = inputBox.Text;
-				char currentChar;
-				int width = 0;
-				if (currentInput.length() > 0) {
-					currentChar = currentInput[inputBox.CursorIndex];
-					width = getTextWidth(currentInput.substr(0, inputBox.CursorIndex).c_str(), normalSizeFont) - 3;
-				}
-				else
+				if (getMsSinceLastConsoleBlink() > 300)
 				{
-					width = -3;
+					consoleBlinking = !consoleBlinking;
+					lastTimeConsoleBlink = GetTickCount();
 				}
-				drawText("|", x + horizontalSpacing + width, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+
+				if (!consoleBlinking)
+				{
+					std::string currentInput = inputBox.Text;
+					char currentChar;
+					int width = 0;
+					if (currentInput.length() > 0) {
+						currentChar = currentInput[inputBox.CursorIndex];
+						width = getTextWidth(currentInput.substr(0, inputBox.CursorIndex).c_str(), normalSizeFont) - 3;
+					}
+					else
+					{
+						width = -3;
+					}
+					drawText("|", x + horizontalSpacing + width, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+				}
 			}
 		}
 
 		y -= verticalSpacingBetweenLinesAndInputBox;
 
 		// Draw text from selected buffer
-		auto& selectedBuffer = buffers.at(getSelectedIdx());
 		for (int i = (int)selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex; i >= 0; i--)
 		{
 			if (i <= (int)(selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex) - selectedBuffer.MaxDisplayLines)
@@ -408,8 +409,8 @@ namespace Modules
 				buffer.ScrollIndex = 0;
 				this->inputBox.Clear();
 			}
-			else
-				Hide();
+
+			Hide();
 			break;
 
 		case VK_ESCAPE:
@@ -497,8 +498,8 @@ namespace Modules
 						if (commandName.compare(0, currentLine.length(), currentLine) == 0)
 							currentCommandList.push_back(cmd.Name);
 					}
-					buffers.at(getSelectedIdx()).Messages.push_back(std::to_string(currentCommandList.size()) + " commands found starting with \"" + currentLine + ".\"");
-					buffers.at(getSelectedIdx()).Messages.push_back("Press tab to go through them.");
+					buffers.at(getSelectedIdx()).PushLine(std::to_string(currentCommandList.size()) + " commands found starting with \"" + currentLine + ".\"");
+					buffers.at(getSelectedIdx()).PushLine("Press tab to go through them.");
 				}
 			}
 			break;

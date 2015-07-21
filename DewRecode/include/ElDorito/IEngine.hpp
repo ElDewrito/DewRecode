@@ -58,6 +58,7 @@ struct ConsoleBuffer
 	ConsoleInputCallback InputCallback;
 	bool Visible;
 	bool Focused;
+	int TimeLastShown = 0;
 
 	ConsoleBuffer(std::string name, std::string group, ConsoleInputCallback inputCallback, bool visible = false)
 	{
@@ -68,6 +69,12 @@ struct ConsoleBuffer
 		Focused = false;
 		ScrollIndex = 0;
 		MaxDisplayLines = 10;
+	}
+
+	void PushLine(std::string line)
+	{
+		Messages.push_back(line);
+		TimeLastShown = GetTickCount();
 	}
 };
 /*

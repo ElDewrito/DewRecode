@@ -3,6 +3,24 @@
 #include <vector>
 #include <deque>
 
+// Holds information about a command bound to a key
+struct KeyBinding
+{
+	//std::vector<std::string> command; // If this is empty, no command is bound
+	//bool isHold; // True if the command binds to a boolean variable
+	std::string command;
+	bool active; // True if this is a hold command and the key is down
+	std::string key; // the key that corresponds to this code, easier than looking it up again
+};
+
+enum class BindingReturnValue
+{
+	Success,
+	ClearedBinding,
+	UnknownKey,
+	InvalidArgument,
+};
+
 enum class VariableSetReturnValue
 {
 	Success,
@@ -210,6 +228,28 @@ public:
 	/// </summary>
 	/// <returns>Each variables name and value.</returns>
 	virtual std::string SaveVariables() = 0;
+
+	/// <summary>
+	/// Adds or clears a keyboard binding.
+	/// </summary>
+	/// <param name="key">The key to bind.</param>
+	/// <param name="command">The command to run (empty if clearing).</param>
+	/// <returns>BindingReturnValue</returns>
+	BindingReturnValue AddBinding(std::string key, std::string command);
+
+	/// <summary>
+	/// Gets the binding for a key.
+	/// </summary>
+	/// <param name="key">The key.</param>
+	/// <returns>A pointer to the KeyBinding struct for this key.</returns>
+	KeyBinding* GetBinding(std::string key);
+
+	/// <summary>
+	/// Gets the binding for a keycode.
+	/// </summary>
+	/// <param name="keyCode">The key code.</param>
+	/// <returns>A pointer to the KeyBinding struct for this key code.</returns>
+	KeyBinding* GetBinding(int keyCode);
 };
 
 #define COMMANDS_INTERFACE_VERSION001 "Commands001"

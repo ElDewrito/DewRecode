@@ -74,8 +74,6 @@ namespace Modules
 		uint64_t uid = 0;
 		if (pubKey.length() <= 0)
 		{
-			// TODO: run this code before the game, and pop up a message box "Generating keypair..." before the game starts, so players know what's going on
-			dorito.Modules.Console.PrintToConsole("Generating player keypair, this may take a moment...");
 			std::string privKey;
 			dorito.Utils.RSAGenerateKeyPair(4096, privKey, pubKey);
 
@@ -91,7 +89,7 @@ namespace Modules
 			commands->SetVariable(dorito.Modules.Player.VarPlayerPrivKey, privKey, std::string());
 			commands->SetVariable(dorito.Modules.Player.VarPlayerPubKey, pubKey, std::string());
 
-			dorito.Modules.Console.PrintToConsole("Done!");
+			dorito.Modules.Console.PrintToConsole("Keypair generation complete!");
 
 			// save the keypair
 			commands->Execute("WriteConfig");

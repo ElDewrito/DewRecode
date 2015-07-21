@@ -4,6 +4,12 @@
 #include "ElDorito.hpp"
 #include "Modules/ModuleInput.hpp"
 
+namespace
+{
+	// Maps key names to key code values
+	extern std::map<std::string, Blam::KeyCodes> keyCodes;
+}
+
 /// <summary>
 /// Adds a command to the console commands list.
 /// </summary>
@@ -499,20 +505,183 @@ std::string Commands::SaveVariables()
 		if (bind.command.empty() || bind.key.empty())
 			continue;
 
-		ss << "Input.Bind " << bind.key << " ";
-		if (bind.isHold)
-			ss << "+";
-
-		ss << bind.command[0];
-		for (size_t i = 1; i < bind.command.size(); i++)
-			ss << " " << bind.command.at(i);
+		ss << "Input.Bind " << bind.key << " " << bind.command;
 		ss << std::endl;
 	}
 	return ss.str();
 }
 
+/// <summary>
+/// Adds or clears a keyboard binding.
+/// </summary>
+/// <param name="key">The key to bind.</param>
+/// <param name="command">The command to run (empty if clearing).</param>
+/// <returns>BindingReturnValue</returns>
+BindingReturnValue Commands::AddBinding(std::string key, std::string command)
+{
+	// Get the key, convert it to lowercase, and translate it to a key code
+	auto actualKey = ElDorito::Instance().Utils.ToLower(key);
+	auto it = keyCodes.find(key);
+	if (it == keyCodes.end())
+		return BindingReturnValue::UnknownKey;
+
+	auto keyCode = it->second;
+	auto binding = &bindings[keyCode];
+
+	// If no command was specified, unset the binding
+	if (command.empty())
+	{
+		binding->command.clear();
+		return BindingReturnValue::ClearedBinding;
+	}
+
+	// Set the binding
+	binding->key = actualKey;
+	binding->command = command;
+	return BindingReturnValue::Success;
+}
+
+/// <summary>
+/// Gets the binding for a key.
+/// </summary>
+/// <param name="key">The key.</param>
+/// <returns>A pointer to the KeyBinding struct for this key.</returns>
+KeyBinding* Commands::GetBinding(std::string key)
+{
+	auto actualKey = ElDorito::Instance().Utils.ToLower(key);
+	auto it = keyCodes.find(key);
+	if (it == keyCodes.end())
+		return nullptr;
+
+	auto keyCode = it->second;
+	return &bindings[keyCode];
+}
+
+/// <summary>
+/// Gets the binding for a keycode.
+/// </summary>
+/// <param name="keyCode">The key code.</param>
+/// <returns>A pointer to the KeyBinding struct for this key code.</returns>
+KeyBinding* Commands::GetBinding(int keyCode)
+{
+	if (keyCode < 0 || keyCode >= Blam::eKeyCodes_Count)
+		return nullptr;
+
+	return &bindings[keyCode];
+}
+
 namespace
 {
+	// Key codes table
+	std::map<std::string, Blam::KeyCodes> keyCodes =
+	{
+		{ "escape", Blam::eKeyCodesEscape },
+		{ "f1", Blam::eKeyCodesF1 },
+		{ "f2", Blam::eKeyCodesF2 },
+		{ "f3", Blam::eKeyCodesF3 },
+		{ "f4", Blam::eKeyCodesF4 },
+		{ "f5", Blam::eKeyCodesF5 },
+		{ "f6", Blam::eKeyCodesF6 },
+		{ "f7", Blam::eKeyCodesF7 },
+		{ "f8", Blam::eKeyCodesF8 },
+		{ "f9", Blam::eKeyCodesF9 },
+		{ "f10", Blam::eKeyCodesF10 },
+		{ "f11", Blam::eKeyCodesF11 },
+		{ "f12", Blam::eKeyCodesF12 },
+		{ "printscreen", Blam::eKeyCodesPrintScreen },
+		{ "f14", Blam::eKeyCodesF14 },
+		{ "f15", Blam::eKeyCodesF15 },
+		{ "tilde", Blam::eKeyCodesTilde },
+		{ "1", Blam::eKeyCodes1 },
+		{ "2", Blam::eKeyCodes2 },
+		{ "3", Blam::eKeyCodes3 },
+		{ "4", Blam::eKeyCodes4 },
+		{ "5", Blam::eKeyCodes5 },
+		{ "6", Blam::eKeyCodes6 },
+		{ "7", Blam::eKeyCodes7 },
+		{ "8", Blam::eKeyCodes8 },
+		{ "9", Blam::eKeyCodes9 },
+		{ "0", Blam::eKeyCodes0 },
+		{ "minus", Blam::eKeyCodesMinus },
+		{ "plus", Blam::eKeyCodesPlus },
+		{ "back", Blam::eKeyCodesBack },
+		{ "tab", Blam::eKeyCodesTab },
+		{ "q", Blam::eKeyCodesQ },
+		{ "w", Blam::eKeyCodesW },
+		{ "e", Blam::eKeyCodesE },
+		{ "r", Blam::eKeyCodesR },
+		{ "t", Blam::eKeyCodesT },
+		{ "y", Blam::eKeyCodesY },
+		{ "u", Blam::eKeyCodesU },
+		{ "i", Blam::eKeyCodesI },
+		{ "o", Blam::eKeyCodesO },
+		{ "p", Blam::eKeyCodesP },
+		{ "lbracket", Blam::eKeyCodesLBracket },
+		{ "rbracket", Blam::eKeyCodesRBracket },
+		{ "pipe", Blam::eKeyCodesPipe },
+		{ "capital", Blam::eKeyCodesCapital },
+		{ "a", Blam::eKeyCodesA },
+		{ "s", Blam::eKeyCodesS },
+		{ "d", Blam::eKeyCodesD },
+		{ "f", Blam::eKeyCodesF },
+		{ "g", Blam::eKeyCodesG },
+		{ "h", Blam::eKeyCodesH },
+		{ "j", Blam::eKeyCodesJ },
+		{ "k", Blam::eKeyCodesK },
+		{ "l", Blam::eKeyCodesL },
+		{ "colon", Blam::eKeyCodesColon },
+		{ "quote", Blam::eKeyCodesQuote },
+		{ "enter", Blam::eKeyCodesEnter },
+		{ "lshift", Blam::eKeyCodesLShift },
+		{ "z", Blam::eKeyCodesZ },
+		{ "x", Blam::eKeyCodesX },
+		{ "c", Blam::eKeyCodesC },
+		{ "v", Blam::eKeyCodesV },
+		{ "b", Blam::eKeyCodesB },
+		{ "n", Blam::eKeyCodesN },
+		{ "m", Blam::eKeyCodesM },
+		{ "comma", Blam::eKeyCodesComma },
+		{ "period", Blam::eKeyCodesPeriod },
+		{ "question", Blam::eKeyCodesQuestion },
+		{ "rshift", Blam::eKeyCodesRShift },
+		{ "lcontrol", Blam::eKeyCodesLControl },
+		{ "lmenu", Blam::eKeyCodesLmenu },
+		{ "space", Blam::eKeyCodesSpace },
+		{ "rmenu", Blam::eKeyCodesRmenu },
+		{ "apps", Blam::eKeyCodesApps },
+		{ "rcontrol", Blam::eKeyCodesRcontrol },
+		{ "up", Blam::eKeyCodesUp },
+		{ "down", Blam::eKeyCodesDown },
+		{ "left", Blam::eKeyCodesLeft },
+		{ "right", Blam::eKeyCodesRight },
+		{ "insert", Blam::eKeyCodesInsert },
+		{ "home", Blam::eKeyCodesHome },
+		{ "pageup", Blam::eKeyCodesPageUp },
+		{ "delete", Blam::eKeyCodesDelete },
+		{ "end", Blam::eKeyCodesEnd },
+		{ "pagedown", Blam::eKeyCodesPageDown },
+		{ "numlock", Blam::eKeyCodesNumLock },
+		{ "divide", Blam::eKeyCodesDivide },
+		{ "multiply", Blam::eKeyCodesMultiply },
+		{ "numpad0", Blam::eKeyCodesNumpad0 },
+		{ "numpad1", Blam::eKeyCodesNumpad1 },
+		{ "numpad2", Blam::eKeyCodesNumpad2 },
+		{ "numpad3", Blam::eKeyCodesNumpad3 },
+		{ "numpad4", Blam::eKeyCodesNumpad4 },
+		{ "numpad5", Blam::eKeyCodesNumpad5 },
+		{ "numpad6", Blam::eKeyCodesNumpad6 },
+		{ "numpad7", Blam::eKeyCodesNumpad7 },
+		{ "numpad8", Blam::eKeyCodesNumpad8 },
+		{ "numpad9", Blam::eKeyCodesNumpad9 },
+		{ "subtract", Blam::eKeyCodesSubtract },
+		{ "add", Blam::eKeyCodesAdd },
+		{ "numpadenter", Blam::eKeyCodesNumpadEnter },
+		{ "decimal", Blam::eKeyCodesDecimal },
+		{ "shift", Blam::eKeyCodesShift },
+		{ "ctrl", Blam::eKeyCodesCtrl },
+		{ "menu", Blam::eKeyCodesMenu },
+	};
+
 	char** CommandLineToArgvA(char* CmdLine, int* _argc)
 	{
 		char** argv;
