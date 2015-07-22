@@ -71,6 +71,8 @@ namespace Modules
 	class ModuleConsole : public ModuleBase
 	{
 	public:
+		Command* VarOnAllBoxesClosed;
+
 		ModuleConsole();
 
 		void Show(std::string group = "Console");

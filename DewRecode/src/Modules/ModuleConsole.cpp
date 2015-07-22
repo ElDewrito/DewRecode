@@ -67,7 +67,7 @@ namespace
 
 	void UserInputResult(std::string boxTag, std::string result)
 	{
-		ElDorito::Instance().Commands.Execute(boxTag + " " + result);
+		ElDorito::Instance().Commands.Execute(boxTag + " \"" + result + "\"");
 	}
 
 	bool CommandConsoleMsgBox(const std::vector<std::string>& Arguments, std::string& returnInfo)
@@ -75,11 +75,16 @@ namespace
 		if (Arguments.size() <= 1)
 			return false;
 
+		auto& dorito = ElDorito::Instance();
+
+		std::string text = Arguments.at(0);
+		dorito.Utils.ReplaceString(text, "\\n", "\n");
+
 		std::vector<std::string> choices;
 		for (size_t i = 2; i < Arguments.size(); i++)
 			choices.push_back(Arguments.at(i));
 
-		ElDorito::Instance().Modules.Console.ShowMessageBox(Arguments.at(0), Arguments.at(1), choices, UserInputResult);
+		ElDorito::Instance().Modules.Console.ShowMessageBox(text, Arguments.at(1), choices, UserInputResult);
 
 		return true;
 	}
@@ -89,16 +94,21 @@ namespace
 		if (Arguments.size() <= 1)
 			return false;
 
+		auto& dorito = ElDorito::Instance();
+
+		std::string text = Arguments.at(0);
+		dorito.Utils.ReplaceString(text, "\\n", "\n");
+
 		std::string defaultText = "";
 		if (Arguments.size() >= 3)
 			defaultText = Arguments.at(2);
 
-		auto& dorito = ElDorito::Instance();
+		// if defaultText is the name of a variable, use the variables value as the default text
 		auto* cmd = dorito.Commands.Find(defaultText);
 		if (cmd != nullptr && cmd->Type != CommandType::Command)
 			defaultText = cmd->ValueString;
 
-		ElDorito::Instance().Modules.Console.ShowInputBox(Arguments.at(0), Arguments.at(1), defaultText, UserInputResult);
+		ElDorito::Instance().Modules.Console.ShowInputBox(text, Arguments.at(1), defaultText, UserInputResult);
 
 		return true;
 	}
@@ -119,6 +129,8 @@ namespace Modules
 
 		AddCommand("TestInputBox", "testinputbox", "Opens a test input box, result is printed into the console", eCommandFlagsNone, CommandConsoleTestInputBox, { "text(string) The text to show on the message box", "defaultText(string) The default text to use on the input box" });
 		AddCommand("InputBox", "inputbox", "Opens an input box where the user can type an answer, result is passed to specified command", eCommandFlagsNone, CommandConsoleInputBox, { "text(string) The text to show on the message box", "command(string) The command to run, with the result passed to it", "defaultText(string) The default text to use on the input box" });
+
+		VarOnAllBoxesClosed = AddVariableString("OnAllBoxesClosed", "allboxesclosed", "Which command to run after all user input boxes have closed", eCommandFlagsNone);
 
 		ConsoleBuffer consoleBuff("Console", "Console", UIConsoleInput, true);
 		consoleBuff.Focused = true;
@@ -690,6 +702,11 @@ namespace Modules
 			if (queuedBoxes.empty())
 			{
 				userInputBoxVisible = false;
+				if (!VarOnAllBoxesClosed->ValueString.empty())
+				{
+					commands->Execute(VarOnAllBoxesClosed->ValueString, true);
+					commands->SetVariable(VarOnAllBoxesClosed, std::string(""), std::string());
+				}
 				unhookRawInput();
 			}
 			else
