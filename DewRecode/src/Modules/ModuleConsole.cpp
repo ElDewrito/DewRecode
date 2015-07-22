@@ -54,6 +54,29 @@ namespace
 
 		return true;
 	}
+
+	std::string msgBoxCommand;
+
+	void MsgBoxResult(std::string buttonChoice)
+	{
+		ElDorito::Instance().Commands.Execute(msgBoxCommand + " " + buttonChoice);
+	}
+
+	bool CommandConsoleMsgBox(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		if (Arguments.size() <= 1)
+			return false;
+
+		msgBoxCommand = Arguments.at(1);
+
+		std::vector<std::string> choices;
+		for (size_t i = 2; i < Arguments.size(); i++)
+			choices.push_back(Arguments.at(i));
+
+		ElDorito::Instance().Modules.Console.ShowMessageBox(Arguments.at(0), choices, MsgBoxResult);
+
+		return true;
+	}
 }
 
 namespace Modules
@@ -66,8 +89,8 @@ namespace Modules
 		AddCommand("Show", "show_console", "Shows the console/chat UI", eCommandFlagsNone, CommandConsoleShow);
 		AddCommand("Hide", "hide_console", "Hides the console/chat UI", eCommandFlagsNone, CommandConsoleHide);
 
-		AddCommand("TestMsgBox", "msgbox", "Opens a test message box, result is printed into the console", eCommandFlagsNone, CommandConsoleTestMsgBox, { "text(string) The text to show on the message box", "choices(string)... The choices to show on the message box" });
-
+		AddCommand("TestMsgBox", "testmsgbox", "Opens a test message box, result is printed into the console", eCommandFlagsNone, CommandConsoleTestMsgBox, { "text(string) The text to show on the message box", "choices(string)... The choices to show on the message box" });
+		AddCommand("MsgBox", "msgbox", "Opens a message box, result is passed to the command specified", eCommandFlagsNone, CommandConsoleMsgBox, { "text(string) The text to show on the message box", "command(string) The command to run, with the result passed to it", "choices(string)... The choices to show on the message box" });
 		ConsoleBuffer consoleBuff("Console", "Console", UIConsoleInput, true);
 		consoleBuff.Focused = true;
 
@@ -294,7 +317,7 @@ namespace Modules
 				if (i <= (int)(selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex) - selectedBuffer.MaxDisplayLines)
 					break;
 
-				std::string line = selectedBuffer.Messages.at(i);
+				std::string& line = selectedBuffer.Messages.at(i);
 				if (line.size() > maxCharsPerLine)
 				{
 					std::vector<std::string> linesWrapped = std::vector < std::string > {};
