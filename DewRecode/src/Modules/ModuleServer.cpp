@@ -73,148 +73,6 @@ namespace
 		}
 	}
 
-	DWORD WINAPI CommandServerAnnounce_Thread(LPVOID lpParam)
-	{
-		std::stringstream ss;
-		std::vector<std::string> announceEndpoints;
-		auto& dorito = ElDorito::Instance();
-
-		GetEndpoints(announceEndpoints, "announce");
-
-		for (auto server : announceEndpoints)
-		{
-			HttpRequest req;
-			try
-			{
-				req = ElDorito::Instance().Utils.HttpSendRequest(dorito.Utils.WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString), L"GET", L"ElDewrito/" + dorito.Utils.WidenString(Utils::Version::GetVersionString()), L"", L"", L"", NULL, 0);
-				if (req.Error != HttpRequestError::None)
-				{
-					ss << "Unable to connect to master server " << server << " (error: " << (int)req.Error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
-					continue;
-				}
-			}
-			catch(...) // TODO: find out what exception is being caused
-			{
-				ss << "Exception during master server announce request to " << server << std::endl << std::endl;
-				continue;
-			}
-
-			// make sure the server replied with 200 OK
-			std::wstring expected = L"HTTP/1.1 200 OK";
-			if (req.ResponseHeader.length() < expected.length())
-			{
-				ss << "Invalid master server announce response from " << server << std::endl << std::endl;
-				continue;
-			}
-
-			auto respHdr = req.ResponseHeader.substr(0, expected.length());
-			if (respHdr.compare(expected))
-			{
-				ss << "Invalid master server announce response from " << server << std::endl << std::endl;
-				continue;
-			}
-
-			// parse the json response
-			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
-			rapidjson::Document json;
-			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
-			{
-				ss << "Invalid master server JSON response from " << server << std::endl << std::endl;
-				continue;
-			}
-
-			if (!json.HasMember("result"))
-			{
-				ss << "Master server JSON response from " << server << " is missing data." << std::endl << std::endl;
-				continue;
-			}
-
-			auto& result = json["result"];
-			if (result["code"].GetInt() != 0)
-			{
-				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
-				continue;
-			}
-		}
-
-		std::string errors = ss.str();
-		if (!errors.empty())
-			dorito.Logger.Log(LogSeverity::Error, "Announce", ss.str());
-
-		return true;
-	}
-
-	DWORD WINAPI CommandServerUnannounce_Thread(LPVOID lpParam)
-	{
-		std::stringstream ss;
-		std::vector<std::string> announceEndpoints;
-		auto& dorito = ElDorito::Instance();
-
-		GetEndpoints(announceEndpoints, "announce");
-
-		for (auto server : announceEndpoints)
-		{
-			HttpRequest req;
-			try
-			{
-				req = ElDorito::Instance().Utils.HttpSendRequest(dorito.Utils.WidenString(server + "?port=" + dorito.Modules.Server.VarServerPort->ValueString + "&shutdown=true"), L"GET", L"ElDewrito/" + dorito.Utils.WidenString(Utils::Version::GetVersionString()), L"", L"", L"", NULL, 0);
-				if (req.Error != HttpRequestError::None)
-				{
-					ss << "Unable to connect to master server " << server << " (error: " << (int)req.Error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
-					continue;
-				}
-			}
-			catch (...)
-			{
-				ss << "Exception during master server unannounce request to " << server << std::endl << std::endl;
-				continue;
-			}
-
-			// make sure the server replied with 200 OK
-			std::wstring expected = L"HTTP/1.1 200 OK";
-			if (req.ResponseHeader.length() < expected.length())
-			{
-				ss << "Invalid master server unannounce response from " << server << std::endl << std::endl;
-				continue;
-			}
-
-			auto respHdr = req.ResponseHeader.substr(0, expected.length());
-			if (respHdr.compare(expected))
-			{
-				ss << "Invalid master server unannounce response from " << server << std::endl << std::endl;
-				continue;
-			}
-
-			// parse the json response
-			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
-			rapidjson::Document json;
-			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
-			{
-				ss << "Invalid master server JSON response from " << server << std::endl << std::endl;
-				continue;
-			}
-
-			if (!json.HasMember("result"))
-			{
-				ss << "Master server JSON response from " << server << " is missing data." << std::endl << std::endl;
-				continue;
-			}
-
-			auto& result = json["result"];
-			if (result["code"].GetInt() != 0)
-			{
-				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
-				continue;
-			}
-		}
-
-		std::string errors = ss.str();
-		if (!errors.empty())
-			dorito.Logger.Log(LogSeverity::Error, "Unannounce", ss.str());
-
-		return true;
-	}
-
 	DWORD WINAPI CommandServerAnnounceStats_Thread(LPVOID lpParam)
 	{
 		std::stringstream ss;
@@ -356,28 +214,6 @@ namespace
 		if (!errors.empty())
 			dorito.Logger.Log(LogSeverity::Error, "AnnounceStats", ss.str());
 
-		return true;
-	}
-
-	bool CommandServerAnnounce(const std::vector<std::string>& Arguments, std::string& returnInfo)
-	{
-		// TODO2: 
-		//if (!Patches::Network::IsInfoSocketOpen())
-		//	return false;
-
-		auto thread = CreateThread(NULL, 0, CommandServerAnnounce_Thread, (LPVOID)&Arguments, 0, NULL);
-		returnInfo = "Announcing to master servers...";
-		return true;
-	}
-
-	bool CommandServerUnannounce(const std::vector<std::string>& Arguments, std::string& returnInfo)
-	{
-		// TODO2: 
-		//if (!Patches::Network::IsInfoSocketOpen())
-		//	return false;
-
-		auto thread = CreateThread(NULL, 0, CommandServerUnannounce_Thread, (LPVOID)&Arguments, 0, NULL);
-		returnInfo = "Unannouncing to master servers...";
 		return true;
 	}
 
@@ -599,17 +435,11 @@ namespace Modules
 		VarServerMaxPlayers->ValueIntMin = 1;
 		VarServerMaxPlayers->ValueIntMax = 16;
 
-		VarServerPort = AddVariableInt("Port", "server_port", "The port number the HTTP server runs on, game uses different one", eCommandFlagsArchived, 11784);
-		VarServerPort->ValueIntMin = 1;
-		VarServerPort->ValueIntMax = 0xFFFF;
-
 		VarServerCheats = AddVariableInt("Cheats", "sv_cheats", "Allows/blocks using cheat commands", eCommandFlagsReplicated, 0);
 		VarServerCheats->ValueIntMin = 0;
 		VarServerCheats->ValueIntMax = 1;
 
 		AddCommand("Connect", "connect", "Begins establishing a connection to a server", eCommandFlagsRunOnMainMenu, CommandServerConnect, { "host:port The server info to connect to", "password(string) The password for the server" });
-		AddCommand("Announce", "announce", "Announces this server to the master servers", eCommandFlagsMustBeHosting, CommandServerAnnounce);
-		AddCommand("Unannounce", "unannounce", "Notifies the master servers to remove this server", eCommandFlagsMustBeHosting, CommandServerUnannounce);
 
 		AddCommand("AnnounceStats", "announcestats", "Announces the players stats to the masters at the end of the game", eCommandFlagsNone, CommandServerAnnounceStats);
 	}

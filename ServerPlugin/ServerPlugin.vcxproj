@@ -59,13 +59,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SERVERPLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../DewRecode/include/;../ThirdParty/rapidjson/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../DewRecode/include/;../ThirdParty/rapidjson/;../ThirdParty/libwebsockets/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mtndew.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../Debug/</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mtndew.lib;Ws2_32.lib;ZLib.lib;libwebsocketswin32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../Debug/;../ThirdParty/libwebsockets/lib/</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>Copy /Y "$(TargetDir)$(TargetFileName)" "C:\Halo\mods\plugins\$(TargetFileName)"</Command>
@@ -80,15 +81,16 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SERVERPLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../DewRecode/include/;../ThirdParty/rapidjson/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../DewRecode/include/;../ThirdParty/rapidjson/;../ThirdParty/libwebsockets/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>mtndew.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../Release/</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mtndew.lib;Ws2_32.lib;ZLib.lib;libwebsocketswin32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../Release/;../ThirdParty/libwebsockets/lib/</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>Copy /Y "$(TargetDir)$(TargetFileName)" "C:\Halo\mods\plugins\$(TargetFileName)"</Command>

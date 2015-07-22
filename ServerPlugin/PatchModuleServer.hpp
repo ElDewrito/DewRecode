@@ -11,6 +11,8 @@ namespace Modules
 	public:
 		Command* VarServerName;
 		Command* VarServerPassword;
+		Command* VarServerPort;
+		Command* VarRconWSPort;
 		Command* VarServerShouldAnnounce;
 
 		PatchModuleServer();

@@ -1,10 +1,18 @@
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <libwebsockets.h>
 #include "PatchModuleServer.hpp"
+#include <iostream>
+#include <fstream>
+#include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 #include <ElDorito/Blam/BlamTypes.hpp>
 
 Modules::PatchModuleServer ServerPatches;
 IUtils* PublicUtils;
+IEngine* Engine;
+IDebugLog* Logger;
+ICommands* Commands;
 
 namespace
 {
@@ -13,9 +21,113 @@ namespace
 		return ServerPatches.WndProc(hWnd, msg, wParam, lParam);
 	}
 
+	static int callback_http(struct libwebsocket_context *context, struct libwebsocket *wsi, enum libwebsocket_callback_reasons reason, void *user, void *in, size_t len)
+	{
+		return 0;
+	}
+
+	static int callback_dew_rcon(struct libwebsocket_context *context, struct libwebsocket *wsi, enum libwebsocket_callback_reasons reason, void *user, void *in, size_t len)
+	{
+		//auto& console = GameConsole::Instance();
+		switch (reason) {
+		case LWS_CALLBACK_ESTABLISHED: // just log message that someone is connecting
+
+			//console.consoleQueue.pushLineFromGameToUI("Websocket Connection Established!");
+			break;
+		case LWS_CALLBACK_RECEIVE: {
+			//console.consoleQueue.pushLineFromGameToUI("received data:" + std::string((char *)in));
+
+			std::string send = Commands->Execute(std::string((char *)in), true);
+
+			unsigned char *sendChar = (unsigned char*)malloc(LWS_SEND_BUFFER_PRE_PADDING + send.length() + LWS_SEND_BUFFER_POST_PADDING);
+
+			for (size_t i = 0; i < send.length(); i++) {
+				sendChar[LWS_SEND_BUFFER_PRE_PADDING + i] = send.c_str()[i];
+			}
+
+			libwebsocket_write(wsi, &sendChar[LWS_SEND_BUFFER_PRE_PADDING], send.length(), LWS_WRITE_TEXT);
+
+			// release memory back into the wild
+			free(sendChar);
+			break;
+		}
+		default:
+			break;
+		}
+
+		return 0;
+	}
+
+	static struct libwebsocket_protocols protocols[] = {
+		/* first protocol must always be HTTP handler */
+		{
+			"http-only",   // name
+			callback_http, // callback
+			0              // per_session_data_size
+		},
+		{
+			"dew-rcon",			// protocol name - very important!
+			callback_dew_rcon,	// callback
+			0					// we don't use any per session data
+		},
+		{
+			NULL, NULL, 0   /* End of list */
+		}
+	};
+
+	DWORD WINAPI StartRconWebSocketServer(LPVOID)
+	{
+		// server url will be http://localhost:11776
+		struct libwebsocket_context *context = nullptr;
+		// create libwebsocket context representing this server
+		int opts = 0;
+		char interface_name[128] = "";
+		const char * interfacez = NULL;
+
+		//TODO: implement https/ssl later
+		const char *cert_path = "/libwebsockets-test-server.pem";
+		const char *key_path = "/libwebsockets-test-server.key.pem";
+
+		//if (!use_ssl)
+		cert_path = key_path = NULL;
+
+
+		int port = ServerPatches.VarRconWSPort->ValueInt;
+		int maxPort = port + 10;
+		while (context == nullptr && maxPort > port)
+		{
+			context = libwebsocket_create_context(port, interfacez, protocols,
+				libwebsocket_internal_extensions,
+				cert_path, key_path, NULL, -1, -1, opts);
+			port++;
+		}
+
+		if (context == nullptr)
+		{
+			//console.consoleQueue.pushLineFromGameToUI("libwebsocket init failed\n");
+			return -1;
+		}
+
+
+		// infinite loop, to end this server send SIGTERM. (CTRL+C)
+		while (1) {
+			libwebsocket_service(context, 50);
+			// libwebsocket_service will process all waiting events with their
+			// callback functions and then wait 50 ms.
+			// (this is a single threaded webserver and this will keep our server
+			// from generating load while there are not requests to process)
+		}
+
+		libwebsocket_context_destroy(context);
+
+		return 0;
+	}
+
 	void CallbackRemoteConsoleStart(void* param)
 	{
 		ServerPatches.RemoteConsoleStart();
+
+		auto thread = CreateThread(NULL, 0, StartRconWebSocketServer, 0, 0, NULL);
 	}
 
 	void CallbackInfoServerStart(void* param)
@@ -120,6 +232,198 @@ namespace
 
 		return true;
 	}
+
+	// retrieves master server endpoints from dewrito.json
+	// TODO1: move this to be part of IEngine?
+	void GetEndpoints(std::vector<std::string>& destVect, std::string endpointType)
+	{
+		std::ifstream in("dewrito.json", std::ios::in | std::ios::binary);
+		if (in && in.is_open())
+		{
+			std::string contents;
+			in.seekg(0, std::ios::end);
+			contents.resize((unsigned int)in.tellg());
+			in.seekg(0, std::ios::beg);
+			in.read(&contents[0], contents.size());
+			in.close();
+
+			rapidjson::Document json;
+			if (!json.Parse<0>(contents.c_str()).HasParseError() && json.IsObject())
+			{
+				if (json.HasMember("masterServers"))
+				{
+					auto& mastersArray = json["masterServers"];
+					for (auto it = mastersArray.Begin(); it != mastersArray.End(); it++)
+					{
+						destVect.push_back((*it)[endpointType.c_str()].GetString());
+					}
+				}
+			}
+		}
+	}
+
+
+	DWORD WINAPI CommandServerAnnounce_Thread(LPVOID lpParam)
+	{
+		std::stringstream ss;
+		std::vector<std::string> announceEndpoints;
+
+		GetEndpoints(announceEndpoints, "announce");
+
+		for (auto server : announceEndpoints)
+		{
+			HttpRequest req;
+			try
+			{
+				req = PublicUtils->HttpSendRequest(PublicUtils->WidenString(server + "?port=" + ServerPatches.VarServerPort->ValueString), L"GET", L"ElDewrito/" + PublicUtils->WidenString(Engine->GetDoritoVersionString()), L"", L"", L"", NULL, 0);
+				if (req.Error != HttpRequestError::None)
+				{
+					ss << "Unable to connect to master server " << server << " (error: " << (int)req.Error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
+					continue;
+				}
+			}
+			catch (...) // TODO: find out what exception is being caused
+			{
+				ss << "Exception during master server announce request to " << server << std::endl << std::endl;
+				continue;
+			}
+
+			// make sure the server replied with 200 OK
+			std::wstring expected = L"HTTP/1.1 200 OK";
+			if (req.ResponseHeader.length() < expected.length())
+			{
+				ss << "Invalid master server announce response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			auto respHdr = req.ResponseHeader.substr(0, expected.length());
+			if (respHdr.compare(expected))
+			{
+				ss << "Invalid master server announce response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			// parse the json response
+			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
+			rapidjson::Document json;
+			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
+			{
+				ss << "Invalid master server JSON response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			if (!json.HasMember("result"))
+			{
+				ss << "Master server JSON response from " << server << " is missing data." << std::endl << std::endl;
+				continue;
+			}
+
+			auto& result = json["result"];
+			if (result["code"].GetInt() != 0)
+			{
+				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
+				continue;
+			}
+		}
+
+		std::string errors = ss.str();
+		if (!errors.empty())
+			Logger->Log(LogSeverity::Error, "Announce", ss.str());
+
+		return true;
+	}
+
+	DWORD WINAPI CommandServerUnannounce_Thread(LPVOID lpParam)
+	{
+		std::stringstream ss;
+		std::vector<std::string> announceEndpoints;
+
+		GetEndpoints(announceEndpoints, "announce");
+
+		for (auto server : announceEndpoints)
+		{
+			HttpRequest req;
+			try
+			{
+				req = PublicUtils->HttpSendRequest(PublicUtils->WidenString(server + "?port=" + ServerPatches.VarServerPort->ValueString + "&shutdown=true"), L"GET", L"ElDewrito/" + PublicUtils->WidenString(Engine->GetDoritoVersionString()), L"", L"", L"", NULL, 0);
+				if (req.Error != HttpRequestError::None)
+				{
+					ss << "Unable to connect to master server " << server << " (error: " << (int)req.Error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
+					continue;
+				}
+			}
+			catch (...)
+			{
+				ss << "Exception during master server unannounce request to " << server << std::endl << std::endl;
+				continue;
+			}
+
+			// make sure the server replied with 200 OK
+			std::wstring expected = L"HTTP/1.1 200 OK";
+			if (req.ResponseHeader.length() < expected.length())
+			{
+				ss << "Invalid master server unannounce response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			auto respHdr = req.ResponseHeader.substr(0, expected.length());
+			if (respHdr.compare(expected))
+			{
+				ss << "Invalid master server unannounce response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			// parse the json response
+			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
+			rapidjson::Document json;
+			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
+			{
+				ss << "Invalid master server JSON response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			if (!json.HasMember("result"))
+			{
+				ss << "Master server JSON response from " << server << " is missing data." << std::endl << std::endl;
+				continue;
+			}
+
+			auto& result = json["result"];
+			if (result["code"].GetInt() != 0)
+			{
+				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
+				continue;
+			}
+		}
+
+		std::string errors = ss.str();
+		if (!errors.empty())
+			Logger->Log(LogSeverity::Error, "Unannounce", ss.str());
+
+		return true;
+	}
+
+	bool CommandServerAnnounce(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		// TODO2: 
+		//if (!Patches::Network::IsInfoSocketOpen())
+		//	return false;
+
+		auto thread = CreateThread(NULL, 0, CommandServerAnnounce_Thread, (LPVOID)&Arguments, 0, NULL);
+		returnInfo = "Announcing to master servers...";
+		return true;
+	}
+
+	bool CommandServerUnannounce(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		// TODO2: 
+		//if (!Patches::Network::IsInfoSocketOpen())
+		//	return false;
+
+		auto thread = CreateThread(NULL, 0, CommandServerUnannounce_Thread, (LPVOID)&Arguments, 0, NULL);
+		returnInfo = "Unannouncing to master servers...";
+		return true;
+	}
 }
 
 namespace Modules
@@ -127,6 +431,9 @@ namespace Modules
 	PatchModuleServer::PatchModuleServer() : ModuleBase("Server")
 	{
 		PublicUtils = utils;
+		Engine = engine;
+		Logger = logger;
+		Commands = commands;
 
 		engine->OnWndProc(PluginWndProc);
 		engine->OnEvent("Core", "Engine.FirstTick", CallbackRemoteConsoleStart);
@@ -142,6 +449,17 @@ namespace Modules
 
 		AddCommand("KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsMustBeHosting, CommandServerKickPlayer, { "playername/UID The name or UID of the player to kick" });
 		AddCommand("ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsMustBeHosting, CommandServerListPlayers);
+
+		VarServerPort = AddVariableInt("Port", "server_port", "The port number the HTTP server runs on, game uses different one", eCommandFlagsArchived, 11784);
+		VarServerPort->ValueIntMin = 1;
+		VarServerPort->ValueIntMax = 0xFFFF;
+
+		VarRconWSPort = AddVariableInt("RconPort", "rcon_port", "The port number for the RCON/WebSockets server", eCommandFlagsArchived, 11765);
+		VarRconWSPort->ValueIntMin = 1;
+		VarRconWSPort->ValueIntMax = 0xFFFF;
+
+		AddCommand("Announce", "announce", "Announces this server to the master servers", eCommandFlagsMustBeHosting, CommandServerAnnounce);
+		AddCommand("Unannounce", "unannounce", "Notifies the master servers to remove this server", eCommandFlagsMustBeHosting, CommandServerUnannounce);
 	}
 
 	void PatchModuleServer::Announce()
