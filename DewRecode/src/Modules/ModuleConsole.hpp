@@ -56,6 +56,16 @@ public:
 	}
 };
 
+struct UserInputBox
+{
+	std::string Text;
+	std::string Tag; // a tag / identifier associated with this box, gets passed to the callback with the result
+	std::vector<std::string> Choices;
+	std::string DefaultText;
+	UserInputBoxCallback Callback;
+	bool IsMsgBox = false;
+};
+
 namespace Modules
 {
 	class ModuleConsole : public ModuleBase
@@ -66,8 +76,9 @@ namespace Modules
 		void Show(std::string group = "Console");
 		void Hide();
 		bool IsVisible() { return visible; }
-		void ShowMessageBox(std::string text, const StringArrayInitializerType& choices, MessageBoxCallback callback);
-		void ShowMessageBox(std::string text, std::vector<std::string>& choices, MessageBoxCallback callback);
+		void ShowMessageBox(std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback);
+		void ShowMessageBox(std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback);
+		void ShowInputBox(std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback);
 
 		void PrintToConsole(std::string str);
 
@@ -94,13 +105,14 @@ namespace Modules
 	private:
 		const size_t INPUT_MAX_CHARS = 400;
 		bool visible = false;
-		bool msgBoxVisible = false;
+		bool userInputBoxVisible = false;
 		bool rawInputHooked = false;
 
-		std::string msgBoxText;
-		std::vector<std::string> msgBoxChoices;
-		MessageBoxCallback msgBoxCallback;
+		UserInputBox currentBox;
+		std::vector<UserInputBox> queuedBoxes;
+
 		int msgBoxSelectedButton;
+		TextInput userInputBoxText;
 
 		TextInput inputBox;
 
@@ -141,9 +153,10 @@ namespace Modules
 
 		int getMsSinceLastConsoleBlink();
 
-		void messageBoxKeyCallback(USHORT vKey);
+		void userInputBoxKeyCallback(USHORT vKey);
 		void consoleKeyCallBack(USHORT vKey);
-		void handleDefaultKeyInput(USHORT vKey);
+
+		void handleDefaultKeyInput(USHORT vKey, TextInput& inputBox);
 
 		int getSelectedIdxForGroup(std::string group);
 		int getNumBuffersInGroup(std::string group);

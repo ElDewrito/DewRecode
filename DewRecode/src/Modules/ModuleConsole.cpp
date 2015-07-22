@@ -36,9 +36,9 @@ namespace
 		return true;
 	}
 
-	void TestMsgBoxResult(std::string buttonChoice)
+	void TestUserInputResult(std::string boxTag, std::string result)
 	{
-		ElDorito::Instance().Modules.Console.PrintToConsole("You chose: " + buttonChoice);
+		ElDorito::Instance().Modules.Console.PrintToConsole(boxTag + " result: " + result);
 	}
 
 	bool CommandConsoleTestMsgBox(const std::vector<std::string>& Arguments, std::string& returnInfo)
@@ -50,16 +50,24 @@ namespace
 		for (size_t i = 1; i < Arguments.size(); i++)
 			choices.push_back(Arguments.at(i));
 
-		ElDorito::Instance().Modules.Console.ShowMessageBox(Arguments.at(0), choices, TestMsgBoxResult);
+		ElDorito::Instance().Modules.Console.ShowMessageBox(Arguments.at(0), "testMsgBox", choices, TestUserInputResult);
 
 		return true;
 	}
 
-	std::string msgBoxCommand;
-
-	void MsgBoxResult(std::string buttonChoice)
+	bool CommandConsoleTestInputBox(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		ElDorito::Instance().Commands.Execute(msgBoxCommand + " " + buttonChoice);
+		if (Arguments.size() <= 0)
+			return false;
+
+		ElDorito::Instance().Modules.Console.ShowInputBox(Arguments.at(0), "testInputBox", Arguments.at(1), TestUserInputResult);
+
+		return true;
+	}
+
+	void UserInputResult(std::string boxTag, std::string result)
+	{
+		ElDorito::Instance().Commands.Execute(boxTag + " " + result);
 	}
 
 	bool CommandConsoleMsgBox(const std::vector<std::string>& Arguments, std::string& returnInfo)
@@ -67,13 +75,30 @@ namespace
 		if (Arguments.size() <= 1)
 			return false;
 
-		msgBoxCommand = Arguments.at(1);
-
 		std::vector<std::string> choices;
 		for (size_t i = 2; i < Arguments.size(); i++)
 			choices.push_back(Arguments.at(i));
 
-		ElDorito::Instance().Modules.Console.ShowMessageBox(Arguments.at(0), choices, MsgBoxResult);
+		ElDorito::Instance().Modules.Console.ShowMessageBox(Arguments.at(0), Arguments.at(1), choices, UserInputResult);
+
+		return true;
+	}
+
+	bool CommandConsoleInputBox(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		if (Arguments.size() <= 1)
+			return false;
+
+		std::string defaultText = "";
+		if (Arguments.size() >= 3)
+			defaultText = Arguments.at(2);
+
+		auto& dorito = ElDorito::Instance();
+		auto* cmd = dorito.Commands.Find(defaultText);
+		if (cmd != nullptr && cmd->Type != CommandType::Command)
+			defaultText = cmd->ValueString;
+
+		ElDorito::Instance().Modules.Console.ShowInputBox(Arguments.at(0), Arguments.at(1), defaultText, UserInputResult);
 
 		return true;
 	}
@@ -91,6 +116,10 @@ namespace Modules
 
 		AddCommand("TestMsgBox", "testmsgbox", "Opens a test message box, result is printed into the console", eCommandFlagsNone, CommandConsoleTestMsgBox, { "text(string) The text to show on the message box", "choices(string)... The choices to show on the message box" });
 		AddCommand("MsgBox", "msgbox", "Opens a message box, result is passed to the command specified", eCommandFlagsNone, CommandConsoleMsgBox, { "text(string) The text to show on the message box", "command(string) The command to run, with the result passed to it", "choices(string)... The choices to show on the message box" });
+
+		AddCommand("TestInputBox", "testinputbox", "Opens a test input box, result is printed into the console", eCommandFlagsNone, CommandConsoleTestInputBox, { "text(string) The text to show on the message box", "defaultText(string) The default text to use on the input box" });
+		AddCommand("InputBox", "inputbox", "Opens an input box where the user can type an answer, result is passed to specified command", eCommandFlagsNone, CommandConsoleInputBox, { "text(string) The text to show on the message box", "command(string) The command to run, with the result passed to it", "defaultText(string) The default text to use on the input box" });
+
 		ConsoleBuffer consoleBuff("Console", "Console", UIConsoleInput, true);
 		consoleBuff.Focused = true;
 
@@ -125,26 +154,60 @@ namespace Modules
 		buffers.at(getSelectedIdx()).TimeLastShown = GetTickCount();
 		visible = false;
 
-		if (!msgBoxVisible)
-			unhookRawInput();
+		unhookRawInput();
 	}
 
-	void ModuleConsole::ShowMessageBox(std::string text, const StringArrayInitializerType& choices, MessageBoxCallback callback)
+	void ModuleConsole::ShowMessageBox(std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback)
 	{
 		std::vector<std::string> choicesVect = choices;
-		ShowMessageBox(text, choicesVect, callback);
+		ShowMessageBox(text, tag, choicesVect, callback);
 	}
 
-	void ModuleConsole::ShowMessageBox(std::string text, std::vector<std::string>& choices, MessageBoxCallback callback)
+	void ModuleConsole::ShowMessageBox(std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback)
 	{
-		// TODO: support having multiple msg boxes at once
-		msgBoxText = text;
-		msgBoxChoices = choices;
-		msgBoxCallback = callback;
-		msgBoxSelectedButton = 0;
-		msgBoxVisible = true;
+		UserInputBox box;
+		box.Text = text;
+		box.Tag = tag;
+		box.Choices = choices;
+		box.Callback = callback;
+		box.IsMsgBox = true;
 
-		hookRawInput();
+		capsLockToggled = GetKeyState(VK_CAPITAL) & 1;
+
+		if (userInputBoxVisible)
+			queuedBoxes.push_back(box);
+		else
+		{
+			currentBox = box;
+			userInputBoxVisible = true;
+			msgBoxSelectedButton = 0;
+
+			hookRawInput();
+		}
+	}
+
+	void ModuleConsole::ShowInputBox(std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback)
+	{
+		UserInputBox box;
+		box.Text = text;
+		box.Tag = tag;
+		box.DefaultText = defaultText;
+		box.Callback = callback;
+		box.IsMsgBox = false;
+
+		capsLockToggled = GetKeyState(VK_CAPITAL) & 1;
+
+		if (userInputBoxVisible)
+			queuedBoxes.push_back(box);
+		else
+		{
+			currentBox = box;
+			userInputBoxVisible = true;
+			msgBoxSelectedButton = 0;
+			userInputBoxText.Set(defaultText);
+
+			hookRawInput();
+		}
 	}
 
 	void ModuleConsole::hookRawInput()
@@ -167,7 +230,7 @@ namespace Modules
 
 	void ModuleConsole::unhookRawInput()
 	{
-		if (!rawInputHooked)
+		if (!rawInputHooked || visible || userInputBoxVisible)
 			return;
 
 		// Enables game keyboard input and disables our keyboard hook
@@ -341,7 +404,7 @@ namespace Modules
 			}
 		}
 
-		if (msgBoxVisible)
+		if (userInputBoxVisible)
 		{
 			int msgBoxX = (int)(0.25 * res.first);
 			int msgBoxY = (int)(0.25 * res.second);
@@ -352,37 +415,76 @@ namespace Modules
 
 			drawBox(device, msgBoxX, msgBoxY, msgBoxWidth, msgBoxHeight, COLOR_WHITE, COLOR_BLACK);
 			int height = 1;
-			size_t numLines = std::count(msgBoxText.begin(), msgBoxText.end(), '\n');
+			size_t numLines = std::count(currentBox.Text.begin(), currentBox.Text.end(), '\n');
 			height += numLines;
 
 			int heightPixels = normalSizeFontHeight * height; // this is a little off, but should be fine
 
-			drawText(msgBoxText.c_str(), centerTextHorizontally(msgBoxText.c_str(), msgBoxX, msgBoxWidth, normalSizeFont), msgBoxY + (int)(0.5 * msgBoxHeight) - (int)(0.5 * heightPixels), COLOR_WHITE, normalSizeFont);
+			drawText(currentBox.Text.c_str(), centerTextHorizontally(currentBox.Text.c_str(), msgBoxX, msgBoxWidth, normalSizeFont), msgBoxY + (int)(0.5 * msgBoxHeight) - (int)(0.5 * heightPixels), COLOR_WHITE, normalSizeFont);
 
-			int largestButtonWidth = 0;
-			for (auto choice : msgBoxChoices)
+			int buttonY = msgBoxY + msgBoxHeight - ((int)(0.075 * msgBoxHeight)) - inputTextBoxHeight;
+			if (currentBox.IsMsgBox)
 			{
-				int width = getTextWidth(choice.c_str(), normalSizeFont) + 2 * horizontalSpacing;
-				if (width > largestButtonWidth)
-					largestButtonWidth = width;
+				int largestButtonWidth = 0;
+				for (auto choice : currentBox.Choices)
+				{
+					int width = getTextWidth(choice.c_str(), normalSizeFont) + 2 * horizontalSpacing;
+					if (width > largestButtonWidth)
+						largestButtonWidth = width;
+				}
+
+				int totalBtnWidth = (largestButtonWidth * currentBox.Choices.size());
+				int spaceBetweenButtons = (int)(0.04 * msgBoxWidth);
+				if (currentBox.Choices.size() > 1)
+					totalBtnWidth += (spaceBetweenButtons * (currentBox.Choices.size() - 1)); // spaces between each button
+				int buttonX = msgBoxX + (int)(0.5 * (msgBoxWidth - totalBtnWidth));
+
+				for (size_t i = 0; i < currentBox.Choices.size(); i++)
+				{
+					std::string& choice = currentBox.Choices.at(i);
+
+					drawBox(device, buttonX, buttonY, largestButtonWidth, inputTextBoxHeight, COLOR_WHITE, i == msgBoxSelectedButton ? COLOR_GREEN : COLOR_BLACK);
+
+					int textX = centerTextHorizontally(choice.c_str(), buttonX, largestButtonWidth, normalSizeFont);
+					drawText(choice.c_str(), textX, buttonY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+					buttonX += largestButtonWidth + spaceBetweenButtons;
+				}
 			}
-
-			int totalBtnWidth = (largestButtonWidth * msgBoxChoices.size());
-			int spaceBetweenButtons = (int)(0.04 * msgBoxWidth);
-			if (msgBoxChoices.size() > 1)
-				totalBtnWidth += (spaceBetweenButtons * (msgBoxChoices.size() - 1)); // spaces between each button
-			int buttonX = msgBoxX + (int)(0.5 * (msgBoxWidth - totalBtnWidth));
-
-			for (size_t i = 0; i < msgBoxChoices.size(); i++)
+			else
 			{
-				std::string& choice = msgBoxChoices.at(i);
-				int buttonY = msgBoxY + msgBoxHeight - ((int)(0.075 * msgBoxHeight)) - inputTextBoxHeight;
+				// drawing an input box
+				int spaceBetweenInputBoxAndMsgBox = (int)(0.04 * msgBoxWidth);
+				int inputBoxWidth = msgBoxWidth - (spaceBetweenInputBoxAndMsgBox * 2);
+				int inputBoxX = msgBoxX + spaceBetweenInputBoxAndMsgBox;
 
-				drawBox(device, buttonX, buttonY, largestButtonWidth, inputTextBoxHeight, COLOR_WHITE, i == msgBoxSelectedButton ? COLOR_GREEN : COLOR_BLACK);
+				// Display current input (TODO4: scroll input thats longer than the input box)
+				drawBox(device, inputBoxX, buttonY, inputBoxWidth, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
+				drawText(userInputBoxText.Text.c_str(), inputBoxX + horizontalSpacing, buttonY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
 
-				int textX = centerTextHorizontally(choice.c_str(), buttonX, largestButtonWidth, normalSizeFont);
-				drawText(choice.c_str(), textX, buttonY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
-				buttonX += largestButtonWidth + spaceBetweenButtons;
+				// Line showing where the user currently is in the input field.
+				{
+					if (getMsSinceLastConsoleBlink() > 300)
+					{
+						consoleBlinking = !consoleBlinking;
+						lastTimeConsoleBlink = GetTickCount();
+					}
+
+					if (!consoleBlinking)
+					{
+						std::string currentInput = userInputBoxText.Text;
+						char currentChar;
+						int width = 0;
+						if (currentInput.length() > 0) {
+							currentChar = currentInput[userInputBoxText.CursorIndex];
+							width = getTextWidth(currentInput.substr(0, userInputBoxText.CursorIndex).c_str(), normalSizeFont) - 3;
+						}
+						else
+						{
+							width = -3;
+						}
+						drawText("|", inputBoxX + horizontalSpacing + width, buttonY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+					}
+				}
 			}
 		}
 
@@ -494,7 +596,7 @@ namespace Modules
 
 	LRESULT ModuleConsole::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if ((!visible && !msgBoxVisible) || msg != WM_INPUT)
+		if ((!visible && !userInputBoxVisible) || msg != WM_INPUT)
 			return 0;
 
 		UINT uiSize = 40;
@@ -507,8 +609,8 @@ namespace Modules
 
 			if (rwInput->header.dwType == RIM_TYPEKEYBOARD && (rwInput->data.keyboard.Flags == RI_KEY_MAKE || rwInput->data.keyboard.Flags == RI_KEY_E0))
 			{
-				if (msgBoxVisible)
-					messageBoxKeyCallback(rwInput->data.keyboard.VKey);
+				if (userInputBoxVisible)
+					userInputBoxKeyCallback(rwInput->data.keyboard.VKey);
 				else
 					consoleKeyCallBack(rwInput->data.keyboard.VKey);
 			}
@@ -521,39 +623,90 @@ namespace Modules
 		return 1;
 	}
 
-	void ModuleConsole::messageBoxKeyCallback(USHORT vKey)
+	void ModuleConsole::userInputBoxKeyCallback(USHORT vKey)
 	{
 		switch (vKey)
 		{
 		case VK_LEFT:
-			if (msgBoxSelectedButton <= 0)
-				msgBoxSelectedButton = msgBoxChoices.size() - 1;
+			if (currentBox.IsMsgBox)
+			{
+				if (msgBoxSelectedButton <= 0)
+					msgBoxSelectedButton = currentBox.Choices.size() - 1;
+				else
+					msgBoxSelectedButton--;
+
+				if (msgBoxSelectedButton < 0)
+					msgBoxSelectedButton = 0;
+			}
 			else
-				msgBoxSelectedButton--;
-
-			if (msgBoxSelectedButton < 0)
-				msgBoxSelectedButton = 0;
-
+			{
+				userInputBoxText.Left();
+			}
 			break;
 		case VK_RIGHT:
-			if ((msgBoxSelectedButton + 1) < (int)msgBoxChoices.size())
-				msgBoxSelectedButton++;
+			if (currentBox.IsMsgBox)
+			{
+				if ((msgBoxSelectedButton + 1) < (int)currentBox.Choices.size())
+					msgBoxSelectedButton++;
+				else
+					msgBoxSelectedButton = 0;
+
+				if (msgBoxSelectedButton >= (int)currentBox.Choices.size())
+					msgBoxSelectedButton = currentBox.Choices.size() - 1;
+
+				if (msgBoxSelectedButton < 0)
+					msgBoxSelectedButton = 0;
+			}
 			else
-				msgBoxSelectedButton = 0;
+			{
+				userInputBoxText.Right();
+			}
+			break;
+		case VK_BACK:
+			if (!currentBox.IsMsgBox)
+				userInputBoxText.Backspace();
+			break;
 
-			if (msgBoxSelectedButton >= (int)msgBoxChoices.size())
-				msgBoxSelectedButton = msgBoxChoices.size() - 1;
-
-			if (msgBoxSelectedButton < 0)
-				msgBoxSelectedButton = 0;
-
+		case VK_DELETE:
+			if (!currentBox.IsMsgBox)
+				userInputBoxText.Delete();
 			break;
 		case VK_RETURN:
 		case VK_SPACE:
-			if (msgBoxCallback && msgBoxSelectedButton >= 0 && msgBoxSelectedButton < (int)msgBoxChoices.size())
-				msgBoxCallback(msgBoxChoices.at(msgBoxSelectedButton));
-			msgBoxVisible = false;
-			unhookRawInput();
+			if (vKey == VK_SPACE && !currentBox.IsMsgBox)
+			{
+				handleDefaultKeyInput(vKey, userInputBoxText);
+				break;
+			}
+			if (currentBox.Callback)
+			{
+				if (currentBox.IsMsgBox && msgBoxSelectedButton >= 0 && msgBoxSelectedButton < (int)currentBox.Choices.size())
+					currentBox.Callback(currentBox.Tag, currentBox.Choices.at(msgBoxSelectedButton));
+				else
+					currentBox.Callback(currentBox.Tag, userInputBoxText.Text);
+			}
+			userInputBoxText.Clear();
+			msgBoxSelectedButton = 0;
+			if (queuedBoxes.empty())
+			{
+				userInputBoxVisible = false;
+				unhookRawInput();
+			}
+			else
+			{
+				currentBox = queuedBoxes.at(0);
+				userInputBoxText.Set(currentBox.DefaultText);
+				queuedBoxes.erase(queuedBoxes.begin());
+			}
+			break;
+
+		case VK_CAPITAL:
+			capsLockToggled = !capsLockToggled;
+			break;
+
+		default:
+			if (!currentBox.IsMsgBox)
+				handleDefaultKeyInput(vKey, userInputBoxText);
 			break;
 		}
 	}
@@ -694,19 +847,19 @@ namespace Modules
 			}
 			else
 			{
-				handleDefaultKeyInput(vKey);
+				handleDefaultKeyInput(vKey, inputBox);
 			}
 			break;
 
 		default:
-			handleDefaultKeyInput(vKey);
+			handleDefaultKeyInput(vKey, inputBox);
 			break;
 		}
 
 		tabHitLast = vKey == VK_TAB;
 	}
 
-	void ModuleConsole::handleDefaultKeyInput(USHORT vKey)
+	void ModuleConsole::handleDefaultKeyInput(USHORT vKey, TextInput& inputBox)
 	{
 		if (inputBox.Text.size() > INPUT_MAX_CHARS)
 			return;

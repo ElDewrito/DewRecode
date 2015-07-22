@@ -39,7 +39,7 @@ struct ConsoleBuffer;
 typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
 typedef void(__cdecl* EventCallback)(void* param);
 typedef void(__cdecl* ConsoleInputCallback)(const std::string& input, ConsoleBuffer* buffer);
-typedef void(__cdecl* MessageBoxCallback)(std::string buttonChoice);
+typedef void(__cdecl* UserInputBoxCallback)(std::string boxTag, std::string result);
 typedef std::initializer_list<std::string> StringArrayInitializerType;
 
 struct PlayerInfo
@@ -183,17 +183,28 @@ public:
 	/// Shows a message box to the user with choices specified by the initializer list, the result the user chose is given to the callback.
 	/// </summary>
 	/// <param name="text">The text to show to the user.</param>
+	/// <param name="tag">A tag/identifier value that gets passed to the callback function.</param>
 	/// <param name="choices">The choices the user can choose from.</param>
 	/// <param name="callback">The function to call after the user has made a selection.</param>
-	virtual void ShowMessageBox(std::string text, const StringArrayInitializerType& choices, MessageBoxCallback callback) = 0;
+	virtual void ShowMessageBox(std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback) = 0;
 
 	/// <summary>
 	/// Shows a message box to the user with choices specified by the vector, the result the user chose is given to the callback.
 	/// </summary>
 	/// <param name="text">The text to show to the user.</param>
+	/// <param name="tag">A tag/identifier value that gets passed to the callback function.</param>
 	/// <param name="choices">The choices the user can choose from.</param>
 	/// <param name="callback">The function to call after the user has made a selection.</param>
-	virtual void ShowMessageBox(std::string text, std::vector<std::string>& choices, MessageBoxCallback callback) = 0;
+	virtual void ShowMessageBox(std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback) = 0;
+
+	/// <summary>
+	/// Shows an input box to the user where the user can type in an answer, the answer is passed as a parameter to the callback.
+	/// </summary>
+	/// <param name="text">The text to show to the user.</param>
+	/// <param name="tag">A tag/identifier value that gets passed to the callback function.</param>
+	/// <param name="defaultText">The default text to fill the inputbox with.</param>
+	/// <param name="callback">The function to call after the user has answered.</param>
+	virtual void ShowInputBox(std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback) = 0;
 
 	/// <summary>
 	/// Returns true if the main menu has been shown, signifying that the game has initialized.
