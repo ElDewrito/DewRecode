@@ -378,6 +378,28 @@ bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
 }
 
 /// <summary>
+/// Shows a message box to the user with choices specified by the initializer list, the result the user chose is given to the callback.
+/// </summary>
+/// <param name="text">The text to show to the user.</param>
+/// <param name="choices">The choices the user can choose from.</param>
+/// <param name="callback">The function to call after the user has made a selection.</param>
+void Engine::ShowMessageBox(std::string text, const StringArrayInitializerType& choices, MessageBoxCallback callback)
+{
+	ElDorito::Instance().Modules.Console.ShowMessageBox(text, choices, callback);
+}
+
+/// <summary>
+/// Shows a message box to the user with choices specified by the vector, the result the user chose is given to the callback.
+/// </summary>
+/// <param name="text">The text to show to the user.</param>
+/// <param name="choices">The choices the user can choose from.</param>
+/// <param name="callback">The function to call after the user has made a selection.</param>
+void Engine::ShowMessageBox(std::string text, std::vector<std::string>& choices, MessageBoxCallback callback)
+{
+	ElDorito::Instance().Modules.Console.ShowMessageBox(text, choices, callback);
+}
+
+/// <summary>
 /// Gets the IP of the server we're connected to (only works if connected through Server.Connect!)
 /// </summary>
 /// <returns>The IP in network endian.</returns>

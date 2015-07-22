@@ -25,6 +25,9 @@ public:
 	ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer);
 	bool SetActiveConsoleBuffer(ConsoleBuffer* buffer);
 
+	void ShowMessageBox(std::string text, const StringArrayInitializerType& choices, MessageBoxCallback callback);
+	void ShowMessageBox(std::string text, std::vector<std::string>& choices, MessageBoxCallback callback);
+
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 
 	HWND GetGameHWND() { return Pointer(0x199C014).Read<HWND>(); }

@@ -39,6 +39,8 @@ struct ConsoleBuffer;
 typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
 typedef void(__cdecl* EventCallback)(void* param);
 typedef void(__cdecl* ConsoleInputCallback)(const std::string& input, ConsoleBuffer* buffer);
+typedef void(__cdecl* MessageBoxCallback)(std::string buttonChoice);
+typedef std::initializer_list<std::string> StringArrayInitializerType;
 
 struct PlayerInfo
 {
@@ -176,6 +178,22 @@ public:
 	/// <param name="buffer">The buffer to set as active.</param>
 	/// <returns>true if the buffer was set active.</returns>
 	virtual bool SetActiveConsoleBuffer(ConsoleBuffer* buffer) = 0;
+
+	/// <summary>
+	/// Shows a message box to the user with choices specified by the initializer list, the result the user chose is given to the callback.
+	/// </summary>
+	/// <param name="text">The text to show to the user.</param>
+	/// <param name="choices">The choices the user can choose from.</param>
+	/// <param name="callback">The function to call after the user has made a selection.</param>
+	virtual void ShowMessageBox(std::string text, const StringArrayInitializerType& choices, MessageBoxCallback callback) = 0;
+
+	/// <summary>
+	/// Shows a message box to the user with choices specified by the vector, the result the user chose is given to the callback.
+	/// </summary>
+	/// <param name="text">The text to show to the user.</param>
+	/// <param name="choices">The choices the user can choose from.</param>
+	/// <param name="callback">The function to call after the user has made a selection.</param>
+	virtual void ShowMessageBox(std::string text, std::vector<std::string>& choices, MessageBoxCallback callback) = 0;
 
 	/// <summary>
 	/// Returns true if the main menu has been shown, signifying that the game has initialized.

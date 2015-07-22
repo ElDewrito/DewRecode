@@ -35,6 +35,25 @@ namespace
 		ElDorito::Instance().Modules.Console.Hide();
 		return true;
 	}
+
+	void TestMsgBoxResult(std::string buttonChoice)
+	{
+		ElDorito::Instance().Modules.Console.PrintToConsole("You chose: " + buttonChoice);
+	}
+
+	bool CommandConsoleTestMsgBox(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		if (Arguments.size() <= 0)
+			return false;
+
+		std::vector<std::string> choices;
+		for (size_t i = 1; i < Arguments.size(); i++)
+			choices.push_back(Arguments.at(i));
+
+		ElDorito::Instance().Modules.Console.ShowMessageBox(Arguments.at(0), choices, TestMsgBoxResult);
+
+		return true;
+	}
 }
 
 namespace Modules
@@ -46,6 +65,8 @@ namespace Modules
 
 		AddCommand("Show", "show_console", "Shows the console/chat UI", eCommandFlagsNone, CommandConsoleShow);
 		AddCommand("Hide", "hide_console", "Hides the console/chat UI", eCommandFlagsNone, CommandConsoleHide);
+
+		AddCommand("TestMsgBox", "msgbox", "Opens a test message box, result is printed into the console", eCommandFlagsNone, CommandConsoleTestMsgBox, { "text(string) The text to show on the message box", "choices(string)... The choices to show on the message box" });
 
 		ConsoleBuffer consoleBuff("Console", "Console", UIConsoleInput, true);
 		consoleBuff.Focused = true;
@@ -65,9 +86,48 @@ namespace Modules
 
 		capsLockToggled = GetKeyState(VK_CAPITAL) & 1;
 
-		visible = true;
 		buffers.at(getSelectedIdx()).ScrollIndex = 0;
 		buffers.at(getSelectedIdx()).Focused = true;
+
+		visible = true;
+		hookRawInput();
+	}
+
+	void ModuleConsole::Hide()
+	{
+		if (!visible)
+			return;
+
+		inputBox.Clear();
+		buffers.at(getSelectedIdx()).TimeLastShown = GetTickCount();
+		visible = false;
+
+		if (!msgBoxVisible)
+			unhookRawInput();
+	}
+
+	void ModuleConsole::ShowMessageBox(std::string text, const StringArrayInitializerType& choices, MessageBoxCallback callback)
+	{
+		std::vector<std::string> choicesVect = choices;
+		ShowMessageBox(text, choicesVect, callback);
+	}
+
+	void ModuleConsole::ShowMessageBox(std::string text, std::vector<std::string>& choices, MessageBoxCallback callback)
+	{
+		// TODO: support having multiple msg boxes at once
+		msgBoxText = text;
+		msgBoxChoices = choices;
+		msgBoxCallback = callback;
+		msgBoxSelectedButton = 0;
+		msgBoxVisible = true;
+
+		hookRawInput();
+	}
+
+	void ModuleConsole::hookRawInput()
+	{
+		if (rawInputHooked)
+			return;
 
 		// Disables game keyboard input and enables our keyboard hook
 		RAWINPUTDEVICE Rid;
@@ -78,16 +138,14 @@ namespace Modules
 
 		if (!RegisterRawInputDevices(&Rid, 1, sizeof(Rid)))
 			PrintToConsole("Registering keyboard failed");
+
+		rawInputHooked = true;
 	}
 
-	void ModuleConsole::Hide()
+	void ModuleConsole::unhookRawInput()
 	{
-		if (!visible)
+		if (!rawInputHooked)
 			return;
-
-		inputBox.Clear();
-		visible = false;
-		buffers.at(getSelectedIdx()).TimeLastShown = GetTickCount();
 
 		// Enables game keyboard input and disables our keyboard hook
 		RAWINPUTDEVICE Rid;
@@ -98,6 +156,8 @@ namespace Modules
 
 		if (!RegisterRawInputDevices(&Rid, 1, sizeof(Rid)))
 			PrintToConsole("Unregistering keyboard failed");
+
+		rawInputHooked = false;
 	}
 
 	void ModuleConsole::PrintToConsole(std::string str)
@@ -152,18 +212,9 @@ namespace Modules
 
 	void ModuleConsole::Draw(IDirect3DDevice9* device)
 	{
-		auto& selectedBuffer = buffers.at(getSelectedIdx());
-		if (GetTickCount() - selectedBuffer.TimeLastShown > 10000 && !visible)
-			return;
-
-		initFonts(device);
 		auto& res = engine->GetGameResolution();
 
-		// TODO3:
-		/*if ((console.getMsSinceLastConsoleOpen() > 10000 && !console.showChat && !console.showConsole) || (GetAsyncKeyState(VK_TAB) & 0x8000 && !console.showChat && !console.showConsole))
-		{
-			return;
-		}*/
+		initFonts(device);
 
 		int x = (int)(0.05 * res.first);
 		int y = (int)(0.65 * res.second);
@@ -175,90 +226,143 @@ namespace Modules
 		int verticalSpacingBetweenTopOfInputBoxAndFont = (inputTextBoxHeight - normalSizeFontHeight) / 2;
 		size_t maxCharsPerLine = 105;
 
-		if (visible) // only show the input box / tab selection if the console is actually open
+		auto& selectedBuffer = buffers.at(getSelectedIdx());
+		bool consoleVisible = !(GetTickCount() - selectedBuffer.TimeLastShown > 10000 && !visible);
+
+		if (consoleVisible)
 		{
-			int tempX = x;
-			for (size_t i = 0; i < buffers.size(); i++)
+
+			if (visible) // only show the input box / tab selection if the console is actually open
 			{
-				auto& buffer = buffers.at(i);
-				if (!buffer.Visible || utils->ToLower(buffer.Group).compare(activeGroup))
-					continue;
+				int tempX = x;
+				for (size_t i = 0; i < buffers.size(); i++)
+				{
+					auto& buffer = buffers.at(i);
+					if (!buffer.Visible || utils->ToLower(buffer.Group).compare(activeGroup))
+						continue;
 
-				std::string displayName = buffer.Name;
-				if (i == getSelectedIdx() && getNumBuffersInGroup(activeGroup) > 1)
-					displayName = ">" + displayName + "<";
+					std::string displayName = buffer.Name;
+					if (i == getSelectedIdx() && getNumBuffersInGroup(activeGroup) > 1)
+						displayName = ">" + displayName + "<";
 
-				drawBox(device, tempX, y, getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
-				drawText(displayName.c_str(), tempX + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
-				tempX += getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing;
+					drawBox(device, tempX, y, getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
+					drawText(displayName.c_str(), tempX + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+					tempX += getTextWidth(displayName.c_str(), normalSizeFont) + 2 * horizontalSpacing;
+				}
+
+				// TODO4: make this text fade out after a while
+				if (getNumBuffersInGroup(activeGroup) > 1)
+					drawText("Press tab to switch tabs. Press ` or F1 to open the console.", x, y + verticalSpacingBetweenTopOfInputBoxAndFont + verticalSpacingBetweenLinesAndInputBox, COLOR_WHITE, normalSizeFont);
+
+				y -= verticalSpacingBetweenLinesAndInputBox;
+
+				// Display current input (TODO4: scroll input thats longer than the input box)
+				drawBox(device, x, y, inputTextBoxWidth, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
+				drawText(inputBox.Text.c_str(), x + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+
+				// Line showing where the user currently is in the input field.
+				{
+					if (getMsSinceLastConsoleBlink() > 300)
+					{
+						consoleBlinking = !consoleBlinking;
+						lastTimeConsoleBlink = GetTickCount();
+					}
+
+					if (!consoleBlinking)
+					{
+						std::string currentInput = inputBox.Text;
+						char currentChar;
+						int width = 0;
+						if (currentInput.length() > 0) {
+							currentChar = currentInput[inputBox.CursorIndex];
+							width = getTextWidth(currentInput.substr(0, inputBox.CursorIndex).c_str(), normalSizeFont) - 3;
+						}
+						else
+						{
+							width = -3;
+						}
+						drawText("|", x + horizontalSpacing + width, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+					}
+				}
 			}
-
-			// TODO4: make this text fade out after a while
-			if (getNumBuffersInGroup(activeGroup) > 1)
-				drawText("Press tab to switch tabs. Press ` or F1 to open the console.", x, y + verticalSpacingBetweenTopOfInputBoxAndFont + verticalSpacingBetweenLinesAndInputBox, COLOR_WHITE, normalSizeFont);
 
 			y -= verticalSpacingBetweenLinesAndInputBox;
 
-			// Display current input (TODO4: scroll input thats longer than the input box)
-			drawBox(device, x, y, inputTextBoxWidth, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
-			drawText(inputBox.Text.c_str(), x + horizontalSpacing, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
-
-			// Line showing where the user currently is in the input field.
+			// Draw text from selected buffer
+			for (int i = (int)selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex; i >= 0; i--)
 			{
-				if (getMsSinceLastConsoleBlink() > 300)
-				{
-					consoleBlinking = !consoleBlinking;
-					lastTimeConsoleBlink = GetTickCount();
-				}
+				if (i <= (int)(selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex) - selectedBuffer.MaxDisplayLines)
+					break;
 
-				if (!consoleBlinking)
+				std::string line = selectedBuffer.Messages.at(i);
+				if (line.size() > maxCharsPerLine)
 				{
-					std::string currentInput = inputBox.Text;
-					char currentChar;
-					int width = 0;
-					if (currentInput.length() > 0) {
-						currentChar = currentInput[inputBox.CursorIndex];
-						width = getTextWidth(currentInput.substr(0, inputBox.CursorIndex).c_str(), normalSizeFont) - 3;
-					}
-					else
+					std::vector<std::string> linesWrapped = std::vector < std::string > {};
+
+					for (size_t i = 0; i < line.size(); i += maxCharsPerLine)
 					{
-						width = -3;
+						linesWrapped.push_back(line.substr(i, maxCharsPerLine));
 					}
-					drawText("|", x + horizontalSpacing + width, y + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+
+					for (int i = linesWrapped.size() - 1; i >= 0; i--)
+					{
+						drawText(linesWrapped.at(i).c_str(), x, y, COLOR_WHITE, normalSizeFont);
+						y -= normalSizeFontHeight + verticalSpacingBetweenEachLine;
+					}
 				}
-			}
-		}
-
-		y -= verticalSpacingBetweenLinesAndInputBox;
-
-		// Draw text from selected buffer
-		for (int i = (int)selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex; i >= 0; i--)
-		{
-			if (i <= (int)(selectedBuffer.Messages.size() - 1 - selectedBuffer.ScrollIndex) - selectedBuffer.MaxDisplayLines)
-				break;
-
-			std::string line = selectedBuffer.Messages.at(i);
-			if (line.size() > maxCharsPerLine)
-			{
-				std::vector<std::string> linesWrapped = std::vector < std::string > {};
-
-				for (size_t i = 0; i < line.size(); i += maxCharsPerLine)
+				else
 				{
-					linesWrapped.push_back(line.substr(i, maxCharsPerLine));
-				}
-
-				for (int i = linesWrapped.size() - 1; i >= 0; i--)
-				{
-					drawText(linesWrapped.at(i).c_str(), x, y, COLOR_WHITE, normalSizeFont);
+					drawText(line.c_str(), x, y, COLOR_WHITE, normalSizeFont);
 					y -= normalSizeFontHeight + verticalSpacingBetweenEachLine;
 				}
 			}
-			else
+		}
+
+		if (msgBoxVisible)
+		{
+			int msgBoxX = (int)(0.25 * res.first);
+			int msgBoxY = (int)(0.25 * res.second);
+			msgBoxY += (int)(0.5 * msgBoxY);
+			int msgBoxWidth = (int)(0.5 * res.first);
+			int msgBoxHeight = (int)(0.5 * res.second);
+			msgBoxHeight -= (int)(0.5 * msgBoxHeight);
+
+			drawBox(device, msgBoxX, msgBoxY, msgBoxWidth, msgBoxHeight, COLOR_WHITE, COLOR_BLACK);
+			int height = 1;
+			size_t numLines = std::count(msgBoxText.begin(), msgBoxText.end(), '\n');
+			height += numLines;
+
+			int heightPixels = normalSizeFontHeight * height; // this is a little off, but should be fine
+
+			drawText(msgBoxText.c_str(), centerTextHorizontally(msgBoxText.c_str(), msgBoxX, msgBoxWidth, normalSizeFont), msgBoxY + (int)(0.5 * msgBoxHeight) - (int)(0.5 * heightPixels), COLOR_WHITE, normalSizeFont);
+
+			int largestButtonWidth = 0;
+			for (auto choice : msgBoxChoices)
 			{
-				drawText(line.c_str(), x, y, COLOR_WHITE, normalSizeFont);
-				y -= normalSizeFontHeight + verticalSpacingBetweenEachLine;
+				int width = getTextWidth(choice.c_str(), normalSizeFont) + 2 * horizontalSpacing;
+				if (width > largestButtonWidth)
+					largestButtonWidth = width;
+			}
+
+			int totalBtnWidth = (largestButtonWidth * msgBoxChoices.size());
+			int spaceBetweenButtons = (int)(0.04 * msgBoxWidth);
+			if (msgBoxChoices.size() > 1)
+				totalBtnWidth += (spaceBetweenButtons * (msgBoxChoices.size() - 1)); // spaces between each button
+			int buttonX = msgBoxX + (int)(0.5 * (msgBoxWidth - totalBtnWidth));
+
+			for (size_t i = 0; i < msgBoxChoices.size(); i++)
+			{
+				std::string& choice = msgBoxChoices.at(i);
+				int buttonY = msgBoxY + msgBoxHeight - ((int)(0.075 * msgBoxHeight)) - inputTextBoxHeight;
+
+				drawBox(device, buttonX, buttonY, largestButtonWidth, inputTextBoxHeight, COLOR_WHITE, i == msgBoxSelectedButton ? COLOR_GREEN : COLOR_BLACK);
+
+				int textX = centerTextHorizontally(choice.c_str(), buttonX, largestButtonWidth, normalSizeFont);
+				drawText(choice.c_str(), textX, buttonY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+				buttonX += largestButtonWidth + spaceBetweenButtons;
 			}
 		}
+
 	}
 
 	void ModuleConsole::initFonts(IDirect3DDevice9* device)
@@ -367,7 +471,7 @@ namespace Modules
 
 	LRESULT ModuleConsole::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if (!visible || msg != WM_INPUT)
+		if ((!visible && !msgBoxVisible) || msg != WM_INPUT)
 			return 0;
 
 		UINT uiSize = 40;
@@ -380,7 +484,10 @@ namespace Modules
 
 			if (rwInput->header.dwType == RIM_TYPEKEYBOARD && (rwInput->data.keyboard.Flags == RI_KEY_MAKE || rwInput->data.keyboard.Flags == RI_KEY_E0))
 			{
-				consoleKeyCallBack(rwInput->data.keyboard.VKey);
+				if (msgBoxVisible)
+					messageBoxKeyCallback(rwInput->data.keyboard.VKey);
+				else
+					consoleKeyCallBack(rwInput->data.keyboard.VKey);
 			}
 			else if (rwInput->header.dwType == RIM_TYPEMOUSE)
 			{
@@ -389,6 +496,43 @@ namespace Modules
 		}
 
 		return 1;
+	}
+
+	void ModuleConsole::messageBoxKeyCallback(USHORT vKey)
+	{
+		switch (vKey)
+		{
+		case VK_LEFT:
+			if (msgBoxSelectedButton <= 0)
+				msgBoxSelectedButton = msgBoxChoices.size() - 1;
+			else
+				msgBoxSelectedButton--;
+
+			if (msgBoxSelectedButton < 0)
+				msgBoxSelectedButton = 0;
+
+			break;
+		case VK_RIGHT:
+			if ((msgBoxSelectedButton + 1) < (int)msgBoxChoices.size())
+				msgBoxSelectedButton++;
+			else
+				msgBoxSelectedButton = 0;
+
+			if (msgBoxSelectedButton >= (int)msgBoxChoices.size())
+				msgBoxSelectedButton = msgBoxChoices.size() - 1;
+
+			if (msgBoxSelectedButton < 0)
+				msgBoxSelectedButton = 0;
+
+			break;
+		case VK_RETURN:
+		case VK_SPACE:
+			if (msgBoxCallback && msgBoxSelectedButton >= 0 && msgBoxSelectedButton < (int)msgBoxChoices.size())
+				msgBoxCallback(msgBoxChoices.at(msgBoxSelectedButton));
+			msgBoxVisible = false;
+			unhookRawInput();
+			break;
+		}
 	}
 
 	void ModuleConsole::consoleKeyCallBack(USHORT vKey)

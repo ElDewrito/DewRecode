@@ -66,6 +66,8 @@ namespace Modules
 		void Show(std::string group = "Console");
 		void Hide();
 		bool IsVisible() { return visible; }
+		void ShowMessageBox(std::string text, const StringArrayInitializerType& choices, MessageBoxCallback callback);
+		void ShowMessageBox(std::string text, std::vector<std::string>& choices, MessageBoxCallback callback);
 
 		void PrintToConsole(std::string str);
 
@@ -92,6 +94,13 @@ namespace Modules
 	private:
 		const size_t INPUT_MAX_CHARS = 400;
 		bool visible = false;
+		bool msgBoxVisible = false;
+		bool rawInputHooked = false;
+
+		std::string msgBoxText;
+		std::vector<std::string> msgBoxChoices;
+		MessageBoxCallback msgBoxCallback;
+		int msgBoxSelectedButton;
 
 		TextInput inputBox;
 
@@ -132,6 +141,7 @@ namespace Modules
 
 		int getMsSinceLastConsoleBlink();
 
+		void messageBoxKeyCallback(USHORT vKey);
 		void consoleKeyCallBack(USHORT vKey);
 		void handleDefaultKeyInput(USHORT vKey);
 
@@ -139,5 +149,8 @@ namespace Modules
 		int getNumBuffersInGroup(std::string group);
 		int getSelectedIdx();
 		void switchToNextIdx();
+
+		void hookRawInput();
+		void unhookRawInput();
 	};
 }
