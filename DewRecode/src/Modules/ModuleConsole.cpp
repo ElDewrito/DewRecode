@@ -1,5 +1,6 @@
 #include "ModuleConsole.hpp"
 #include "../ElDorito.hpp"
+#include <windowsx.h>
 
 namespace
 {
@@ -187,8 +188,9 @@ namespace Modules
 		else
 		{
 			currentBox = box;
-			userInputBoxVisible = true;
 			msgBoxSelectedButton = 0;
+			msgBoxMouseHasClickedButton = false;
+			userInputBoxVisible = true;
 
 			hookRawInput();
 		}
@@ -217,9 +219,10 @@ namespace Modules
 		else
 		{
 			currentBox = box;
-			userInputBoxVisible = true;
 			msgBoxSelectedButton = 0;
+			msgBoxMouseHasClickedButton = false;
 			userInputBoxText.Set(box.DefaultText);
+			userInputBoxVisible = true;
 
 			hookRawInput();
 		}
@@ -454,32 +457,52 @@ namespace Modules
 
 			if (currentBox.IsMsgBox)
 			{
-				int largestButtonWidth = 0;
-				for (auto choice : currentBox.Choices)
-				{
-					std::string choice2 = choice;
-					while (choice2.length() < 4) // pad out the string
-						choice2 += "M";
-					int width = getTextWidth(choice2.c_str(), normalSizeFont) + 2 * horizontalSpacing;
-					if (width > largestButtonWidth)
-						largestButtonWidth = width;
-				}
-
-				int totalBtnWidth = (largestButtonWidth * currentBox.Choices.size());
 				int spaceBetweenButtons = (int)(0.04 * msgBoxWidth);
-				if (currentBox.Choices.size() > 1)
-					totalBtnWidth += (spaceBetweenButtons * (currentBox.Choices.size() - 1)); // spaces between each button
-				int buttonX = msgBoxX + (int)(0.5 * (msgBoxWidth - totalBtnWidth));
-
-				for (size_t i = 0; i < currentBox.Choices.size(); i++)
+				if (currentBox.LargestChoiceButtonWidth != 0)
 				{
-					std::string& choice = currentBox.Choices.at(i);
+					for (size_t i = 0; i < currentBox.Choices.size(); i++)
+					{
+						std::string& choice = currentBox.Choices.at(i);
+						int buttonX = currentBox.ChoicePositions.at(i).first;
+						buttonY = currentBox.ChoicePositions.at(i).second;
 
-					drawBox(device, buttonX, buttonY, largestButtonWidth, inputTextBoxHeight, COLOR_WHITE, i == msgBoxSelectedButton ? COLOR_GREEN : COLOR_BLACK);
+						drawBox(device, buttonX, buttonY, currentBox.LargestChoiceButtonWidth, inputTextBoxHeight, COLOR_WHITE, i == msgBoxSelectedButton ? COLOR_GREEN : COLOR_BLACK);
 
-					int textX = centerTextHorizontally(choice.c_str(), buttonX, largestButtonWidth, normalSizeFont);
-					drawText(choice.c_str(), textX, buttonY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
-					buttonX += largestButtonWidth + spaceBetweenButtons;
+						int textX = centerTextHorizontally(choice.c_str(), buttonX, currentBox.LargestChoiceButtonWidth, normalSizeFont);
+						drawText(choice.c_str(), textX, buttonY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+						buttonX += currentBox.LargestChoiceButtonWidth + spaceBetweenButtons;
+					}
+				}
+				else
+				{
+					int largestButtonWidth = 0;
+					for (auto choice : currentBox.Choices)
+					{
+						std::string choice2 = choice;
+						while (choice2.length() < 4) // pad out the string
+							choice2 += "M";
+						int width = getTextWidth(choice2.c_str(), normalSizeFont) + 2 * horizontalSpacing;
+						if (width > largestButtonWidth)
+							largestButtonWidth = width;
+					}
+					currentBox.LargestChoiceButtonWidth = largestButtonWidth;
+
+					int totalBtnWidth = (largestButtonWidth * currentBox.Choices.size());
+					if (currentBox.Choices.size() > 1)
+						totalBtnWidth += (spaceBetweenButtons * (currentBox.Choices.size() - 1)); // spaces between each button
+					int buttonX = msgBoxX + (int)(0.5 * (msgBoxWidth - totalBtnWidth));
+
+					for (size_t i = 0; i < currentBox.Choices.size(); i++)
+					{
+						std::string& choice = currentBox.Choices.at(i);
+
+						drawBox(device, buttonX, buttonY, largestButtonWidth, inputTextBoxHeight, COLOR_WHITE, i == msgBoxSelectedButton ? COLOR_GREEN : COLOR_BLACK);
+						currentBox.ChoicePositions.push_back(std::pair<int, int>(buttonX, buttonY));
+
+						int textX = centerTextHorizontally(choice.c_str(), buttonX, largestButtonWidth, normalSizeFont);
+						drawText(choice.c_str(), textX, buttonY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+						buttonX += largestButtonWidth + spaceBetweenButtons;
+					}
 				}
 			}
 			else
@@ -628,7 +651,82 @@ namespace Modules
 
 	LRESULT ModuleConsole::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if ((!visible && !userInputBoxVisible) || msg != WM_INPUT)
+		if (msg == WM_MOUSEMOVE)
+		{
+			mouseXPos = GET_X_LPARAM(lParam);
+			mouseYPos = GET_Y_LPARAM(lParam);
+
+			return 0;
+		}
+
+		if ((!visible && !userInputBoxVisible))
+			return 0;
+
+		if (msg == WM_LBUTTONDOWN && userInputBoxVisible)
+		{
+			if (!currentBox.IsMsgBox)
+				return 0; // TODO1: add a button to msg box
+
+			if (currentBox.LargestChoiceButtonWidth == 0)
+				return 0;
+
+			int inputTextBoxHeight = normalSizeFontHeight + (int)(0.769 * normalSizeFontHeight);
+			
+			for (size_t i = 0; i < currentBox.Choices.size(); i++)
+			{
+				std::string& choice = currentBox.Choices.at(i);
+
+				int boxX = currentBox.ChoicePositions.at(i).first;
+				int boxY = currentBox.ChoicePositions.at(i).second;
+				int boxWidth = currentBox.LargestChoiceButtonWidth;
+				int boxHeight = inputTextBoxHeight;
+
+				if (mouseXPos < boxX + boxWidth && mouseXPos + 1 > boxX &&
+					mouseYPos < boxY + boxHeight && mouseYPos + 1 > boxY)
+				{
+					msgBoxSelectedButton = i;
+					msgBoxMouseHasClickedButton = true;
+					break;
+				}
+			}
+
+			return 0;
+		}
+
+		if (msg == WM_LBUTTONUP && userInputBoxVisible && msgBoxMouseHasClickedButton)
+		{
+			// have to do the same logic as WM_LBUTTONDOWN to make sure they still have the button hovered..
+
+			if (!currentBox.IsMsgBox)
+				return 0; // TODO1: add a button to msg box
+
+			if (currentBox.LargestChoiceButtonWidth == 0)
+				return 0;
+
+			int inputTextBoxHeight = normalSizeFontHeight + (int)(0.769 * normalSizeFontHeight);
+
+			for (size_t i = 0; i < currentBox.Choices.size(); i++)
+			{
+				std::string& choice = currentBox.Choices.at(i);
+
+				int boxX = currentBox.ChoicePositions.at(i).first;
+				int boxY = currentBox.ChoicePositions.at(i).second;
+				int boxWidth = currentBox.LargestChoiceButtonWidth;
+				int boxHeight = inputTextBoxHeight;
+
+				if (mouseXPos < boxX + boxWidth && mouseXPos + 1 > boxX &&
+					mouseYPos < boxY + boxHeight && mouseYPos + 1 > boxY)
+				{
+					msgBoxMouseHasClickedButton = false;
+					userInputBoxKeyCallback(VK_RETURN);
+					break;
+				}
+			}
+
+			return 0;
+		}
+
+		if (msg != WM_INPUT)
 			return 0;
 
 		UINT uiSize = 40;
@@ -648,7 +746,10 @@ namespace Modules
 			}
 			else if (rwInput->header.dwType == RIM_TYPEMOUSE)
 			{
-				//console.mouseCallBack(rwInput->data.mouse);
+				if (!userInputBoxVisible)
+				//	userInputBoxMouseCallback(rwInput->data.mouse);
+				//else
+					consoleMouseCallBack(rwInput->data.mouse);
 			}
 		}
 
@@ -719,6 +820,7 @@ namespace Modules
 			}
 			userInputBoxText.Clear();
 			msgBoxSelectedButton = 0;
+			msgBoxMouseHasClickedButton = false;
 			if (queuedBoxes.empty())
 			{
 				userInputBoxVisible = false;
@@ -741,10 +843,32 @@ namespace Modules
 			capsLockToggled = !capsLockToggled;
 			break;
 
+		case VK_ESCAPE:
+			// TODO: close the user input box if they press escape? what about other queued boxes? what about the callback?
+			break;
+
 		default:
 			if (!currentBox.IsMsgBox)
 				handleDefaultKeyInput(vKey, userInputBoxText);
 			break;
+		}
+	}
+
+	void ModuleConsole::consoleMouseCallBack(RAWMOUSE mouseInfo)
+	{
+		auto& buffer = buffers.at(getSelectedIdx());
+		if (mouseInfo.usButtonFlags == RI_MOUSE_WHEEL)
+		{
+			if ((short)mouseInfo.usButtonData > 0)
+			{
+				if ((int)buffer.ScrollIndex < (int)(buffer.Messages.size() - buffer.MaxDisplayLines))
+					buffer.ScrollIndex++;
+			}
+			else
+			{
+				if (buffer.ScrollIndex > 0)
+					buffer.ScrollIndex--;
+			}
 		}
 	}
 

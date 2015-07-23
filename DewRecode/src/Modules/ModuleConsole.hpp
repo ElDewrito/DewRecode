@@ -62,6 +62,9 @@ struct UserInputBox
 	std::string Text;
 	std::string Tag; // a tag / identifier associated with this box, gets passed to the callback with the result
 	std::vector<std::string> Choices;
+	std::vector<std::pair<int, int>> ChoicePositions;
+	int LargestChoiceButtonWidth = 0;
+
 	std::string DefaultText;
 	UserInputBoxCallback Callback;
 	bool IsMsgBox = false;
@@ -115,9 +118,13 @@ namespace Modules
 		std::vector<UserInputBox> queuedBoxes;
 
 		int msgBoxSelectedButton;
+		bool msgBoxMouseHasClickedButton = false;
 		TextInput userInputBoxText;
 
 		TextInput inputBox;
+
+		int mouseXPos = 0;
+		int mouseYPos = 0;
 
 		int normalSizeFontHeight = 0;
 		int largeSizeFontHeight = 0;
@@ -158,6 +165,8 @@ namespace Modules
 
 		void userInputBoxKeyCallback(USHORT vKey);
 		void consoleKeyCallBack(USHORT vKey);
+		//void userInputBoxMouseCallback(RAWMOUSE mouseInfo);
+		void consoleMouseCallBack(RAWMOUSE mouseInfo);
 
 		void handleDefaultKeyInput(USHORT vKey, TextInput& inputBox);
 
