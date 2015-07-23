@@ -771,12 +771,91 @@ namespace
 		returnInfo = Utils::Version::GetVersionString();
 		return true;
 	}
+
+	void SettingChangeCallback(std::string boxTag, std::string result)
+	{
+		ElDorito::Instance().Commands.Execute(boxTag + " \"" + result + "\"");
+	}
+
+	void InitialSetupCallback(std::string boxTag, std::string result)
+	{
+		auto& dorito = ElDorito::Instance();
+		dorito.Commands.Execute(boxTag + " \"" + result + "\"");
+		if (boxTag == "Player.Name")
+		{
+			dorito.Modules.Console.ShowMessageBox("Name set", "Your name has been set to " + dorito.Modules.Player.VarPlayerName->ValueString + "\nYou can change your name any time you're outside a game\nby opening the ElDewrito settings menu (Default key: F5)", "", { "OK" }, nullptr);
+		}
+	}
+
+	void MsgBoxCallback(std::string boxTag, std::string result);
+
+	void SettingsMsgBoxCallback(std::string boxTag, std::string result)
+	{
+		auto& dorito = ElDorito::Instance();
+		if (result == "Player Name")
+			dorito.Modules.Console.ShowInputBox("Player name", "Enter the nickname you want to be known as online.\nPress ENTER to confirm.", "Player.Name", "Player.Name", SettingChangeCallback);
+		else if (result == "Server Name")
+			dorito.Modules.Console.ShowInputBox("Server name", "Enter the name of your server.\nPress ENTER to confirm.", "Server.Name", "Server.Name", SettingChangeCallback);
+		else if (result == "Server Password")
+			dorito.Modules.Console.ShowInputBox("Server password", "Enter the password for your server.\nPress ENTER to confirm.", "Server.Password", "Server.Password", SettingChangeCallback);
+		else if (result == "IRC Server Host")
+			dorito.Modules.Console.ShowInputBox("IRC server hostname", "Enter the hostname of the IRC server.\nPress ENTER to confirm.", "IRC.Server", "IRC.Server", SettingChangeCallback);
+		else if (result == "IRC Server Port")
+			dorito.Modules.Console.ShowInputBox("IRC server port", "Enter the port number of the IRC server.\nPress ENTER to confirm.", "IRC.ServerPort", "IRC.ServerPort", SettingChangeCallback);
+		else if (result == "IRC Global Channel")
+			dorito.Modules.Console.ShowInputBox("Global channel name", "Enter the name of the global chat channel.\nPress ENTER to confirm.", "IRC.GlobalChannel", "IRC.GlobalChannel", SettingChangeCallback);
+		else
+		{
+			MsgBoxCallback("", "");
+			return;
+		}
+		dorito.Commands.Execute("WriteConfig");
+	}
+
+	bool CommandGameSettingsMenu(const std::vector<std::string>& arguments, std::string& returnInfo)
+	{
+		auto& dorito = ElDorito::Instance();
+
+		if (arguments.size() <= 0 || arguments.at(0).empty())
+		{
+			dorito.Modules.Console.ShowMessageBox("ElDewrito settings", "Which settings do you want to change?", "settingsChoice", { "Player", "Server", "IRC", "Return" }, MsgBoxCallback);
+			return true;
+		}
+		const std::string& menu = dorito.Utils.ToLower(arguments.at(0));
+		
+		if (menu == "player")
+			dorito.Modules.Console.ShowMessageBox("Player settings", "", "playerSettingsChoice", { "Player Name", "Return" }, SettingsMsgBoxCallback);
+
+		else if (menu == "server")
+			dorito.Modules.Console.ShowMessageBox("Server settings", "", "serverSettingsChoice", { "Server Name", "Server Password", "Return" }, SettingsMsgBoxCallback);
+
+		else if (menu == "irc")
+			dorito.Modules.Console.ShowMessageBox("IRC settings", "", "ircSettingsChoice", { "IRC Server Host", "IRC Server Port", "IRC Global Channel", "Return" }, SettingsMsgBoxCallback);
+
+		else if (menu == "setup")
+			dorito.Modules.Console.ShowInputBox("Player name", "Enter the nickname you want to be known as online.\nPress ENTER to confirm.", "Player.Name", "Player.Name", InitialSetupCallback);
+		else
+		{
+			returnInfo = "Usage: Game.SettingsMenu <Player/Server/IRC/Setup>";
+			return false;
+		}
+
+		return true;
+	}
+
+	void MsgBoxCallback(std::string boxTag, std::string result)
+	{
+		CommandGameSettingsMenu({ result }, std::string());
+	}
+
 }
 
 namespace Modules
 {
 	ModuleGame::ModuleGame() : ModuleBase("Game")
 	{
+		AddCommand("SettingsMenu", "settings", "Opens the ElDewrito settings menu", eCommandFlagsNone, CommandGameSettingsMenu, { "menuName(string) The menu to open, can be blank" });
+
 		AddCommand("LogMode", "debug", "Chooses which debug messages to print to the log file", eCommandFlagsNone, CommandGameLogMode, { "network|ssl|ui|game1|game2|all|off The log mode to enable" });
 
 		AddCommand("LogFilter", "debug_filter", "Allows you to set filters to apply to the debug messages", eCommandFlagsNone, CommandGameLogFilter, { "include/exclude The type of filter", "add/remove Add or remove the filter", "string The filter to add" });

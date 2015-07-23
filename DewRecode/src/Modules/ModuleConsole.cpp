@@ -50,7 +50,7 @@ namespace
 		for (size_t i = 1; i < Arguments.size(); i++)
 			choices.push_back(Arguments.at(i));
 
-		ElDorito::Instance().Modules.Console.ShowMessageBox(Arguments.at(0), "testMsgBox", choices, TestUserInputResult);
+		ElDorito::Instance().Modules.Console.ShowMessageBox("testMsgBox", Arguments.at(0), "testMsgBox", choices, TestUserInputResult);
 
 		return true;
 	}
@@ -60,7 +60,7 @@ namespace
 		if (Arguments.size() <= 0)
 			return false;
 
-		ElDorito::Instance().Modules.Console.ShowInputBox(Arguments.at(0), "testInputBox", Arguments.at(1), TestUserInputResult);
+		ElDorito::Instance().Modules.Console.ShowInputBox("testInputBox", Arguments.at(0), "testInputBox", Arguments.at(1), TestUserInputResult);
 
 		return true;
 	}
@@ -84,7 +84,7 @@ namespace
 		for (size_t i = 2; i < Arguments.size(); i++)
 			choices.push_back(Arguments.at(i));
 
-		ElDorito::Instance().Modules.Console.ShowMessageBox(text, Arguments.at(1), choices, UserInputResult);
+		ElDorito::Instance().Modules.Console.ShowMessageBox("", text, Arguments.at(1), choices, UserInputResult);
 
 		return true;
 	}
@@ -103,12 +103,7 @@ namespace
 		if (Arguments.size() >= 3)
 			defaultText = Arguments.at(2);
 
-		// if defaultText is the name of a variable, use the variables value as the default text
-		auto* cmd = dorito.Commands.Find(defaultText);
-		if (cmd != nullptr && cmd->Type != CommandType::Command)
-			defaultText = cmd->ValueString;
-
-		ElDorito::Instance().Modules.Console.ShowInputBox(text, Arguments.at(1), defaultText, UserInputResult);
+		ElDorito::Instance().Modules.Console.ShowInputBox("", text, Arguments.at(1), defaultText, UserInputResult);
 
 		return true;
 	}
@@ -169,15 +164,16 @@ namespace Modules
 		unhookRawInput();
 	}
 
-	void ModuleConsole::ShowMessageBox(std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback)
+	void ModuleConsole::ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback)
 	{
 		std::vector<std::string> choicesVect = choices;
-		ShowMessageBox(text, tag, choicesVect, callback);
+		ShowMessageBox(title, text, tag, choicesVect, callback);
 	}
 
-	void ModuleConsole::ShowMessageBox(std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback)
+	void ModuleConsole::ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback)
 	{
 		UserInputBox box;
+		box.Title = title;
 		box.Text = text;
 		box.Tag = tag;
 		box.Choices = choices;
@@ -198,12 +194,19 @@ namespace Modules
 		}
 	}
 
-	void ModuleConsole::ShowInputBox(std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback)
+	void ModuleConsole::ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback)
 	{
 		UserInputBox box;
+		box.Title = title;
 		box.Text = text;
 		box.Tag = tag;
 		box.DefaultText = defaultText;
+
+		// if defaultText is the name of a variable, use the variables value as the default text
+		auto* cmd = commands->Find(box.DefaultText);
+		if (cmd != nullptr && cmd->Type != CommandType::Command)
+			box.DefaultText = cmd->ValueString;
+
 		box.Callback = callback;
 		box.IsMsgBox = false;
 
@@ -216,7 +219,7 @@ namespace Modules
 			currentBox = box;
 			userInputBoxVisible = true;
 			msgBoxSelectedButton = 0;
-			userInputBoxText.Set(defaultText);
+			userInputBoxText.Set(box.DefaultText);
 
 			hookRawInput();
 		}
@@ -260,6 +263,9 @@ namespace Modules
 
 	void ModuleConsole::PrintToConsole(std::string str)
 	{
+		if (str.empty())
+			return;
+
 		logger->Log(LogSeverity::Debug, "Console", str); // log everything
 
 		if (str.find('\n') == std::string::npos)
@@ -426,21 +432,35 @@ namespace Modules
 			msgBoxHeight -= (int)(0.5 * msgBoxHeight);
 
 			drawBox(device, msgBoxX, msgBoxY, msgBoxWidth, msgBoxHeight, COLOR_WHITE, COLOR_BLACK);
-			int height = 1;
-			size_t numLines = std::count(currentBox.Text.begin(), currentBox.Text.end(), '\n');
-			height += numLines;
+			if (!currentBox.Title.empty())
+			{
+				drawBox(device, msgBoxX, msgBoxY, msgBoxWidth, inputTextBoxHeight, COLOR_WHITE, COLOR_BLACK);
+				drawText(currentBox.Title.c_str(), msgBoxX + horizontalSpacing, msgBoxY + verticalSpacingBetweenTopOfInputBoxAndFont, COLOR_WHITE, normalSizeFont);
+			}
 
-			int heightPixels = normalSizeFontHeight * height; // this is a little off, but should be fine
+			int buttonY = msgBoxY + (int)(0.6 * msgBoxHeight) - (int)(0.5 * inputTextBoxHeight);
+			if (!currentBox.Text.empty())
+			{
+				int height = 1;
+				size_t numLines = std::count(currentBox.Text.begin(), currentBox.Text.end(), '\n');
+				height += numLines;
 
-			drawText(currentBox.Text.c_str(), centerTextHorizontally(currentBox.Text.c_str(), msgBoxX, msgBoxWidth, normalSizeFont), msgBoxY + (int)(0.5 * msgBoxHeight) - (int)(0.5 * heightPixels), COLOR_WHITE, normalSizeFont);
+				int heightPixels = normalSizeFontHeight * height; // this is a little off, but should be fine
 
-			int buttonY = msgBoxY + msgBoxHeight - ((int)(0.075 * msgBoxHeight)) - inputTextBoxHeight;
+				drawText(currentBox.Text.c_str(), centerTextHorizontally(currentBox.Text.c_str(), msgBoxX, msgBoxWidth, normalSizeFont), msgBoxY + (int)(0.5 * msgBoxHeight) - (int)(0.5 * heightPixels), COLOR_WHITE, normalSizeFont);
+			
+				buttonY = msgBoxY + msgBoxHeight - ((int)(0.075 * msgBoxHeight)) - inputTextBoxHeight;
+			}
+
 			if (currentBox.IsMsgBox)
 			{
 				int largestButtonWidth = 0;
 				for (auto choice : currentBox.Choices)
 				{
-					int width = getTextWidth(choice.c_str(), normalSizeFont) + 2 * horizontalSpacing;
+					std::string choice2 = choice;
+					while (choice2.length() < 4) // pad out the string
+						choice2 += "M";
+					int width = getTextWidth(choice2.c_str(), normalSizeFont) + 2 * horizontalSpacing;
 					if (width > largestButtonWidth)
 						largestButtonWidth = width;
 				}

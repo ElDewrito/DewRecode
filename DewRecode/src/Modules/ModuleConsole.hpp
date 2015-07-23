@@ -58,6 +58,7 @@ public:
 
 struct UserInputBox
 {
+	std::string Title;
 	std::string Text;
 	std::string Tag; // a tag / identifier associated with this box, gets passed to the callback with the result
 	std::vector<std::string> Choices;
@@ -78,9 +79,9 @@ namespace Modules
 		void Show(std::string group = "Console");
 		void Hide();
 		bool IsVisible() { return visible; }
-		void ShowMessageBox(std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback);
-		void ShowMessageBox(std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback);
-		void ShowInputBox(std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback);
+		void ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback);
+		void ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback);
+		void ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback);
 
 		void PrintToConsole(std::string str);
 

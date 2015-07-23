@@ -383,9 +383,9 @@ bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
 /// <param name="text">The text to show to the user.</param>
 /// <param name="choices">The choices the user can choose from.</param>
 /// <param name="callback">The function to call after the user has made a selection.</param>
-void Engine::ShowMessageBox(std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback)
+void Engine::ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback)
 {
-	ElDorito::Instance().Modules.Console.ShowMessageBox(text, tag, choices, callback);
+	ElDorito::Instance().Modules.Console.ShowMessageBox(title, text, tag, choices, callback);
 }
 
 /// <summary>
@@ -394,9 +394,9 @@ void Engine::ShowMessageBox(std::string text, std::string tag, const StringArray
 /// <param name="text">The text to show to the user.</param>
 /// <param name="choices">The choices the user can choose from.</param>
 /// <param name="callback">The function to call after the user has made a selection.</param>
-void Engine::ShowMessageBox(std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback)
+void Engine::ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback)
 {
-	ElDorito::Instance().Modules.Console.ShowMessageBox(text, tag, choices, callback);
+	ElDorito::Instance().Modules.Console.ShowMessageBox(title, text, tag, choices, callback);
 }
 
 /// <summary>
@@ -405,9 +405,9 @@ void Engine::ShowMessageBox(std::string text, std::string tag, std::vector<std::
 /// <param name="text">The text to show to the user.</param>
 /// <param name="defaultText">The default text to fill the inputbox with.</param>
 /// <param name="callback">The function to call after the user has answered.</param>
-void Engine::ShowInputBox(std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback)
+void Engine::ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback)
 {
-	ElDorito::Instance().Modules.Console.ShowInputBox(text, tag, defaultText, callback);
+	ElDorito::Instance().Modules.Console.ShowInputBox(title, text, tag, defaultText, callback);
 }
 
 /// <summary>

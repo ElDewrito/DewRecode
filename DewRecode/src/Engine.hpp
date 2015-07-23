@@ -25,9 +25,9 @@ public:
 	ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer);
 	bool SetActiveConsoleBuffer(ConsoleBuffer* buffer);
 
-	void ShowMessageBox(std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback);
-	void ShowMessageBox(std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback);
-	void ShowInputBox(std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback);
+	void ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback);
+	void ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback);
+	void ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback);
 
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 
