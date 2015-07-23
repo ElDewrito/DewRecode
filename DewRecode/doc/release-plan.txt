@@ -1,6 +1,6 @@
-Our first release of DewRecode (1.0) will include everything we'd promised for ElDewrito 0.5, and more. Releases will be done in four stages:
+Our first release of DewRecode (1.0) will include everything we'd promised for ElDewrito 0.5, and more. Each release of DewRecode will be done in four stages:
 
-Stage 1 - Code is branched off for the new release, no new features can be added to this branch, only fixes.
+Stage 1 - Code is branched off for the new version, no new features can be added to this branch, only fixes.
 Stage 2 - Internal/IRC/nightly testing is done, any bugs found will be fixed in the release branch. (lasts around 3-4 days)
 Stage 3 - Update pushed to beta updater channel, people on the channel can try it out and report bugs to us (lasts around a week)
 Stage 4 - Full release over updater, every user will be updated to the new build.

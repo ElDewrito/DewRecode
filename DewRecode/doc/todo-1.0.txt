@@ -1,8 +1,3 @@
-Fix up console UI: Show at startup but fade out
-Add VoIP UI stuff to ChatPlugin
-Add RCON WebSocket stuff to ServerPlugin
-Move most ModuleServer stuff to ServerPlugin
-
 Fix Release build crashing when PatchModuleUI is enabled (crashes after UI_MenuUpdateHook is called and the Tick function tries opening mainmenu)
 Fix Debug (probably release too) build crashing on exit when PatchModuleVirtualKeyboard is enabled
 
