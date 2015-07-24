@@ -11,6 +11,9 @@ namespace
 			engine.Event("Core", "Engine.MainMenuShown");
 
 		bool shouldUpdate = *(DWORD*)((uint8_t*)a1 + 0x10) >= 0x1E;
+		int uiData0x18Value = 1;
+		//if (menuIdToLoad == 0x100A8) // TODO1: find what 0x100A8(H3E) stringid is in HO
+		//	uiData0x18Value = 5;
 
 		typedef void(__thiscall *UI_MenuUpdatePtr)(void* a1, int menuIdToLoad);
 		auto UI_MenuUpdate = reinterpret_cast<UI_MenuUpdatePtr>(0xADF6E0);
@@ -18,12 +21,21 @@ namespace
 
 		if (shouldUpdate)
 		{
-			auto& uiPatches = ElDorito::Instance().Modules.UIPatches;
-			uiPatches.DialogStringId = menuIdToLoad;
-			uiPatches.DialogArg1 = 0xFF;
-			uiPatches.DialogFlags = 4;
-			uiPatches.DialogParentStringId = 0x1000D;
-			uiPatches.DialogShow = true;
+			typedef void*(__cdecl * UI_AllocPtr)(int size);
+			auto UI_Alloc = reinterpret_cast<UI_AllocPtr>(0xAB4ED0);
+			void* UIData = UI_Alloc(0x3C);
+
+			// fill UIData with proper data
+			typedef void*(__thiscall * UI_OpenDialogByIdPtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
+			auto UI_OpenDialogById = reinterpret_cast<UI_OpenDialogByIdPtr>(0xA92780);
+			UI_OpenDialogById(UIData, menuIdToLoad, 0xFF, 4, 0x1000D);
+
+			// post UI message
+			typedef int(*UI_PostMessagePtr)(void* uiDataStruct);
+			auto UI_PostMessage = reinterpret_cast<UI_PostMessagePtr>(0xA93450);
+			UI_PostMessage(UIData);
+
+			*(uint32_t*)((char*)UIData + 0x18) = uiData0x18Value;
 		}
 	}
 
@@ -166,9 +178,7 @@ namespace Modules
 	PatchModuleUI::PatchModuleUI() : ModuleBase("Patches.UI")
 	{
 		// register our tick callbacks
-#ifdef _DEBUG
-		engine->OnTick(UIPatches_TickCallback); // TODO1: calling this on release builds causes crashes, wtf?
-#endif
+		engine->OnTick(UIPatches_TickCallback);
 		engine->OnEvent("Core", "Engine.FirstTick", UIPatches_ApplyMapNameFixes);
 
 		// add our patches
@@ -180,10 +190,6 @@ namespace Modules
 			// Fix gamepad option in settings (todo: find out why it doesn't detect gamepads
 			// and find a way to at least enable pressing ESC when gamepad is enabled)
 			Patch("GamepadFix", 0x60D7F2, 0x90, 2),
-
-			// Hacky fix to stop the game crashing when you move selection on UI
-			// (todo: find out what's really causing this)
-			Patch("UICrashFix", 0x969D07, 0x90, 3),
 
 			// Remove Xbox Live from the network menu
 			Patch("RemoveXBL1", 0xB23D85, 0x90, 0x17),
@@ -201,7 +207,6 @@ namespace Modules
 			Patch("ShowH3PauseMenu1", 0x7B682B, 0x90, 1),
 		}, 
 		{
-
 			// Fix for leave game button to show H3 pause menu
 			Hook("ShowH3PauseMenu2", 0x7B6826, UI_ShowHalo3PauseMenu, HookType::Call),
 
@@ -236,21 +241,23 @@ namespace Modules
 			// fill UIData with proper data
 			typedef void*(__thiscall * UI_OpenDialogByIdPtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
 			auto UI_OpenDialogById = reinterpret_cast<UI_OpenDialogByIdPtr>(0xA92780);
-			UI_OpenDialogById(&UIData, DialogStringId, DialogArg1, DialogFlags, DialogParentStringId);
+			UI_OpenDialogById(UIData, DialogStringId, DialogArg1, DialogFlags, DialogParentStringId);
 
-			// send UI notification
-			typedef int(*UI_SendNotificationPtr)(void* uiDataStruct);
-			auto UI_SendNotification = reinterpret_cast<UI_SendNotificationPtr>(0xA93450);
-			UI_SendNotification(&UIData);
+			// post UI message
+			typedef int(*UI_PostMessagePtr)(void* uiDataStruct);
+			auto UI_PostMessage = reinterpret_cast<UI_PostMessagePtr>(0xA93450);
+			UI_PostMessage(UIData);
 
-			/* alternate way of sending UI notification
-			uint32_t eax = (uint32_t)&UIData;
+			//alternate way of posting UI message
+			/*uint32_t eax = (uint32_t)UIData;
 			uint32_t ecx = *(uint32_t*)0x5260254;
 			*(DWORD*)(ecx + 8) = eax;
 
 			eax = *(uint32_t*)0x5260254;
 			eax = *(uint32_t*)eax;
 			*(uint32_t*)0x5260254 = eax;*/
+
+			//*(uint32_t*)((char*)UIData + 0x18) = 1;
 
 			DialogShow = false;
 		}

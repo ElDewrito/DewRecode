@@ -115,6 +115,7 @@
     <ClCompile Include="src\Modules\Patches\PlayerUid.cpp" />
     <ClCompile Include="src\Modules\Patches\Scoreboard.cpp" />
     <ClCompile Include="src\Modules\Patches\UI.cpp" />
+    <ClCompile Include="src\Modules\Patches\VirtualKeyboard.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
     <ClCompile Include="src\Utils.cpp" />
     <ClCompile Include="src\Utils\VersionInfo.cpp" />

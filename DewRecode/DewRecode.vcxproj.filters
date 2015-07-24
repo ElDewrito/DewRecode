@@ -99,6 +99,9 @@
     <ClCompile Include="src\Modules\Patches\Armor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Modules\Patches\VirtualKeyboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ElDorito.hpp">
