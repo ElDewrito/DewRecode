@@ -16,10 +16,9 @@ namespace Modules
 		Command* VarCameraSpeed;
 		Command* VarCameraSave;
 		Command* VarCameraLoad;
+		Command* VarSpectatorIndex;
 
 		PatchSet* CustomModePatches;
-
-		// patches to disable all camera edits while in static mode
 		PatchSet* StaticModePatches;
 
 		Patch* HideHudPatch;
@@ -28,8 +27,5 @@ namespace Modules
 		ModuleCamera();
 
 		void UpdatePosition();
-
-		//std::unordered_map<std::string, CameraType> CameraTypeStrings;
-		//std::unordered_map<CameraType, size_t> CameraTypeFunctions;
 	};
 }

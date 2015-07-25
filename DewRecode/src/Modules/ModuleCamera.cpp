@@ -29,7 +29,7 @@ namespace
 				return true;
 			}
 		}
-		else if (!mode.compare("flying") || !mode.compare("static"))
+		else if (!mode.compare("flying") || !mode.compare("static") || !mode.compare("spectator"))
 		{
 			return true;
 		}
@@ -170,6 +170,24 @@ namespace
 		return true;
 	}
 
+	bool SpectatorIndexUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		auto& dorito = ElDorito::Instance();
+		unsigned long index = dorito.Modules.Camera.VarSpectatorIndex->ValueInt;
+
+		// get current player count and clamp index within bounds
+		Pointer &players = dorito.Engine.GetMainTls(GameGlobals::Players::TLSOffset)[0];
+		int playerCount = players(0x38).Read<int>();
+		int clampedIndex = index % playerCount;
+		dorito.Modules.Camera.VarSpectatorIndex->ValueInt = clampedIndex;
+
+		std::stringstream ss;
+		ss << "Spectating player index " << clampedIndex;
+		returnInfo = ss.str();
+
+		return true;
+	}
+
 	//bool VariableCameraSave(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	//{
 	//	auto mode = Utils::String::ToLower(Modules::ModuleCamera::Instance().VarCameraMode->ValueString);
@@ -211,15 +229,15 @@ namespace
 		// patches allowing us to control the camera when a non-default mode is selected
 		dorito.Patches.EnablePatchSet(camera.CustomModePatches, mode.compare("default") != 0);
 
-		// prevents the engine from modifying any camera components while in static mode
-		dorito.Patches.EnablePatchSet(camera.StaticModePatches, mode.compare("static") == 0);
+		// prevents the engine from modifying any camera components while in static/spectator mode
+		dorito.Patches.EnablePatchSet(camera.StaticModePatches, mode.compare("static") == 0 | mode.compare("spectator") == 0);
 
-		// makes sure the hud is hidden when flying or in static camera mode
+		// makes sure the hud is hidden when flying/spectator/static camera mode
 		if (!camera.VarCameraHideHud->ValueInt)
-			dorito.Patches.EnablePatch(camera.HideHudPatch, mode.compare("flying") == 0 || mode.compare("static") == 0);
+			dorito.Patches.EnablePatch(camera.HideHudPatch, mode.compare("flying") == 0 || mode.compare("static") == 0 || mode.compare("spectator") == 0);
 
 		// disable player movement while in flycam
-		playerControlGlobalsPtr(GameGlobals::Input::DisablePlayerInputIndex).Write(mode == "flying");
+		playerControlGlobalsPtr(GameGlobals::Input::DisablePlayerInputIndex).Write(mode.compare("flying") == 0);
 
 		// get new camera perspective function offset 
 		size_t offset = 0x166ACB0;
@@ -254,7 +272,7 @@ namespace
 			directorGlobalsPtr(0x850).Write(0.0f);			// vertical look shift
 			directorGlobalsPtr(0x854).Write(0.0f);			// depth
 		}
-		else if (!mode.compare("static")) // c_static_camera
+		else if (!mode.compare("static") || !mode.compare("spectator")) // c_static_camera
 		{
 			offset = 0x16728A8;
 			directorGlobalsPtr(0x840).Write(0.0f);			// x camera shift
@@ -312,7 +330,7 @@ namespace Modules
 		// register our tick callbacks
 		engine->OnTick(CameraPatches_TickCallback);
 
-		// TODO: commands for setting camera speed, positions, save/restore etc.
+		// TODO: commands for setting camera speed, positsaions, save/restore etc.
 
 		VarCameraCrosshair = AddVariableInt("Crosshair", "crosshair", "Controls whether the crosshair should be centered", eCommandFlagsArchived, 0, VariableCameraCrosshairUpdate);
 		VarCameraCrosshair->ValueIntMin = 0;
@@ -330,7 +348,11 @@ namespace Modules
 		VarCameraSpeed->ValueFloatMin = 0.01f;
 		VarCameraSpeed->ValueFloatMax = 5.0f;
 
-		VarCameraMode = AddVariableString("Mode", "camera_mode", "Camera mode, valid modes: default, first, third, flying, static", (CommandFlags)(eCommandFlagsDontUpdateInitial | eCommandFlagsCheat), "default", VariableCameraModeUpdate);
+		VarSpectatorIndex = AddVariableInt("SpectatorIndex", "spectator_index", "The player index to spectate", eCommandFlagsDontUpdateInitial, 0, SpectatorIndexUpdate);
+		VarSpectatorIndex->ValueIntMin = 0;
+		VarSpectatorIndex->ValueIntMax = 15;
+
+		VarCameraMode = AddVariableString("Mode", "camera_mode", "Camera mode, valid modes: default, first, third, flying, static, spectator", (CommandFlags)(eCommandFlagsDontUpdateInitial | eCommandFlagsCheat), "default", VariableCameraModeUpdate);
 
 		CustomModePatches = patches->AddPatchSet("CustomModePatches",
 		{
@@ -349,11 +371,31 @@ namespace Modules
 			Hook("CameraPermHookAlt3", 0x614902, UpdateCameraDefinitionsAlt3, HookType::Jmp),
 		});
 
-		// prevents the engine from modifying camera components while in static mode
+		// prevents the engine from modifying camera components while in static/spectator mode
 		StaticModePatches = patches->AddPatchSet("DisableStaticUpdatePatches",
 		{
-			Patch("StaticILookVector", 0x611433, 0x90, 8),
-			Patch("StaticKLookVector", 0x61143E, 0x90, 6),
+			Patch("IForwardLook", 0x611433, 0x90, 8),
+			Patch("KForwardLook", 0x61143E, 0x90, 6),
+
+			Patch("IForwardLook2", 0x6146EB, 0x90, 9),
+			Patch("JForwardLook2", 0x6146FE, 0x90, 9),
+			Patch("JForwardLook2", 0x614711, 0x90, 9),
+
+			Patch("IJForwardLook3", 0x611EC8, 0x90, 4),
+			Patch("KForwardLook3", 0x611ECF, 0x90, 3),
+			
+			Patch("IUpLook", 0x614648, 0x90, 9),
+			Patch("JUpLook", 0x61463B, 0x90, 9),
+			Patch("KUpLook", 0x614632, 0x90, 9),
+
+			Patch("IUpLook2", 0x6147B0, 0x90, 9),
+			Patch("JUpLook2", 0x6147C3, 0x90, 9),
+			Patch("KUpLook2", 0x6147D6, 0x90, 9),
+
+			Patch("IJUpLook3", 0x611EDB, 0x90, 4),
+			Patch("KUpLook3", 0x611EE2, 0x90, 3),
+
+			// fov - 0x611EE5, 0x6122E8
 		});
 
 		HideHudPatch = patches->AddPatch("HideHud", 0x16B5A5C, { 0xC3, 0xF5, 0x48, 0x40 }); // 3.14f in hex form
@@ -363,124 +405,175 @@ namespace Modules
 	void ModuleCamera::UpdatePosition()
 	{
 		auto& dorito = ElDorito::Instance();
-
 		auto mode = dorito.Utils.ToLower(dorito.Modules.Camera.VarCameraMode->ValueString);
-
-		// only allow camera input while flying outside of cli/chat
-		if (mode.compare("flying") || dorito.Modules.Console.IsVisible())
-			return;
 
 		Pointer &directorGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];
 		Pointer &playerControlGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
+		Pointer &playersPtr = dorito.Engine.GetMainTls(GameGlobals::Players::TLSOffset)[0];
+		Pointer &objectHeaderPtr = dorito.Engine.GetMainTls(GameGlobals::ObjectHeader::TLSOffset)[0];
 
-		float moveDelta = dorito.Modules.Camera.VarCameraSpeed->ValueFloat;
-		float lookDelta = 0.01f;	// not used yet
-
-		// current values
-		float hLookAngle = playerControlGlobalsPtr(0x30C).Read<float>();
-		float vLookAngle = playerControlGlobalsPtr(0x310).Read<float>();
-		float xPos = directorGlobalsPtr(0x834).Read<float>();
-		float yPos = directorGlobalsPtr(0x838).Read<float>();
-		float zPos = directorGlobalsPtr(0x83C).Read<float>();
-		float xShift = directorGlobalsPtr(0x840).Read<float>();
-		float yShift = directorGlobalsPtr(0x844).Read<float>();
-		float zShift = directorGlobalsPtr(0x845).Read<float>();
-		float hShift = directorGlobalsPtr(0x84C).Read<float>();
-		float vShift = directorGlobalsPtr(0x850).Read<float>();
-		float depth = directorGlobalsPtr(0x854).Read<float>();
-		float fov = directorGlobalsPtr(0x858).Read<float>();
-		float iForward = directorGlobalsPtr(0x85C).Read<float>();
-		float jForward = directorGlobalsPtr(0x860).Read<float>();
-		float kForward = directorGlobalsPtr(0x864).Read<float>();
-		float iUp = directorGlobalsPtr(0x868).Read<float>();
-		float jUp = directorGlobalsPtr(0x86C).Read<float>();
-		float kUp = directorGlobalsPtr(0x870).Read<float>();
-		float iRight = cos(hLookAngle + 3.14159265359f / 2);
-		float jRight = sin(hLookAngle + 3.14159265359f / 2);
-
-		// TODO: use shockfire's keyboard hooks instead
-
-		// down
-		if (GetAsyncKeyState('Q') & 0x8000)
+		// only allow flycam input outside of cli/chat
+		if (!mode.compare("flying") && !dorito.Modules.Console.IsVisible())
 		{
-			zPos -= moveDelta;
-		}
+			float moveDelta = dorito.Modules.Camera.VarCameraSpeed->ValueFloat;
+			float lookDelta = 0.01f;	// not used yet
 
-		// up
-		if (GetAsyncKeyState('E') & 0x8000)
-		{
-			zPos += moveDelta;
-		}
+			// current values
+			float hLookAngle = playerControlGlobalsPtr(0x30C).Read<float>();
+			float vLookAngle = playerControlGlobalsPtr(0x310).Read<float>();
+			float xPos = directorGlobalsPtr(0x834).Read<float>();
+			float yPos = directorGlobalsPtr(0x838).Read<float>();
+			float zPos = directorGlobalsPtr(0x83C).Read<float>();
+			float xShift = directorGlobalsPtr(0x840).Read<float>();
+			float yShift = directorGlobalsPtr(0x844).Read<float>();
+			float zShift = directorGlobalsPtr(0x845).Read<float>();
+			float hShift = directorGlobalsPtr(0x84C).Read<float>();
+			float vShift = directorGlobalsPtr(0x850).Read<float>();
+			float depth = directorGlobalsPtr(0x854).Read<float>();
+			float fov = directorGlobalsPtr(0x858).Read<float>();
+			float iForward = directorGlobalsPtr(0x85C).Read<float>();
+			float jForward = directorGlobalsPtr(0x860).Read<float>();
+			float kForward = directorGlobalsPtr(0x864).Read<float>();
+			float iUp = directorGlobalsPtr(0x868).Read<float>();
+			float jUp = directorGlobalsPtr(0x86C).Read<float>();
+			float kUp = directorGlobalsPtr(0x870).Read<float>();
+			float iRight = cos(hLookAngle + 3.14159265359f / 2);
+			float jRight = sin(hLookAngle + 3.14159265359f / 2);
 
-		// forward
-		if (GetAsyncKeyState('W') & 0x8000)
-		{
-			xPos += iForward * moveDelta;
-			yPos += jForward * moveDelta;
-			zPos += kForward * moveDelta;
-		}
+			// TODO: use shockfire's keyboard hooks instead
 
-		// back
-		if (GetAsyncKeyState('S') & 0x8000)
-		{
-			xPos -= iForward * moveDelta;
-			yPos -= jForward * moveDelta;
-			zPos -= kForward * moveDelta;
-		}
+			// down
+			if (GetAsyncKeyState('Q') & 0x8000)
+			{
+				zPos -= moveDelta;
+			}
 
-		// left
-		if (GetAsyncKeyState('A') & 0x8000)
-		{
-			xPos += iRight * moveDelta;
-			yPos += jRight * moveDelta;
-		}
+			// up
+			if (GetAsyncKeyState('E') & 0x8000)
+			{
+				zPos += moveDelta;
+			}
 
-		// right
-		if (GetAsyncKeyState('D') & 0x8000)
-		{
-			xPos -= iRight * moveDelta;
-			yPos -= jRight * moveDelta;
-		}
+			// forward
+			if (GetAsyncKeyState('W') & 0x8000)
+			{
+				xPos += iForward * moveDelta;
+				yPos += jForward * moveDelta;
+				zPos += kForward * moveDelta;
+			}
 
-		if (GetAsyncKeyState(VK_UP))
-		{
-			// TODO: look up
-		}
-		if (GetAsyncKeyState(VK_DOWN))
-		{
-			// TODO: look down
-		}
-		if (GetAsyncKeyState(VK_LEFT))
-		{
-			// TODO: look left
-		}
-		if (GetAsyncKeyState(VK_RIGHT))
-		{
-			// TODO: look right
-		}
+			// back
+			if (GetAsyncKeyState('S') & 0x8000)
+			{
+				xPos -= iForward * moveDelta;
+				yPos -= jForward * moveDelta;
+				zPos -= kForward * moveDelta;
+			}
 
-		if (GetAsyncKeyState('Z') & 0x8000)
-		{
-			fov -= 0.003f;
+			// left
+			if (GetAsyncKeyState('A') & 0x8000)
+			{
+				xPos += iRight * moveDelta;
+				yPos += jRight * moveDelta;
+			}
+
+			// right
+			if (GetAsyncKeyState('D') & 0x8000)
+			{
+				xPos -= iRight * moveDelta;
+				yPos -= jRight * moveDelta;
+			}
+
+			if (GetAsyncKeyState(VK_UP))
+			{
+				// TODO: look up
+			}
+			if (GetAsyncKeyState(VK_DOWN))
+			{
+				// TODO: look down
+			}
+			if (GetAsyncKeyState(VK_LEFT))
+			{
+				// TODO: look left
+			}
+			if (GetAsyncKeyState(VK_RIGHT))
+			{
+				// TODO: look right
+			}
+
+			if (GetAsyncKeyState('Z') & 0x8000)
+			{
+				fov -= 0.003f;
+			}
+			if (GetAsyncKeyState('C') & 0x8000)
+			{
+				fov += 0.003f;
+			}
+
+			// update position
+			directorGlobalsPtr(0x834).Write<float>(xPos);
+			directorGlobalsPtr(0x838).Write<float>(yPos);
+			directorGlobalsPtr(0x83C).Write<float>(zPos);
+
+			// update look angles
+			directorGlobalsPtr(0x85C).Write<float>(cos(hLookAngle) * cos(vLookAngle));
+			directorGlobalsPtr(0x860).Write<float>(sin(hLookAngle) * cos(vLookAngle));
+			directorGlobalsPtr(0x864).Write<float>(sin(vLookAngle));
+			directorGlobalsPtr(0x868).Write<float>(-cos(hLookAngle) * sin(vLookAngle));
+			directorGlobalsPtr(0x86C).Write<float>(-sin(hLookAngle) * sin(vLookAngle));
+			directorGlobalsPtr(0x870).Write<float>(cos(vLookAngle));
+
+			directorGlobalsPtr(0x858).Write<float>(fov);
 		}
-		if (GetAsyncKeyState('C') & 0x8000)
+		else if (!mode.compare("spectator"))
 		{
-			fov += 0.003f;
+			unsigned long playerIndex = dorito.Modules.Camera.VarSpectatorIndex->ValueInt;
+			if (playerIndex >= playersPtr(0x38).Read<unsigned long>())
+				return;
+
+			// get player object datum
+			uint32_t playerStructAddress = playersPtr(0x44).Read<uint32_t>() + playerIndex * GameGlobals::Players::PlayerEntryLength;
+			uint32_t playerObjectDatum = *(uint32_t*)(playerStructAddress + 0x30);
+				
+			// get player object index
+			uint32_t objectIndex = playerObjectDatum & 0xFFFF;
+
+			// TODO: double-check that it's a valid object index and of the bipd class
+
+			// get player object data address
+			uint32_t objectAddress = objectHeaderPtr(0x44).Read<uint32_t>() + 0xC + objectIndex * 0x10;
+			uint32_t objectDataAddress = *(uint32_t*)objectAddress;
+			
+			// get player position and look direction
+			float x = *(float*)(objectDataAddress + 0x20);
+			float y = *(float*)(objectDataAddress + 0x24);
+			float z = *(float*)(objectDataAddress + 0x28);
+			float i = *(float*)(objectDataAddress + 0x1B8);
+			float j = *(float*)(objectDataAddress + 0x1BC);
+			float k = *(float*)(objectDataAddress + 0x1C0);
+
+			// vectorize everything
+			D3DXVECTOR3 position = D3DXVECTOR3(x, y, z);
+			D3DXVECTOR3 forward = D3DXVECTOR3(i, j, k);
+			D3DXVECTOR3 absoluteUp = D3DXVECTOR3(0, 0, 1);
+			D3DXVECTOR3 left, up;
+
+			// get the up vector relative to the current look direction
+			D3DXVec3Cross(&left, &forward, &absoluteUp);
+			D3DXVec3Cross(&up, &left, &forward);
+
+			// update camera values
+			directorGlobalsPtr(0x834).Write<float>(position.x);
+			directorGlobalsPtr(0x838).Write<float>(position.y);
+			directorGlobalsPtr(0x83C).Write<float>(position.z + 0.3f);
+			directorGlobalsPtr(0x848).Write<float>(0.1f);	// z shift
+			directorGlobalsPtr(0x854).Write<float>(0.5f);	// depth
+			directorGlobalsPtr(0x85C).Write<float>(forward.x);
+			directorGlobalsPtr(0x860).Write<float>(forward.y);
+			directorGlobalsPtr(0x864).Write<float>(forward.z);
+			directorGlobalsPtr(0x868).Write<float>(up.x);
+			directorGlobalsPtr(0x86C).Write<float>(up.y);
+			directorGlobalsPtr(0x870).Write<float>(up.z);
 		}
-
-		// update position
-		directorGlobalsPtr(0x834).Write<float>(xPos);
-		directorGlobalsPtr(0x838).Write<float>(yPos);
-		directorGlobalsPtr(0x83C).Write<float>(zPos);
-
-		// update look angles
-		directorGlobalsPtr(0x85C).Write<float>(cos(hLookAngle) * cos(vLookAngle));
-		directorGlobalsPtr(0x860).Write<float>(sin(hLookAngle) * cos(vLookAngle));
-		directorGlobalsPtr(0x864).Write<float>(sin(vLookAngle));
-		directorGlobalsPtr(0x868).Write<float>(-cos(hLookAngle) * sin(vLookAngle));
-		directorGlobalsPtr(0x86C).Write<float>(-sin(hLookAngle) * sin(vLookAngle));
-		directorGlobalsPtr(0x870).Write<float>(cos(vLookAngle));
-
-		directorGlobalsPtr(0x858).Write<float>(fov);
 	}
 }

@@ -350,7 +350,7 @@ VariableSetReturnValue Commands::SetVariable(Command* command, std::string& valu
 			}
 			break;
 		case CommandType::VariableInt64:
-			previousValue = std::to_string(command->ValueInt);
+			previousValue = std::to_string(command->ValueInt64);
 			if (!value.empty())
 			{
 				auto newValue = std::stoull(value, 0, 0);
