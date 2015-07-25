@@ -102,13 +102,13 @@ PatchSet* PatchManager::AddPatchSet(std::string name, const PatchSetInitializerL
 {
 	PatchSet patchSet(name, patches, hooks);
 
-	for (auto patch : patchSet.Patches)
+	for (auto& patch : patchSet.Patches)
 	{
 		patch.Orig.resize(patch.Data.size());
 		Pointer(patch.Address).Read(patch.Orig.data(), patch.Orig.size());
 	}
 
-	for (auto hook : patchSet.Hooks)
+	for (auto& hook : patchSet.Hooks)
 	{
 		auto patchData = GetHookBytes(&hook);
 		hook.Orig.resize(patchData.size());

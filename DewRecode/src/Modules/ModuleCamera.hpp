@@ -17,9 +17,10 @@ namespace Modules
 		Command* VarCameraSave;
 		Command* VarCameraLoad;
 
-		// patches to stop camera mode from changing
-		PatchSet* CameraPatches;
-		PatchSet* StaticPatches;
+		PatchSet* CustomModePatches;
+
+		// patches to disable all camera edits while in static mode
+		PatchSet* StaticModePatches;
 
 		Patch* HideHudPatch;
 		Patch* CenteredCrosshairPatch;

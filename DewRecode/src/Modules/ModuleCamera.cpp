@@ -19,6 +19,7 @@ namespace
 	{
 		auto& dorito = ElDorito::Instance();
 		auto mode = dorito.Utils.ToLower(dorito.Modules.Camera.VarCameraMode->ValueString);
+ 
 		if (!mode.compare("first") || !mode.compare("third"))
 		{
 			if (definition == CameraDefinitionType::PositionShift ||
@@ -33,6 +34,7 @@ namespace
 			return true;
 		}
 
+		// otherwise let the game do the camera updating
 		return false;
 	}
 
@@ -200,23 +202,24 @@ namespace
 	{
 		auto& dorito = ElDorito::Instance();
 		auto mode = dorito.Utils.ToLower(ElDorito::Instance().Modules.Camera.VarCameraMode->ValueString);
-
 		auto& camera = dorito.Modules.Camera;
-		// prevent the game from updating certain camera values depending on the current camera mode
-		dorito.Patches.EnablePatchSet(camera.CameraPatches, mode.compare("default") != 0);
 
-		// hides the hud when flying or in static camera mode
+		// get some globals
+		Pointer &playerControlGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
+		Pointer &directorGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];
+
+		// patches allowing us to control the camera when a non-default mode is selected
+		dorito.Patches.EnablePatchSet(camera.CustomModePatches, mode.compare("default") != 0);
+
+		// prevents the engine from modifying any camera components while in static mode
+		dorito.Patches.EnablePatchSet(camera.StaticModePatches, mode.compare("static") == 0);
+
+		// makes sure the hud is hidden when flying or in static camera mode
 		if (!camera.VarCameraHideHud->ValueInt)
 			dorito.Patches.EnablePatch(camera.HideHudPatch, mode.compare("flying") == 0 || mode.compare("static") == 0);
 
-		// prevents death from resetting look angles when in static camera mode
-		dorito.Patches.EnablePatchSet(camera.StaticPatches, mode.compare("status") == 0);
-
 		// disable player movement while in flycam
-		Pointer &playerControlGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
 		playerControlGlobalsPtr(GameGlobals::Input::DisablePlayerInputIndex).Write(mode == "flying");
-
-		Pointer &directorGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];
 
 		// get new camera perspective function offset 
 		size_t offset = 0x166ACB0;
@@ -284,9 +287,8 @@ namespace
 		*/
 
 		// update camera perspective function
-		Pointer &directorPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];
-		size_t oldOffset = directorPtr(GameGlobals::Director::CameraFunctionIndex).Read<size_t>();
-		directorPtr(GameGlobals::Director::CameraFunctionIndex).Write(offset);
+		size_t oldOffset = directorGlobalsPtr(GameGlobals::Director::CameraFunctionIndex).Read<size_t>();
+		directorGlobalsPtr(GameGlobals::Director::CameraFunctionIndex).Write(offset);
 
 		// output old -> new perspective function information to console
 		std::stringstream ss;
@@ -295,12 +297,21 @@ namespace
 
 		return true;
 	}
+
+	// TODO: make this use a lambda func instead once VC supports converting lambdas to funcptrs
+	void CameraPatches_TickCallback(const std::chrono::duration<double>& deltaTime)
+	{
+		ElDorito::Instance().Modules.Camera.UpdatePosition();
+	}
 }
 
 namespace Modules
 {
 	ModuleCamera::ModuleCamera() : ModuleBase("Camera")
 	{
+		// register our tick callbacks
+		engine->OnTick(CameraPatches_TickCallback);
+
 		// TODO: commands for setting camera speed, positions, save/restore etc.
 
 		VarCameraCrosshair = AddVariableInt("Crosshair", "crosshair", "Controls whether the crosshair should be centered", eCommandFlagsArchived, 0, VariableCameraCrosshairUpdate);
@@ -321,8 +332,9 @@ namespace Modules
 
 		VarCameraMode = AddVariableString("Mode", "camera_mode", "Camera mode, valid modes: default, first, third, flying, static", (CommandFlags)(eCommandFlagsDontUpdateInitial | eCommandFlagsCheat), "default", VariableCameraModeUpdate);
 
-		CameraPatches = patches->AddPatchSet("CameraPatches", 
+		CustomModePatches = patches->AddPatchSet("CustomModePatches",
 		{
+			// prevents the engine from switching camera perspectives when using a custom camera mode
 			Patch("CameraDebug1", 0x725A80, 0x90, 6),
 			Patch("CameraDebug2", 0x591525, 0x90, 6),
 			Patch("CameraThirdPerson", 0x728640, 0x90, 6),
@@ -330,13 +342,15 @@ namespace Modules
 			Patch("CameraDead", 0x729E6F, 0x90, 6),
 		},
 		{
+			// allows us to control certain parts of the camera depending on the current custom camera mode
 			Hook("CameraPermHook", 0x61440D, UpdateCameraDefinitions, HookType::Jmp),
 			Hook("CameraPermHookAlt1", 0x614818, UpdateCameraDefinitionsAlt1, HookType::Jmp),
 			Hook("CameraPermHookAlt2", 0x6148BE, UpdateCameraDefinitionsAlt2, HookType::Jmp),
 			Hook("CameraPermHookAlt3", 0x614902, UpdateCameraDefinitionsAlt3, HookType::Jmp),
 		});
 
-		StaticPatches = patches->AddPatchSet("StaticCameraPatches",
+		// prevents the engine from modifying camera components while in static mode
+		StaticModePatches = patches->AddPatchSet("DisableStaticUpdatePatches",
 		{
 			Patch("StaticILookVector", 0x611433, 0x90, 8),
 			Patch("StaticKLookVector", 0x61143E, 0x90, 6),
