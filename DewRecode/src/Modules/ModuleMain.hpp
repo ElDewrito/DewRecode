@@ -8,6 +8,7 @@
 #include "ModulePlayer.hpp"
 #include "ModuleServer.hpp"
 #include "ModuleTime.hpp"
+#include "ModuleDebug.hpp"
 
 #include "Patches/Armor.hpp"
 #include "Patches/ContentItems.hpp"
@@ -33,6 +34,7 @@ namespace Modules
 		ModulePlayer Player;
 		ModuleServer Server;
 		ModuleTime Time;
+		ModuleDebug Debug;
 
 		PatchModuleArmor ArmorPatches;
 		PatchModuleContentItems ContentItemPatches;
