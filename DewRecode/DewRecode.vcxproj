@@ -98,6 +98,7 @@
     <ClCompile Include="src\ElDorito.cpp" />
     <ClCompile Include="src\Modules\ModuleCamera.cpp" />
     <ClCompile Include="src\Modules\ModuleConsole.cpp" />
+	<ClCompile Include="src\Modules\ModuleDebug.cpp" />
     <ClCompile Include="src\Modules\ModuleForge.cpp" />
     <ClCompile Include="src\Modules\ModuleGame.cpp" />
     <ClCompile Include="src\Modules\ModuleGraphics.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="src\Commands.hpp" />
     <ClInclude Include="src\ElDorito.hpp" />
     <ClInclude Include="src\Modules\ModuleCamera.hpp" />
+	<ClInclude Include="src\Modules\ModuleDebug.hpp" />
     <ClInclude Include="src\Modules\ModuleGame.hpp" />
     <ClInclude Include="src\Modules\ModuleGraphics.hpp" />
     <ClInclude Include="src\Modules\ModuleInput.hpp" />
