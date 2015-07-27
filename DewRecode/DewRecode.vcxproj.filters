@@ -102,6 +102,9 @@
     <ClCompile Include="src\Modules\Patches\VirtualKeyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Modules\ModuleDebug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ElDorito.hpp">
@@ -234,6 +237,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Modules\ModuleConsole.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Modules\ModuleDebug.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
