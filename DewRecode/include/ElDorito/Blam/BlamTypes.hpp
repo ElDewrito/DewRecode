@@ -374,6 +374,11 @@ namespace GameGlobals
 		const unsigned CameraFunctionIndex = 4;
 	}
 
+	namespace Observer
+	{
+		const size_t TLSOffset = 0xE8;
+	}
+
 	namespace DepthOfField
 	{
 		const size_t TLSOffset = 0x3DC;

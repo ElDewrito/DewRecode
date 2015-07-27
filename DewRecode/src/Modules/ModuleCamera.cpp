@@ -225,6 +225,7 @@ namespace
 		// get some globals
 		Pointer &playerControlGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
 		Pointer &directorGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];
+		Pointer &observerGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Observer::TLSOffset)[0];
 
 		// patches allowing us to control the camera when a non-default mode is selected
 		dorito.Patches.EnablePatchSet(camera.CustomModePatches, mode.compare("default") != 0);
@@ -244,43 +245,43 @@ namespace
 		if (!mode.compare("first")) // c_first_person_camera
 		{
 			offset = 0x166ACB0;
-			directorGlobalsPtr(0x840).Write(0.0f);			// x camera shift
-			directorGlobalsPtr(0x844).Write(0.0f);			// y camera shift
-			directorGlobalsPtr(0x848).Write(0.0f);			// z camera shift
-			directorGlobalsPtr(0x84C).Write(0.0f);			// horizontal look shift
-			directorGlobalsPtr(0x850).Write(0.0f);			// vertical look shift
-			directorGlobalsPtr(0x854).Write(0.0f);			// depth
+			observerGlobalsPtr(0x18C).Write(0.0f);			// x camera shift
+			observerGlobalsPtr(0x190).Write(0.0f);			// y camera shift
+			observerGlobalsPtr(0x194).Write(0.0f);			// z camera shift
+			observerGlobalsPtr(0x198).Write(0.0f);			// horizontal look shift
+			observerGlobalsPtr(0x19C).Write(0.0f);			// vertical look shift
+			observerGlobalsPtr(0x1A0).Write(0.0f);			// depth
 		}
 		else if (!mode.compare("third")) // c_following_camera
 		{
 			offset = 0x16724D4;
-			directorGlobalsPtr(0x840).Write(0.0f);			// x camera shift
-			directorGlobalsPtr(0x844).Write(0.0f);			// y camera shift
-			directorGlobalsPtr(0x848).Write(0.1f);			// z camera shift
-			directorGlobalsPtr(0x84C).Write(0.0f);			// horizontal look shift
-			directorGlobalsPtr(0x850).Write(0.0f);			// vertical look shift
-			directorGlobalsPtr(0x854).Write(0.5f);			// depth
-			directorGlobalsPtr(0x858).Write(1.91986218f);	// 110 degrees
+			observerGlobalsPtr(0x18C).Write(0.0f);			// x camera shift
+			observerGlobalsPtr(0x190).Write(0.0f);			// y camera shift
+			observerGlobalsPtr(0x194).Write(0.1f);			// z camera shift
+			observerGlobalsPtr(0x198).Write(0.0f);			// horizontal look shift
+			observerGlobalsPtr(0x19C).Write(0.0f);			// vertical look shift
+			observerGlobalsPtr(0x1A0).Write(0.5f);			// depth
+			observerGlobalsPtr(0x1A4).Write(1.91986218f);	// 110 degrees
 		}
 		else if (!mode.compare("flying")) // c_flying_camera
 		{
 			offset = 0x16726D0;
-			directorGlobalsPtr(0x840).Write(0.0f);			// x camera shift
-			directorGlobalsPtr(0x844).Write(0.0f);			// y camera shift
-			directorGlobalsPtr(0x848).Write(0.0f);			// z camera shift
-			directorGlobalsPtr(0x84C).Write(0.0f);			// horizontal look shift
-			directorGlobalsPtr(0x850).Write(0.0f);			// vertical look shift
-			directorGlobalsPtr(0x854).Write(0.0f);			// depth
+			observerGlobalsPtr(0x18C).Write(0.0f);			// x camera shift
+			observerGlobalsPtr(0x190).Write(0.0f);			// y camera shift
+			observerGlobalsPtr(0x194).Write(0.0f);			// z camera shift
+			observerGlobalsPtr(0x198).Write(0.0f);			// horizontal look shift
+			observerGlobalsPtr(0x19C).Write(0.0f);			// vertical look shift
+			observerGlobalsPtr(0x1A0).Write(0.0f);			// depth
 		}
 		else if (!mode.compare("static") || !mode.compare("spectator")) // c_static_camera
 		{
 			offset = 0x16728A8;
-			directorGlobalsPtr(0x840).Write(0.0f);			// x camera shift
-			directorGlobalsPtr(0x844).Write(0.0f);			// y camera shift
-			directorGlobalsPtr(0x848).Write(0.0f);			// z camera shift
-			directorGlobalsPtr(0x84C).Write(0.0f);			// horizontal look shift
-			directorGlobalsPtr(0x850).Write(0.0f);			// vertical look shift
-			directorGlobalsPtr(0x854).Write(0.0f);			// depth
+			observerGlobalsPtr(0x18C).Write(0.0f);			// x camera shift
+			observerGlobalsPtr(0x190).Write(0.0f);			// y camera shift
+			observerGlobalsPtr(0x194).Write(0.0f);			// z camera shift
+			observerGlobalsPtr(0x198).Write(0.0f);			// horizontal look shift
+			observerGlobalsPtr(0x19C).Write(0.0f);			// vertical look shift
+			observerGlobalsPtr(0x1A0).Write(0.0f);			// depth
 		}
 
 		/*
@@ -330,7 +331,7 @@ namespace Modules
 		// register our tick callbacks
 		engine->OnTick(CameraPatches_TickCallback);
 
-		// TODO: commands for setting camera speed, positsaions, save/restore etc.
+		// TODO: commands for setting camera speed, positions, save/restore etc.
 
 		VarCameraCrosshair = AddVariableInt("Crosshair", "crosshair", "Controls whether the crosshair should be centered", eCommandFlagsArchived, 0, VariableCameraCrosshairUpdate);
 		VarCameraCrosshair->ValueIntMin = 0;
@@ -395,6 +396,13 @@ namespace Modules
 			Patch("IJUpLook3", 0x611EDB, 0x90, 4),
 			Patch("KUpLook3", 0x611EE2, 0x90, 3),
 
+			//Patch("HLookAngle", 0x5D3808, 0x90, 4),
+			//Patch("HLookAngle2", 0x5D3A0B, 0x90, 4),
+			//Patch("HLookAngle3", 0x5D3A2B, 0x90, 4),
+
+			//Patch("VLookAngle", 0x5D3F44, 0x90, 9),
+			//Patch("VLookAngle2", 0x5D3F75, 0x90, 9),
+
 			// fov - 0x611EE5, 0x6122E8
 		});
 
@@ -407,7 +415,7 @@ namespace Modules
 		auto& dorito = ElDorito::Instance();
 		auto mode = dorito.Utils.ToLower(dorito.Modules.Camera.VarCameraMode->ValueString);
 
-		Pointer &directorGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Director::TLSOffset)[0];
+		Pointer &observerGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Observer::TLSOffset)[0];
 		Pointer &playerControlGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
 		Pointer &playersPtr = dorito.Engine.GetMainTls(GameGlobals::Players::TLSOffset)[0];
 		Pointer &objectHeaderPtr = dorito.Engine.GetMainTls(GameGlobals::ObjectHeader::TLSOffset)[0];
@@ -421,22 +429,22 @@ namespace Modules
 			// current values
 			float hLookAngle = playerControlGlobalsPtr(0x30C).Read<float>();
 			float vLookAngle = playerControlGlobalsPtr(0x310).Read<float>();
-			float xPos = directorGlobalsPtr(0x834).Read<float>();
-			float yPos = directorGlobalsPtr(0x838).Read<float>();
-			float zPos = directorGlobalsPtr(0x83C).Read<float>();
-			float xShift = directorGlobalsPtr(0x840).Read<float>();
-			float yShift = directorGlobalsPtr(0x844).Read<float>();
-			float zShift = directorGlobalsPtr(0x845).Read<float>();
-			float hShift = directorGlobalsPtr(0x84C).Read<float>();
-			float vShift = directorGlobalsPtr(0x850).Read<float>();
-			float depth = directorGlobalsPtr(0x854).Read<float>();
-			float fov = directorGlobalsPtr(0x858).Read<float>();
-			float iForward = directorGlobalsPtr(0x85C).Read<float>();
-			float jForward = directorGlobalsPtr(0x860).Read<float>();
-			float kForward = directorGlobalsPtr(0x864).Read<float>();
-			float iUp = directorGlobalsPtr(0x868).Read<float>();
-			float jUp = directorGlobalsPtr(0x86C).Read<float>();
-			float kUp = directorGlobalsPtr(0x870).Read<float>();
+			float xPos = observerGlobalsPtr(0x180).Read<float>();
+			float yPos = observerGlobalsPtr(0x184).Read<float>();
+			float zPos = observerGlobalsPtr(0x188).Read<float>();
+			float xShift = observerGlobalsPtr(0x18C).Read<float>();
+			float yShift = observerGlobalsPtr(0x190).Read<float>();
+			float zShift = observerGlobalsPtr(0x194).Read<float>();
+			float hShift = observerGlobalsPtr(0x198).Read<float>();
+			float vShift = observerGlobalsPtr(0x19C).Read<float>();
+			float depth = observerGlobalsPtr(0x1A0).Read<float>();
+			float fov = observerGlobalsPtr(0x1A4).Read<float>();
+			float iForward = observerGlobalsPtr(0x1A8).Read<float>();
+			float jForward = observerGlobalsPtr(0x1AC).Read<float>();
+			float kForward = observerGlobalsPtr(0x1B0).Read<float>();
+			float iUp = observerGlobalsPtr(0x1B4).Read<float>();
+			float jUp = observerGlobalsPtr(0x1B8).Read<float>();
+			float kUp = observerGlobalsPtr(0x1BC).Read<float>();
 			float iRight = cos(hLookAngle + 3.14159265359f / 2);
 			float jRight = sin(hLookAngle + 3.14159265359f / 2);
 
@@ -511,22 +519,25 @@ namespace Modules
 			}
 
 			// update position
-			directorGlobalsPtr(0x834).Write<float>(xPos);
-			directorGlobalsPtr(0x838).Write<float>(yPos);
-			directorGlobalsPtr(0x83C).Write<float>(zPos);
+			observerGlobalsPtr(0x180).Write<float>(xPos);
+			observerGlobalsPtr(0x184).Write<float>(yPos);
+			observerGlobalsPtr(0x188).Write<float>(zPos);
 
 			// update look angles
-			directorGlobalsPtr(0x85C).Write<float>(cos(hLookAngle) * cos(vLookAngle));
-			directorGlobalsPtr(0x860).Write<float>(sin(hLookAngle) * cos(vLookAngle));
-			directorGlobalsPtr(0x864).Write<float>(sin(vLookAngle));
-			directorGlobalsPtr(0x868).Write<float>(-cos(hLookAngle) * sin(vLookAngle));
-			directorGlobalsPtr(0x86C).Write<float>(-sin(hLookAngle) * sin(vLookAngle));
-			directorGlobalsPtr(0x870).Write<float>(cos(vLookAngle));
+			observerGlobalsPtr(0x1A8).Write<float>(cos(hLookAngle) * cos(vLookAngle));
+			observerGlobalsPtr(0x1AC).Write<float>(sin(hLookAngle) * cos(vLookAngle));
+			observerGlobalsPtr(0x1B0).Write<float>(sin(vLookAngle));
+			observerGlobalsPtr(0x1B4).Write<float>(-cos(hLookAngle) * sin(vLookAngle));
+			observerGlobalsPtr(0x1B8).Write<float>(-sin(hLookAngle) * sin(vLookAngle));
+			observerGlobalsPtr(0x1BC).Write<float>(cos(vLookAngle));
 
-			directorGlobalsPtr(0x858).Write<float>(fov);
+			observerGlobalsPtr(0x1A4).Write<float>(fov);
 		}
 		else if (!mode.compare("spectator"))
 		{
+			// TODO: disable player input and allow custom controls for cycling through players and adjusting camera orientation
+
+			// check spectator index against max player count
 			unsigned long playerIndex = dorito.Modules.Camera.VarSpectatorIndex->ValueInt;
 			if (playerIndex >= playersPtr(0x38).Read<unsigned long>())
 				return;
@@ -563,17 +574,17 @@ namespace Modules
 			D3DXVec3Cross(&up, &left, &forward);
 
 			// update camera values
-			directorGlobalsPtr(0x834).Write<float>(position.x);
-			directorGlobalsPtr(0x838).Write<float>(position.y);
-			directorGlobalsPtr(0x83C).Write<float>(position.z + 0.3f);
-			directorGlobalsPtr(0x848).Write<float>(0.1f);	// z shift
-			directorGlobalsPtr(0x854).Write<float>(0.5f);	// depth
-			directorGlobalsPtr(0x85C).Write<float>(forward.x);
-			directorGlobalsPtr(0x860).Write<float>(forward.y);
-			directorGlobalsPtr(0x864).Write<float>(forward.z);
-			directorGlobalsPtr(0x868).Write<float>(up.x);
-			directorGlobalsPtr(0x86C).Write<float>(up.y);
-			directorGlobalsPtr(0x870).Write<float>(up.z);
+			observerGlobalsPtr(0x180).Write<float>(position.x);
+			observerGlobalsPtr(0x184).Write<float>(position.y);
+			observerGlobalsPtr(0x188).Write<float>(position.z + 0.3f);
+			observerGlobalsPtr(0x194).Write<float>(0.1f);	// z shift
+			observerGlobalsPtr(0x1A0).Write<float>(0.5f);	// depth
+			observerGlobalsPtr(0x1A8).Write<float>(forward.x);
+			observerGlobalsPtr(0x1AC).Write<float>(forward.y);
+			observerGlobalsPtr(0x1B0).Write<float>(forward.z);
+			observerGlobalsPtr(0x1B4).Write<float>(up.x);
+			observerGlobalsPtr(0x1B8).Write<float>(up.y);
+			observerGlobalsPtr(0x1BC).Write<float>(up.z);
 		}
 	}
 }
