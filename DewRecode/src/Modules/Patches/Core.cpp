@@ -1,4 +1,5 @@
 #include "Core.hpp"
+#include "../../ElDorito.hpp"
 namespace
 {
 	__declspec(naked) void FovHook()
@@ -12,6 +13,23 @@ namespace
 			push 0x50CA08
 			ret
 		}
+	}
+
+	int __cdecl DualWieldHook(unsigned short objectIndex)
+	{
+		auto& dorito = ElDorito::Instance();
+
+		Pointer &objectHeaderPtr = dorito.Engine.GetMainTls(GameGlobals::ObjectHeader::TLSOffset)[0];
+		uint32_t objectAddress = objectHeaderPtr(0x44).Read<uint32_t>() + 0xC + objectIndex * 0x10;
+		uint32_t objectDataAddress = *(uint32_t*)objectAddress;
+		uint32_t index = *(uint32_t*)objectDataAddress;
+
+		typedef char* (*GetTagAddressPtr)(int groupTag, uint32_t index);
+		auto GetTagAddress = reinterpret_cast<GetTagAddressPtr>(0x503370);
+
+		char* tagAddr = GetTagAddress(0x70616577, index);
+
+		return ((*(uint32_t*)(tagAddr + 0x1D4) >> 22) & 1) == 1;
 	}
 }
 namespace Modules
@@ -45,10 +63,12 @@ namespace Modules
 
 			// Prevent FOV from being overridden when the game loads
 			Patch("FOVOverride1", 0x65FA79, 0x90, 10),
-			Patch("FOVOverride2", 0x65FA86, 0x90, 5)
+			Patch("FOVOverride2", 0x65FA86, 0x90, 5)*/
 		},
 		{
-			Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp)*/
+			/*Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp)*/
+
+			Hook("DualWieldHook", 0xB61550, DualWieldHook, HookType::Jmp)
 		});
 	}
 }
