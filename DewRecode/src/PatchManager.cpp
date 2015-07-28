@@ -14,17 +14,16 @@ std::vector<unsigned char> GetHookBytes(Hook* hook)
 	if (hook->Type == HookType::Call)
 		tempJMP[0] = 0xE8; // change it to call instruction
 
-	uint32_t patchSize = (hook->Type == HookType::JmpIfEqual) ? 6 : 5;
+	uint32_t patchSize = (hook->Type == HookType::JmpIfEqual || hook->Type == HookType::JmpIfNotEqual) ? 6 : 5;
 	uint32_t JMPSize = ((uint32_t)hook->DestFunc - (uint32_t)hook->Address - patchSize);
 
-	if (hook->Type == HookType::JmpIfEqual)
+	if (hook->Type == HookType::JmpIfEqual || hook->Type == HookType::JmpIfNotEqual)
 	{
+		if (hook->Type == HookType::JmpIfNotEqual)
+			tempJE[1] = 0x85;
+
 		memcpy(&tempJE[2], &JMPSize, 4);
 		return std::vector<unsigned char>(tempJE, tempJE + 6);
-	}
-	else if (hook->Type == HookType::JmpIfNotEqual)
-	{
-		// TODO
 	}
 	else //(hook->Type == HookType::None || hook->Type == HookType::Call)
 	{
