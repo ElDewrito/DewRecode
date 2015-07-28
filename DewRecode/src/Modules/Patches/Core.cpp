@@ -31,6 +31,25 @@ namespace
 
 		return ((*(uint32_t*)(tagAddr + 0x1D4) >> 22) & 1) == 1;
 	}
+
+	int __cdecl GetEquipmentCountHook(uint16_t playerObjectIndex, uint16_t equipmentIndex)
+	{
+		auto& dorito = ElDorito::Instance();
+
+		if (equipmentIndex == 0xFFFF)
+			return 0;
+
+		// disable equipment when dual wielding
+		if (*(uint8_t*)(0x244D33D) == 0)
+			return 0;
+
+		Pointer &objectHeaderPtr = dorito.Engine.GetMainTls(GameGlobals::ObjectHeader::TLSOffset)[0];
+		uint32_t objectAddress = objectHeaderPtr(0x44).Read<uint32_t>() + 0xC + playerObjectIndex * 0x10;
+		uint32_t objectDataAddress = *(uint32_t*)(objectAddress);
+
+		return *(uint8_t*)(objectDataAddress + 0x320 + equipmentIndex);
+	}
+
 }
 namespace Modules
 {
@@ -68,7 +87,8 @@ namespace Modules
 		{
 			/*Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp)*/
 
-			Hook("DualWieldHook", 0xB61550, DualWieldHook, HookType::Jmp)
+			Hook("DualWieldHook", 0xB61550, DualWieldHook, HookType::Jmp),
+			Hook("GetEquipmentCountHook", 0xB440F0, GetEquipmentCountHook, HookType::Jmp)
 		});
 	}
 }
