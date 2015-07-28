@@ -380,6 +380,95 @@ namespace
 			ret
 		}
 	}
+
+	void EquipmentHookImpl(unsigned short playerIndex, unsigned short equipmentIndex)
+	{
+		BYTE unkData[0x40];
+		BYTE b69Data[0x48];
+
+		auto& dorito = ElDorito::Instance();
+
+		Pointer& playerHeaderPtr = dorito.Engine.GetMainTls(GameGlobals::Players::TLSOffset)[0];
+		uint32_t playerStructAddress = playerHeaderPtr(0x44).Read<uint32_t>() + playerIndex * GameGlobals::Players::PlayerEntryLength;
+		uint32_t playerObjectDatum = *(uint32_t*)(playerStructAddress + 0x30);
+
+		Pointer &objectHeaderPtr = dorito.Engine.GetMainTls(GameGlobals::ObjectHeader::TLSOffset)[0];
+		uint32_t objectAddress = objectHeaderPtr(0x44).Read<uint32_t>() + 0xC + equipmentIndex * 0x10;
+		uint32_t objectDataAddress = *(uint32_t*)objectAddress;
+		uint32_t index = *(uint32_t*)objectDataAddress;
+
+		memset(b69Data, 0, 0x48);
+		*(uint32_t*)(b69Data) = 0x3D; // object type?
+		*(uint32_t*)(b69Data + 4) = equipmentIndex;
+
+		// add equipment to the player, also removes the object from gameworld
+		typedef char(__cdecl* Objects_AttachPtr)(int a1, void* a2);
+		auto Objects_Attach = reinterpret_cast<Objects_AttachPtr>(0xB69C50);
+		Objects_Attach(playerObjectDatum, b69Data); // 82182C48
+
+		// prints text to the HUD, taken from HO's code
+		{
+			typedef int(__thiscall* sub_589680Ptr)(void* thisPtr, int a2);
+			auto sub_589680 = reinterpret_cast<sub_589680Ptr>(0x589680);
+			sub_589680(&unkData, playerIndex);
+
+			typedef BOOL(__thiscall* sub_589770Ptr)(void* thisPtr);
+			auto sub_589770 = reinterpret_cast<sub_589770Ptr>(0x589770);
+			while ((unsigned __int8)sub_589770(&unkData))
+			{
+				typedef int(__thiscall* sub_589760Ptr)(void* thisPtr);
+				auto sub_589760 = reinterpret_cast<sub_589760Ptr>(0x589760);
+				int v9 = sub_589760(&unkData);
+
+				typedef int(__cdecl* sub_A95850Ptr)(unsigned int a1, short a2);
+				auto sub_A95850 = reinterpret_cast<sub_A95850Ptr>(0xA95850);
+				sub_A95850(v9, index);
+			}
+		}
+
+		// unsure what these do, taken from HO code
+		{
+			typedef int(__cdecl *sub_B887B0Ptr)(unsigned short a1, unsigned short a2);
+			auto sub_B887B0 = reinterpret_cast<sub_B887B0Ptr>(0xB887B0);
+			sub_B887B0(playerIndex, index); // sub_82437A08
+
+			typedef void(_cdecl *sub_4B31C0Ptr)(unsigned short a1, unsigned short a2);
+			auto sub_4B31C0 = reinterpret_cast<sub_4B31C0Ptr>(0x4B31C0);
+			sub_4B31C0(playerObjectDatum, index); // sub_8249A1A0
+		}
+
+		// called by powerup pickup func, deletes the item but also crashes the game when used with equipment
+		// not needed since Objects_Attach removes it from the game world
+		/*
+		typedef int(__cdecl *Objects_DeletePtr)(int objectIndex);
+		auto Objects_Delete = reinterpret_cast<Objects_DeletePtr>(0xB57090);
+		Objects_Delete(equipmentIndex);*/
+
+	}
+
+	__declspec(naked) void EquipmentHook()
+	{
+		__asm
+		{
+			mov edx, 0x531D70
+			call edx
+			mov esi, [ebp+8]
+			push edi
+			push esi
+			test al, al
+			jz DoEquipmentHook
+			mov edx, 0x4B4A20
+			call edx
+			add esp, 8
+			push 0x5397D8
+			ret
+		DoEquipmentHook:
+			call EquipmentHookImpl
+			add esp, 8
+			push 0x5397D8
+			ret
+		}
+	}
 }
 namespace Modules
 {
@@ -431,7 +520,8 @@ namespace Modules
 			Hook("ClientObjectHealthHook", 0xB33F13, ClientObjectHealthHook, HookType::Jmp),
 			Hook("ClientObjectShieldHook", 0xB329CE, ClientObjectShieldHook, HookType::Jmp),
 
-			Hook("GrenadeLoadoutHook", 0x5A3267, GrenadeLoadoutHook, HookType::Jmp)
+			Hook("GrenadeLoadoutHook", 0x5A3267, GrenadeLoadoutHook, HookType::Jmp),
+			Hook("EquipmentHook", 0x539888, EquipmentHook, HookType::JmpIfNotEqual)
 		});
 	}
 }
