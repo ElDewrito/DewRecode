@@ -39,7 +39,7 @@ namespace
 		if (equipmentIndex == 0xFFFF)
 			return 0;
 
-		// disable equipment when dual wielding
+		// checks if dual wielding and disables equipment use if so
 		if (*(uint8_t*)(0x244D33D) == 0)
 			return 0;
 
@@ -50,6 +50,20 @@ namespace
 		return *(uint8_t*)(objectDataAddress + 0x320 + equipmentIndex);
 	}
 
+	__declspec(naked) void DualWieldSprintHook()
+	{
+		__asm
+		{
+			mov		ecx, edi
+			cmp		byte ptr ds:[0244D33Dh], 0	; checks if dual wielding
+			jne		enable
+			and		ax, 0FEFFh				; disable by removing the 8th bit indicating a sprint input press
+			enable:
+			mov		dword ptr ds:[esi + 8], eax
+			push	046DFC0h
+			ret
+		}
+	}
 }
 namespace Modules
 {
@@ -88,7 +102,8 @@ namespace Modules
 			/*Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp)*/
 
 			Hook("DualWieldHook", 0xB61550, DualWieldHook, HookType::Jmp),
-			Hook("GetEquipmentCountHook", 0xB440F0, GetEquipmentCountHook, HookType::Jmp)
+			Hook("GetEquipmentCountHook", 0xB440F0, GetEquipmentCountHook, HookType::Jmp),
+			Hook("DualWieldSprintHook", 0x46DFBB, DualWieldSprintHook, HookType::Jmp)
 		});
 	}
 }
