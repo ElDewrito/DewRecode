@@ -21,8 +21,6 @@ namespace
 			int breakHere = 0;
 		}
 
-		// TODO: might be better to just inline hook the existing memcpy
-		// depending on how performance suffers for debug builds using this
 		return memcpy(dst, src, len);
 	}
 
@@ -47,6 +45,30 @@ namespace
 
 		return true;
 	}
+
+	void* Debug_MemsetHook(void* dst, int val, uint32_t len)
+	{
+		auto dstFilter = ElDorito::Instance().Modules.Debug.VarMemsetDst->ValueInt;
+		uint32_t dstAddress = (uint32_t)dst;
+
+		if (dstFilter >= dstAddress && dstFilter < dstAddress + len)
+		{
+			int breakHere = 0;
+		}
+
+		return memset(dst, val, len);
+	}
+
+	bool MemsetDstFilterUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		auto dst = ElDorito::Instance().Modules.Debug.VarMemsetDst->ValueInt;
+
+		std::stringstream ss;
+		ss << "Memset destination address filter set to " << dst;
+		returnInfo = ss.str();
+
+		return true;
+	}
 }
 
 namespace Modules
@@ -55,8 +77,12 @@ namespace Modules
 	{
 		VarMemcpySrc = AddVariableInt("MemcpySrc", "memcpy_src", "Allows breakpointing memcpy based on specified source address filter.", eCommandFlagsHidden, 0, MemcpySrcFilterUpdate);
 		VarMemcpyDst = AddVariableInt("MemcpyDst", "memcpy_dst", "Allows breakpointing memcpy based on specified destination address filter.", eCommandFlagsHidden, 0, MemcpyDstFilterUpdate);
+		VarMemsetDst = AddVariableInt("MemsetDst", "memset_dst", "Allows breakpointing memset based on specified destination address filter.", eCommandFlagsHidden, 0, MemsetDstFilterUpdate);
 
-		Hook hook = Hook("Memcpy", 0xBEF260, Debug_MemcpyHook, HookType::Jmp);
-		patches->EnableHook(&hook, true);
+		Hook memcpyHook = Hook("Memcpy", 0xBEF260, Debug_MemcpyHook, HookType::Jmp);
+		Hook memsetHook = Hook("Memset", 0xBEE2E0, Debug_MemsetHook, HookType::Jmp);
+
+		patches->EnableHook(&memcpyHook, true);
+		patches->EnableHook(&memsetHook, true);
 	}
 }

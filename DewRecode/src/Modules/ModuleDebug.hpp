@@ -8,6 +8,7 @@ namespace Modules
 	public:
 		Command* VarMemcpySrc;
 		Command* VarMemcpyDst;
+		Command* VarMemsetDst;
 
 		ModuleDebug();
 	};

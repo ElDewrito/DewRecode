@@ -50,17 +50,51 @@ namespace
 		return *(uint8_t*)(objectDataAddress + 0x320 + equipmentIndex);
 	}
 
-	__declspec(naked) void DualWieldSprintHook()
+	__declspec(naked) void SprintInputHook()
 	{
 		__asm
 		{
 			mov		ecx, edi
-			cmp		byte ptr ds:[0244D33Dh], 0	; checks if dual wielding
-			jne		enable
-			and		ax, 0FEFFh				; disable by removing the 8th bit indicating a sprint input press
+			cmp		byte ptr ds:[0244D33Dh], 0	; zero if dual wielding
+			jne		enable						; leave sprint enabled (for now) if not dual wielding
+			and		ax, 0FEFFh					; disable by removing the 8th bit indicating no sprint input press
 			enable:
 			mov		dword ptr ds:[esi + 8], eax
 			push	046DFC0h
+			ret
+		}
+	}
+
+	// scope level is an int16 with -1 indicating no scope, 0 indicating first level, 1 indicating second level etc.
+	__declspec(naked) void ScopeLevelHook()
+	{
+		__asm
+		{
+			mov		word ptr ds:[edi + esi + 32Ah], 0FFFFh	; no scope by default
+			cmp		byte ptr ds:[0244D33Dh], 0				; zero if dual wielding
+			je		noscope									; prevent scoping when dual wielding
+			mov		word ptr ds:[edi + esi + 32Ah], ax		; otherwise use intended scope level
+			noscope:
+			push	05D50D3h
+			ret
+		}
+	}
+	
+	__declspec(naked) void LocalPlayerDamageHook()
+	{
+		__asm
+		{
+			; descope when taking damage
+			push	eax
+			mov     eax, dword ptr fs:[02Ch]			; get tls array address
+			mov		eax, dword ptr ds:[eax]				; get slot 0 tls address
+			mov		eax, dword ptr ds:[eax + 0C4h]		; get player control globals address
+			mov		word ptr ds:[eax + 32Ah], 0FFFFh	; reset local player 0 scope level
+			pop		eax
+
+			; decrease player object damage
+			movss	dword ptr ds:[edi + 100h], xmm1
+			push	0B553ABh
 			ret
 		}
 	}
@@ -103,7 +137,9 @@ namespace Modules
 
 			Hook("DualWieldHook", 0xB61550, DualWieldHook, HookType::Jmp),
 			Hook("GetEquipmentCountHook", 0xB440F0, GetEquipmentCountHook, HookType::Jmp),
-			Hook("DualWieldSprintHook", 0x46DFBB, DualWieldSprintHook, HookType::Jmp)
+			Hook("SprintInputHook", 0x46DFBB, SprintInputHook, HookType::Jmp),
+			Hook("ScopeLevelHook", 0x5D50CB, ScopeLevelHook, HookType::Jmp),
+			Hook("LocalPlayerDamageHook", 0xB553A3, LocalPlayerDamageHook, HookType::Jmp)
 		});
 	}
 }
