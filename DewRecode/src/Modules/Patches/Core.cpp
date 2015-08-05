@@ -469,6 +469,22 @@ namespace
 			ret
 		}
 	}
+
+	// replaces some check that always fails and allows you to throw equipment, as long as it still has a use remaining
+	// if you've used up all the uses and try throwing again it'll still destroy your first thrown equipment though
+	// H3E likely has this check somewhere closer to the top of the hooked func, but I couldn't find it
+	__declspec(naked) void EquipmentTestHook()
+	{
+		__asm
+		{
+			push dword ptr [ebp+8]
+			mov edx, 0xB89190 // Equipment_GetNumRemainingUses(int16 objectIdx)
+			call edx
+			add esp, 4
+			push 0xB86CFD
+			ret
+		}
+	}
 }
 namespace Modules
 {
@@ -499,7 +515,8 @@ namespace Modules
 			// skips some check and allows you to throw equipment
 			// not exactly sure what the skipped check is checking
 			// my guess is it checks the loadout for the currently equipped equipment, if it's not in the loadout then it returns false
-			Patch("EquipmentThrowHookFix", 0xB86CFF, 0x90, 6)
+			Patch("EquipmentThrowHookFix", 0xB86CFF, 0x90, 6),
+			Patch("EquipmentTestPatch", 0xB86CF7, 0x90, 6)
 
 			/* TODO: find out if one of these patches is breaking game prefs
 			// Remove preferences.dat hash check
@@ -526,7 +543,8 @@ namespace Modules
 			Hook("ClientObjectShieldHook", 0xB329CE, ClientObjectShieldHook, HookType::Jmp),
 
 			Hook("GrenadeLoadoutHook", 0x5A3267, GrenadeLoadoutHook, HookType::Jmp),
-			Hook("EquipmentHook", 0x539888, EquipmentHook, HookType::JmpIfNotEqual)
+			Hook("EquipmentHook", 0x539888, EquipmentHook, HookType::JmpIfNotEqual),
+			Hook("EquipmentTestHook", 0xB86CF2, EquipmentTestHook, HookType::Jmp)
 		});
 	}
 }
