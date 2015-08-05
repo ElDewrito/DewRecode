@@ -496,6 +496,11 @@ namespace Modules
 			// TODO: maybe find a way to update HO's FMOD, HO is using 4.26.6 which is ancient
 			Patch("FmodWasapiFix", 0x140DA75, { 0x2 }),
 
+			// skips some check and allows you to throw equipment
+			// not exactly sure what the skipped check is checking
+			// my guess is it checks the loadout for the currently equipped equipment, if it's not in the loadout then it returns false
+			Patch("EquipmentThrowHookFix", 0xB86CFF, 0x90, 6)
+
 			/* TODO: find out if one of these patches is breaking game prefs
 			// Remove preferences.dat hash check
 			Patch("PrefsDatHashCheck", 0x50C99A, 0x90, 6),
