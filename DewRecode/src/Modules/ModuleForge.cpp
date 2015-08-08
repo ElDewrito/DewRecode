@@ -47,23 +47,30 @@ namespace
 	std::chrono::high_resolution_clock::time_point PrevTime = std::chrono::high_resolution_clock::now();
 	char __fastcall UI_Forge_ButtonPressHandlerHook(void* a1, int unused, uint8_t* controllerStruct)
 	{
-		uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
-
-		auto CurTime = std::chrono::high_resolution_clock::now();
-		auto timeSinceLastAction = std::chrono::duration_cast<std::chrono::milliseconds>(CurTime - PrevTime);
-
-		if (btnCode == Blam::ButtonCodes::eButtonCodesLeft || btnCode == Blam::ButtonCodes::eButtonCodesRight)
+		bool usingController = Pointer(0x244DE98).Read<uint32_t>() == 1;
+		if (!usingController)
 		{
-			if (timeSinceLastAction.count() < 200) // 200ms between button presses otherwise it spams the key
-				return 1;
+			uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
 
-			PrevTime = CurTime;
+			if (btnCode >= Blam::ButtonCodes::eButtonCodesDpadUp && btnCode <= Blam::ButtonCodes::eButtonCodesDpadRight)
+				return 1; // ignore the dpad button presses
 
-			if (btnCode == Blam::ButtonCodes::eButtonCodesLeft) // analog left / arrow key left
-				*(uint32_t*)(controllerStruct + 0x1C) = Blam::ButtonCodes::eButtonCodesLB;
+			auto CurTime = std::chrono::high_resolution_clock::now();
+			auto timeSinceLastAction = std::chrono::duration_cast<std::chrono::milliseconds>(CurTime - PrevTime);
 
-			if (btnCode == Blam::ButtonCodes::eButtonCodesRight) // analog right / arrow key right
-				*(uint32_t*)(controllerStruct + 0x1C) = Blam::ButtonCodes::eButtonCodesRB;
+			if (btnCode == Blam::ButtonCodes::eButtonCodesLeft || btnCode == Blam::ButtonCodes::eButtonCodesRight)
+			{
+				if (timeSinceLastAction.count() < 200) // 200ms between button presses otherwise it spams the key
+					return 1;
+
+				PrevTime = CurTime;
+
+				if (btnCode == Blam::ButtonCodes::eButtonCodesLeft) // analog left / arrow key left
+					*(uint32_t*)(controllerStruct + 0x1C) = Blam::ButtonCodes::eButtonCodesLB;
+
+				if (btnCode == Blam::ButtonCodes::eButtonCodesRight) // analog right / arrow key right
+					*(uint32_t*)(controllerStruct + 0x1C) = Blam::ButtonCodes::eButtonCodesRB;
+			}
 		}
 
 		typedef char(__thiscall *UI_Forge_ButtonPressHandler)(void* a1, void* controllerStruct);

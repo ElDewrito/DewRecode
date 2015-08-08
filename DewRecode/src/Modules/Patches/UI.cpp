@@ -172,24 +172,25 @@ namespace
 		ElDorito::Instance().Modules.UIPatches.Tick(deltaTime);
 	}
 
-	// Fix to limit button presses, stops pause menu from skipping options when using KB
-	// TODO: find the proper fix for this, it seems like when your on the pause menu it sends 3 button presses when you press a key, two dpad presses and an analog press
+	// Fix to ignore duplicate button presses when using keyboard
+	// TODO: find the proper fix for this, it seems like when your on the pause menu / forge menu it sends 3 button presses when you press a key (two dpad presses and an analog press)
 	// eg. for dpad right it sends DpadRight (sent @ 0xA93E40), DpadRight (sent @ 0xA941B9), Right (sent @ 0xA93E23)
 	// only sends one button press on the main menu though, which is strange
-	std::chrono::high_resolution_clock::time_point PrevButtonPress = std::chrono::high_resolution_clock::now();
-	BOOL UI_ButtonPressCheckHook()
+	// we just ignore the dpad button presses so options don't get skipped
+	int __fastcall c_start_menu__ButtonPressHook(void *thisPtr, int unused, uint8_t* controllerStruct)
 	{
-		auto CurTime = std::chrono::high_resolution_clock::now();
-		auto timeSinceLastAction = std::chrono::duration_cast<std::chrono::milliseconds>(CurTime - PrevButtonPress);
+		bool usingController = Pointer(0x244DE98).Read<uint32_t>() == 1;
+		if (!usingController)
+		{
+			uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
 
-		if (timeSinceLastAction.count() < 50) // limit to 50ms between presses
-			return TRUE;
+			if (btnCode >= Blam::ButtonCodes::eButtonCodesDpadUp && btnCode <= Blam::ButtonCodes::eButtonCodesDpadRight)
+				return 1; // ignore the dpad button presses
+		}
 
-		PrevButtonPress = CurTime;
-
-		typedef BOOL(*UI_ButtonPressCheckPtr)();
-		auto UI_ButtonPressCheck = reinterpret_cast<UI_ButtonPressCheckPtr>(0xA84850);
-		return UI_ButtonPressCheck();
+		typedef int(__thiscall* c_start_menu__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
+		auto c_start_menu__ButtonPress = reinterpret_cast<c_start_menu__ButtonPressPtr>(0xB1F620);
+		return c_start_menu__ButtonPress(thisPtr, controllerStruct);
 	}
 }
 
@@ -245,10 +246,18 @@ namespace Modules
 			Hook("LocalizedString", 0x51E040, LocalizedStringHook, HookType::Jmp),
 
 			// Hook window title sprintf to replace the dest buf with our string
-			Hook("WindowTitle", 0x42EB84, WindowTitleSprintfHook, HookType::Call),
-
-			Hook("ButtonPressCheck", 0xAAB7EE, UI_ButtonPressCheckHook, HookType::Call)
+			Hook("WindowTitle", 0x42EB84, WindowTitleSprintfHook, HookType::Call)
 		});
+
+		// hook c_start_menu::ButtonPress on each c_start_menu_* vftable
+		Pointer(0x0169FE08).Write((uint32_t)&c_start_menu__ButtonPressHook);
+		Pointer(0x0169FFA8).Write((uint32_t)&c_start_menu__ButtonPressHook);
+		Pointer(0x016A0118).Write((uint32_t)&c_start_menu__ButtonPressHook);
+		Pointer(0x016A0350).Write((uint32_t)&c_start_menu__ButtonPressHook);
+		Pointer(0x016A0488).Write((uint32_t)&c_start_menu__ButtonPressHook);
+		Pointer(0x016A18B0).Write((uint32_t)&c_start_menu__ButtonPressHook);
+		Pointer(0x016A1BE8).Write((uint32_t)&c_start_menu__ButtonPressHook);
+		Pointer(0x016A6C80).Write((uint32_t)&c_start_menu__ButtonPressHook);
 	}
 
 	void PatchModuleUI::Tick(const std::chrono::duration<double>& deltaTime)
