@@ -176,7 +176,7 @@ namespace
 	// TODO: find the proper fix for this, it seems like when your on the pause menu / forge menu it sends 3 button presses when you press a key (two dpad presses and an analog press)
 	// eg. for dpad right it sends DpadRight (sent @ 0xA93E40), DpadRight (sent @ 0xA941B9), Right (sent @ 0xA93E23)
 	// only sends one button press on the main menu though, which is strange
-	// we just ignore the dpad button presses so options don't get skipped
+	// we just ignore the dpad button presses so options don't get skipped.
 	int __fastcall c_start_menu__ButtonPressHook(void *thisPtr, int unused, uint8_t* controllerStruct)
 	{
 		bool usingController = Pointer(0x244DE98).Read<uint32_t>() == 1;
