@@ -171,6 +171,26 @@ namespace
 	{
 		ElDorito::Instance().Modules.UIPatches.Tick(deltaTime);
 	}
+
+	// Fix to limit button presses, stops pause menu from skipping options when using KB
+	// TODO: find the proper fix for this, it seems like when your on the pause menu it sends 3 button presses when you press a key, two dpad presses and an analog press
+	// eg. for dpad right it sends DpadRight (sent @ 0xA93E40), DpadRight (sent @ 0xA941B9), Right (sent @ 0xA93E23)
+	// only sends one button press on the main menu though, which is strange
+	std::chrono::high_resolution_clock::time_point PrevButtonPress = std::chrono::high_resolution_clock::now();
+	BOOL UI_ButtonPressCheckHook()
+	{
+		auto CurTime = std::chrono::high_resolution_clock::now();
+		auto timeSinceLastAction = std::chrono::duration_cast<std::chrono::milliseconds>(CurTime - PrevButtonPress);
+
+		if (timeSinceLastAction.count() < 50) // limit to 50ms between presses
+			return TRUE;
+
+		PrevButtonPress = CurTime;
+
+		typedef BOOL(*UI_ButtonPressCheckPtr)();
+		auto UI_ButtonPressCheck = reinterpret_cast<UI_ButtonPressCheckPtr>(0xA84850);
+		return UI_ButtonPressCheck();
+	}
 }
 
 namespace Modules
@@ -206,7 +226,8 @@ namespace Modules
 			// Fix for leave game button to show H3 pause menu
 			Patch("ShowH3PauseMenu1", 0x7B682B, 0x90, 1),
 
-			// allows you to press B to close the h3 start menu
+			// Allows you to press B to close the H3 pause menu
+			// TODO: find out what the byte that's being checked does, we're just patching out the check here but maybe it's important
 			Patch("CloseStartMenuFix", 0xAE05F3, 0x90, 2)
 		}, 
 		{
@@ -225,9 +246,9 @@ namespace Modules
 
 			// Hook window title sprintf to replace the dest buf with our string
 			Hook("WindowTitle", 0x42EB84, WindowTitleSprintfHook, HookType::Call),
-		});
 
-		// TODO: pause menu hook
+			Hook("ButtonPressCheck", 0xAAB7EE, UI_ButtonPressCheckHook, HookType::Call)
+		});
 	}
 
 	void PatchModuleUI::Tick(const std::chrono::duration<double>& deltaTime)
