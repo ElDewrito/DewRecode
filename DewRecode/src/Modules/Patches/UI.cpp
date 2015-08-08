@@ -205,6 +205,9 @@ namespace Modules
 
 			// Fix for leave game button to show H3 pause menu
 			Patch("ShowH3PauseMenu1", 0x7B682B, 0x90, 1),
+
+			// allows you to press B to close the h3 start menu
+			Patch("CloseStartMenuFix", 0xAE05F3, 0x90, 2)
 		}, 
 		{
 			// Fix for leave game button to show H3 pause menu
