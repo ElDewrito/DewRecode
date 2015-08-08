@@ -454,7 +454,7 @@ namespace Modules
 		VarServerPort->ValueIntMin = 1;
 		VarServerPort->ValueIntMax = 0xFFFF;
 
-		VarRconWSPort = AddVariableInt("RconPort", "rcon_port", "The port number for the RCON/WebSockets server", eCommandFlagsArchived, 11765);
+		VarRconWSPort = AddVariableInt("RconPort", "rcon_port", "The port number for the RCON/WebSockets server", eCommandFlagsArchived, 11764);
 		VarRconWSPort->ValueIntMin = 1;
 		VarRconWSPort->ValueIntMax = 0xFFFF;
 

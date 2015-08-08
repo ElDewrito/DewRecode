@@ -267,7 +267,7 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 	if (eventId.compare("Core.Input.KeyboardUpdate") && eventId.compare("Core.Direct3D.EndScene")) // don't show keyboard update spam
 		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "EngineEvent", "%s event triggered", eventId.c_str());
 
-	if (!eventId.compare("Core.MainMenuShown"))
+	if (!eventId.compare("Core.Engine.MainMenuShown"))
 	{
 		if (this->mainMenuHasShown)
 			return; // this event should only occur once during the lifecycle of the game

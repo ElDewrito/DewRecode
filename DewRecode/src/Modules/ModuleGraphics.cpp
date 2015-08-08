@@ -120,33 +120,33 @@ namespace Modules
 {
 	ModuleGraphics::ModuleGraphics() : ModuleBase("Graphics")
 	{
-		VarSaturation = AddVariableFloat("Saturation", "saturation", "The saturation", eCommandFlagsArchived, 1.0f, VariableSaturationUpdate);
+		VarSaturation = AddVariableFloat("Saturation", "saturation", "The saturation", (CommandFlags)(eCommandFlagsArchived | eCommandFlagsDontUpdateInitial), 1.0f, VariableSaturationUpdate);
 		VarSaturation->ValueFloatMin = -10.0f;
 		VarSaturation->ValueFloatMax = 10.0f;
 
-		VarRedHue = AddVariableFloat("RedHue", "red_hue", "The red hue", eCommandFlagsNone, 1.0f, VariableRedHueUpdate);
+		VarRedHue = AddVariableFloat("RedHue", "red_hue", "The red hue", eCommandFlagsDontUpdateInitial, 1.0f, VariableRedHueUpdate);
 		VarRedHue->ValueFloatMin = 0.0f;
 		VarRedHue->ValueFloatMax = 1.0f;
 
-		VarGreenHue = AddVariableFloat("GreenHue", "green_hue", "The green hue", eCommandFlagsNone, 1.0f, VariableGreenHueUpdate);
+		VarGreenHue = AddVariableFloat("GreenHue", "green_hue", "The green hue", eCommandFlagsDontUpdateInitial, 1.0f, VariableGreenHueUpdate);
 		VarGreenHue->ValueFloatMin = 0.0f;
 		VarGreenHue->ValueFloatMax = 1.0f;
 
-		VarBlueHue = AddVariableFloat("BlueHue", "blue_hue", "The blue hue", eCommandFlagsNone, 1.0f, VariableBlueHueUpdate);
+		VarBlueHue = AddVariableFloat("BlueHue", "blue_hue", "The blue hue", eCommandFlagsDontUpdateInitial, 1.0f, VariableBlueHueUpdate);
 		VarBlueHue->ValueFloatMin = 0.0f;
 		VarBlueHue->ValueFloatMax = 1.0f;
 
 		// TODO: consider breaking some of these out into a separate cinematics module or possibly moving dof to camera
 
-		VarBloom = AddVariableFloat("Bloom", "bloom", "The atmosphere bloom", eCommandFlagsArchived, 0.0f, VariableBloomUpdate);
+		VarBloom = AddVariableFloat("Bloom", "bloom", "The atmosphere bloom", (CommandFlags)(eCommandFlagsArchived | eCommandFlagsDontUpdateInitial), 0.0f, VariableBloomUpdate);
 		VarBloom->ValueFloatMin = 0.0f;
 		VarBloom->ValueFloatMax = 5.0f;
 
-		VarDepthOfField = AddVariableFloat("DepthOfField", "dof", "The camera's depth of field", eCommandFlagsNone, 0.0f, VariableDepthOfFieldUpdate);
+		VarDepthOfField = AddVariableFloat("DepthOfField", "dof", "The camera's depth of field", eCommandFlagsDontUpdateInitial, 0.0f, VariableDepthOfFieldUpdate);
 		VarDepthOfField->ValueFloatMin = 0.0f;
 		VarDepthOfField->ValueFloatMax = 1.0f;
 
-		VarLetterbox = AddVariableInt("Letterbox", "letterbox", "A cinematic letterbox.", eCommandFlagsNone, 0, VariableLetterboxUpdate);
+		VarLetterbox = AddVariableInt("Letterbox", "letterbox", "A cinematic letterbox.", eCommandFlagsDontUpdateInitial, 0, VariableLetterboxUpdate);
 		VarLetterbox->ValueIntMin = 0;
 		VarLetterbox->ValueIntMax = 1;
 	}

@@ -231,6 +231,28 @@ namespace Modules
 	{
 		if (DialogShow)
 		{
+			if (DialogStringId == 0x10084) // start_menu
+			{
+				// seems like this func is meant to be called which returns the first arg to give AE0BE0, but it seems to only return 0?
+				/*
+				int test = 0;
+				typedef bool(__cdecl* sub_A933D0Ptr)(int a1, int a2, int a3, int a4);
+				auto sub_A933D0 = reinterpret_cast<sub_A933D0Ptr>(0xA933D0);
+
+				sub_A933D0(0xFFFFFFFF, 0xFF, 0xFF, (int)&test);
+				*/
+
+				// this func was part of a larger func in H3E, but in HO the func was removed and only this part remains, which loads up the start_menu
+				// in H3E the call to this larger func is at 0x8211D334, in HO this call is at 0xAAC8A3
+				// the func in HO does some of what the H3E func does, but it call other funcs instead of this func we're calling
+				// the H3E equivalent to this func we call is at 0x825D5C7C
+				typedef bool(__cdecl* sub_AE0BE0Ptr)(int a1, int a2, int a3, int a4, void* a5, int a6);
+				auto sub_AE0BE0 = reinterpret_cast<sub_AE0BE0Ptr>(0xAE0BE0);
+				sub_AE0BE0(0, 0, 0, 0, 0, 0);
+				DialogShow = false;
+				return;
+			}
+
 			if (!UIData) // the game can also free this mem at any time afaik, but it also looks like it resets this ptr to 0, so we can just alloc it again
 			{
 				typedef void*(__cdecl * UI_AllocPtr)(int size);

@@ -243,7 +243,7 @@ namespace
 			password = Arguments[1];
 
 		uint32_t rawIpaddr = 0;
-		int httpPort = 11775;
+		int httpPort = 11784;
 
 		size_t portOffset = address.find(':');
 		auto host = address;

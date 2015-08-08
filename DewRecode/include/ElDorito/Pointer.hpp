@@ -95,7 +95,7 @@ public:
 		if (!VirtualProtect(_Pointer, sizeof(T), PAGE_READWRITE, &temp))
 		{
 			std::stringstream ss;
-			ss << "Failed to set protection on memory address " << std::hex << _Pointer;
+			ss << "Failed to set protection on memory address " << std::hex << _Pointer << std::endl;
 			OutputDebugStringA(ss.str().c_str());
 			return;
 		}
@@ -110,7 +110,7 @@ public:
 		if (!VirtualProtect(_Pointer, size, PAGE_READWRITE, &temp))
 		{
 			std::stringstream ss;
-			ss << "Failed to set protection on memory address " << std::hex << _Pointer;
+			ss << "Failed to set protection on memory address " << std::hex << _Pointer << std::endl;
 			OutputDebugStringA(ss.str().c_str());
 			return;
 		}
