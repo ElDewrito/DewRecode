@@ -224,7 +224,7 @@ namespace Modules
 			Hook("WindowTitle", 0x42EB84, WindowTitleSprintfHook, HookType::Call),
 		});
 
-		// TODO: forge menu hook, pause menu hook
+		// TODO: pause menu hook
 	}
 
 	void PatchModuleUI::Tick(const std::chrono::duration<double>& deltaTime)
