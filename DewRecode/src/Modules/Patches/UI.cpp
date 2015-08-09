@@ -177,7 +177,7 @@ namespace
 	// eg. for dpad right it sends DpadRight (sent @ 0xA93E40), DpadRight (sent @ 0xA941B9), Right (sent @ 0xA93E23)
 	// only sends one button press on the main menu though, which is strange
 	// we just ignore the dpad button presses so options don't get skipped.
-	int __fastcall c_start_menu__ButtonPressHook(void *thisPtr, int unused, uint8_t* controllerStruct)
+	int __fastcall c_start_menu__ButtonPressHook(void* thisPtr, int unused, uint8_t* controllerStruct)
 	{
 		bool usingController = Pointer(0x244DE98).Read<uint32_t>() == 1;
 		if (!usingController)
@@ -191,6 +191,17 @@ namespace
 		typedef int(__thiscall* c_start_menu__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
 		auto c_start_menu__ButtonPress = reinterpret_cast<c_start_menu__ButtonPressPtr>(0xB1F620);
 		return c_start_menu__ButtonPress(thisPtr, controllerStruct);
+	}
+
+	int __fastcall c_main_menu_screen_widget__ButtonPressHook(void* thisPtr, int unused, uint8_t* controllerStruct)
+	{
+		uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
+		if (btnCode == Blam::ButtonCodes::eButtonCodesStart)
+			return UI_ShowHalo3PauseMenu(0, 0, 0, 0, 0);
+
+		typedef int(__thiscall* c_main_menu_screen_widget__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
+		auto c_main_menu_screen_widget__ButtonPress = reinterpret_cast<c_main_menu_screen_widget__ButtonPressPtr>(0xAE7660);
+		return c_main_menu_screen_widget__ButtonPress(thisPtr, controllerStruct);
 	}
 }
 
@@ -262,6 +273,9 @@ namespace Modules
 		Pointer(0x016A18B0).Write((uint32_t)&c_start_menu__ButtonPressHook);
 		Pointer(0x016A1BE8).Write((uint32_t)&c_start_menu__ButtonPressHook);
 		Pointer(0x016A6C80).Write((uint32_t)&c_start_menu__ButtonPressHook);
+
+		// hook c_main_menu_screen_widget::ButtonPress so we can show settings menu if they push start
+		Pointer(0x0169FCA8).Write((uint32_t)&c_main_menu_screen_widget__ButtonPressHook);
 	}
 
 	void PatchModuleUI::Tick(const std::chrono::duration<double>& deltaTime)
