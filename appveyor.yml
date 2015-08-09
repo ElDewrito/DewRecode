@@ -31,9 +31,9 @@ after_build:
   - xcopy C:\projects\dewrecode\ThirdParty\libwebsockets\bin C:\Halo\ /S /Y
   - xcopy C:\projects\dewrecode\dewrecode\dist C:\Halo\ /S /Y
   - cd C:\Halo\
-  - 7z a c:\projects\dewrecode\dewrecode.7z * -t7z m0=lzma -mx=9 -mfb=64 -md=32m -ms=on
+  - 7z a c:\projects\dewrecode\dewrecode-%APPVEYOR_BUILD_VERSION%.7z * -t7z m0=lzma -mx=9 -mfb=64 -md=32m -ms=on
   - cd c:\projects\dewrecode
 
 artifacts:
-  - path: dewrecode.7z
-    name: dewrecode.7z
+  - path: dewrecode-$(appveyor_build_version).7z
+    name: dewrecode-$(appveyor_build_version).7z
