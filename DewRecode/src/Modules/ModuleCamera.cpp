@@ -231,7 +231,7 @@ namespace
 		dorito.Patches.EnablePatchSet(camera.CustomModePatches, mode.compare("default") != 0);
 
 		// prevents the engine from modifying any camera components while in static/spectator mode
-		dorito.Patches.EnablePatchSet(camera.StaticModePatches, mode.compare("static") == 0 | mode.compare("spectator") == 0);
+		dorito.Patches.EnablePatchSet(camera.StaticModePatches, mode.compare("static") == 0 || mode.compare("spectator") == 0);
 
 		// makes sure the hud is hidden when flying/spectator/static camera mode
 		if (!camera.VarCameraHideHud->ValueInt)
