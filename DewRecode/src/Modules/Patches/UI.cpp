@@ -229,7 +229,11 @@ namespace Modules
 
 			// Allows you to press B to close the H3 pause menu
 			// TODO: find out what the byte that's being checked does, we're just patching out the check here but maybe it's important
-			Patch("CloseStartMenuFix", 0xAE05F3, 0x90, 2)
+			Patch("CloseStartMenuFix", 0xAE05F3, 0x90, 2),
+
+			// Allows you to semi-close the voice settings menu by pressing B (pressing it once takes you to blank menu, pressing it again goes back to pause menu)
+			// TODO: find a proper fix, since the part that gets patched here is used by a lot of different dialogs. Alternatively we could remove this menu altogether.
+			Patch("CloseVoiceMenuFix", 0xAB130D, 0x90, 2)
 		}, 
 		{
 			// Fix for leave game button to show H3 pause menu
