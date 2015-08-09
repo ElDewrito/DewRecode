@@ -10,7 +10,7 @@ init:
 # clone directory
 clone_folder: c:\projects\dewrecode
 
-platform: x86
+platform: Win32
 configuration: Release
 
 install:
