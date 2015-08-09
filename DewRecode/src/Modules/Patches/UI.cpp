@@ -54,21 +54,6 @@ namespace
 		return 1;
 	}
 
-	__declspec(naked) void LobbyMenuButtonHandlerHook()
-	{
-		__asm
-		{
-			// call sub that handles showing game options
-			mov ecx, esi
-			push[edi + 0x10]
-			mov eax, 0xB225B0
-			call eax
-			// jump back to original function
-			mov eax, 0xB21B9F
-			jmp eax
-		}
-	}
-
 	bool LocalizedStringHookImpl(int tagIndex, int stringId, wchar_t *outputBuffer)
 	{
 		const size_t MaxStringLength = 0x400;
@@ -203,6 +188,24 @@ namespace
 		auto c_main_menu_screen_widget__ButtonPress = reinterpret_cast<c_main_menu_screen_widget__ButtonPressPtr>(0xAE7660);
 		return c_main_menu_screen_widget__ButtonPress(thisPtr, controllerStruct);
 	}
+
+	// hooks the lobbys button handler and opens game settings window if X or Start is pressed
+	int __fastcall c_gui_screen_pregame_lobby__ButtonPressHook(void* thisPtr, int unused, uint8_t* controllerStruct)
+	{
+		uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
+		if (btnCode == Blam::ButtonCodes::eButtonCodesStart || btnCode == Blam::ButtonCodes::eButtonCodesX)
+		{
+			typedef int(__thiscall* c_gui_screen_pregame_lobby__OpenGameSettingsPtr)(void* thisPtr, uint32_t a2);
+			auto c_gui_screen_pregame_lobby__OpenGameSettings = reinterpret_cast<c_gui_screen_pregame_lobby__OpenGameSettingsPtr>(0xB225B0);
+			return c_gui_screen_pregame_lobby__OpenGameSettings(thisPtr, *(uint32_t*)(controllerStruct + 0x10));
+
+			return 1;
+		}
+
+		typedef int(__thiscall* c_gui_screen_pregame_lobby__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
+		auto c_gui_screen_pregame_lobby__ButtonPress = reinterpret_cast<c_gui_screen_pregame_lobby__ButtonPressPtr>(0xB21A20);
+		return c_gui_screen_pregame_lobby__ButtonPress(thisPtr, controllerStruct);
+	}
 }
 
 namespace Modules
@@ -253,10 +256,6 @@ namespace Modules
 			// Fix menu update code to include missing mainmenu code
 			Hook("MenuUpdate", 0xADFB73, UI_MenuUpdateHook, HookType::Call),
 
-			// Sorta hacky way of getting game options screen to show when you press X on lobby
-			// TODO: find real way of showing the [X] Edit Game Options text, that might enable it to work without patching
-			Hook("GameOptions", 0xB21B8A, LobbyMenuButtonHandlerHook, HookType::JmpIfEqual),
-
 			// Localized string override hook
 			Hook("LocalizedString", 0x51E040, LocalizedStringHook, HookType::Jmp),
 
@@ -276,6 +275,15 @@ namespace Modules
 
 		// hook c_main_menu_screen_widget::ButtonPress so we can show settings menu if they push start
 		Pointer(0x0169FCA8).Write((uint32_t)&c_main_menu_screen_widget__ButtonPressHook);
+
+		// hook c_gui_screen_pregame_lobby::ButtonPress so we can open game options
+		// Sorta hacky way of getting game options screen to show when you press X/start in lobby
+		// TODO: find real way of showing the [X] Edit Game Options text, that might enable it to work without patching
+		Pointer(0x016A3BB0).Write((uint32_t)&c_gui_screen_pregame_lobby__ButtonPressHook);
+		Pointer(0x016A3D68).Write((uint32_t)&c_gui_screen_pregame_lobby__ButtonPressHook);
+		Pointer(0x016A3F80).Write((uint32_t)&c_gui_screen_pregame_lobby__ButtonPressHook);
+		Pointer(0x016A40F0).Write((uint32_t)&c_gui_screen_pregame_lobby__ButtonPressHook);
+		Pointer(0x016A7080).Write((uint32_t)&c_gui_screen_pregame_lobby__ButtonPressHook);
 	}
 
 	void PatchModuleUI::Tick(const std::chrono::duration<double>& deltaTime)
