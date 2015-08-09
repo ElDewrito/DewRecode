@@ -90,7 +90,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Blam\BitStream.cpp" />
     <ClCompile Include="src\DebugLog.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\Commands.cpp" />
@@ -98,7 +97,7 @@
     <ClCompile Include="src\ElDorito.cpp" />
     <ClCompile Include="src\Modules\ModuleCamera.cpp" />
     <ClCompile Include="src\Modules\ModuleConsole.cpp" />
-	<ClCompile Include="src\Modules\ModuleDebug.cpp" />
+    <ClCompile Include="src\Modules\ModuleDebug.cpp" />
     <ClCompile Include="src\Modules\ModuleForge.cpp" />
     <ClCompile Include="src\Modules\ModuleGame.cpp" />
     <ClCompile Include="src\Modules\ModuleGraphics.cpp" />
@@ -122,6 +121,7 @@
     <ClCompile Include="src\Utils\VersionInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\ElDorito\Blam\BlamNetwork.hpp" />
     <ClInclude Include="include\ElDorito\Blam\Tags\GameEngineSettingsDefinition.hpp" />
     <ClInclude Include="include\ElDorito\Blam\Tags\Tags.hpp" />
     <ClInclude Include="include\ElDorito\Blam\BlamTypes.hpp" />
@@ -138,13 +138,13 @@
     <ClInclude Include="src\Modules\Patches\PlayerUid.hpp" />
     <ClInclude Include="src\Modules\Patches\VirtualKeyboard.hpp" />
     <ClInclude Include="src\resource.h" />
-    <ClInclude Include="src\Blam\BitStream.hpp" />
+    <ClInclude Include="include\ElDorito\Blam\BitStream.hpp" />
     <ClInclude Include="src\DebugLog.hpp" />
     <ClInclude Include="src\Engine.hpp" />
     <ClInclude Include="src\Commands.hpp" />
     <ClInclude Include="src\ElDorito.hpp" />
     <ClInclude Include="src\Modules\ModuleCamera.hpp" />
-	<ClInclude Include="src\Modules\ModuleDebug.hpp" />
+    <ClInclude Include="src\Modules\ModuleDebug.hpp" />
     <ClInclude Include="src\Modules\ModuleGame.hpp" />
     <ClInclude Include="src\Modules\ModuleGraphics.hpp" />
     <ClInclude Include="src\Modules\ModuleInput.hpp" />
@@ -162,7 +162,7 @@
     <ClInclude Include="src\Modules\Patches\PlayerPropertiesExtension.hpp" />
     <ClInclude Include="src\PatchManager.hpp" />
     <ClInclude Include="src\Utils.hpp" />
-    <ClInclude Include="src\Utils\Bits.hpp" />
+    <ClInclude Include="include\ElDorito\Utils\Bits.hpp" />
     <ClInclude Include="src\Utils\Macros.hpp" />
     <ClInclude Include="src\Utils\Misc.hpp" />
     <ClInclude Include="src\Utils\Utils.hpp" />

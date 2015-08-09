@@ -3,6 +3,7 @@
 #include <sstream>
 #include "ElDorito.hpp"
 #include "Modules/ModuleInput.hpp"
+#include <ElDorito/Blam/BlamNetwork.hpp>
 
 namespace
 {
@@ -91,11 +92,15 @@ std::string Commands::Execute(std::string command, bool isUserInput)
 		return "Command queued until mainmenu shows";
 	}
 
-	if ((cmd->Flags & eCommandFlagsMustBeHosting))// TODO1: && !ElDorito::Instance().IsHostPlayer())
-		return "Only a player hosting a game can use this command";
+	Blam::Network::Session* session = Blam::Network::GetActiveSession();
 
-	if ((cmd->Flags & eCommandFlagsReplicated))// TODO1: check if player is host or on mainmenu
-		return "You must be at the lobby or hosting a game to use this command";
+	if ((cmd->Flags & eCommandFlagsMustBeHosting))
+		if (!session || !session->IsEstablished() || !session->IsHost())
+			return "You must be hosting a game to use this command";
+
+	if ((cmd->Flags & eCommandFlagsReplicated))
+		if (session && session->IsEstablished() && !session->IsHost())
+			return "You must be at the main menu or hosting a game to use this command";
 
 	std::vector<std::string> argsVect;
 	if (numArgs > 1)

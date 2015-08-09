@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../../Blam/BitStream.hpp"
+
+#include <ElDorito/Blam/BitStream.hpp>
 
 #include <vector>
 #include <memory>
