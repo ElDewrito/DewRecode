@@ -1,0 +1,13 @@
+;!@Install@!UTF-8!
+Title="DewRecode Installer"
+BeginPrompt="Do you want to install Halo Online: DewRecode?"
+CancelPrompt="Are you sure you want to cancel?"
+ExtractDialogText="Please, wait..."
+ExtractPathText="Please select your Halo Online installation directory:"
+ExtractTitle="Extracting..."
+InstallPath="C:\\Halo\\"
+GUIFlags="8+32+64+256+4096"
+GUIMode="1"
+OverwriteMode="0"
+FinishMessage="DewRecode has been installed!\n\nPlease report any bugs to our GitHub.\n\nEnjoy!"
+;!@InstallEnd@!
