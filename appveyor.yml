@@ -35,5 +35,5 @@ after_build:
   - cd c:\projects\dewrecode
 
 artifacts:
-  - path: dewrecode-$(version).7z
-    name: dewrecode-$(version).7z
+  - path: dewrecode-0.5.0.$(build).7z
+    name: dewrecode-0.5.0.$(build).7z
