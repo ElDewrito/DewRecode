@@ -18,7 +18,7 @@ void DebugLog::Log(LogSeverity severity, std::string module, std::string format,
 {
 	// TODO1: LogSeverity
 
-	if (module.length() + format.length() > 4096)
+	if (format.length() > 4096)
 		return;
 
 	va_list ap;
