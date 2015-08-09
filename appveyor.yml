@@ -31,7 +31,7 @@ after_build:
   - xcopy C:\projects\dewrecode\ThirdParty\libwebsockets\bin C:\Halo\ /S /Y
   - xcopy C:\projects\dewrecode\dewrecode\dist C:\Halo\ /S /Y
   - cd C:\Halo\
-  - 7z a c:\projects\dewrecode\dewrecode-$(version).7z * -t7z m0=lzma -mx=9 -mfb=64 -md=32m -ms=on
+  - 7z a c:\projects\dewrecode\dewrecode-0.5.0.%APPVEYOR_BUILD_NUMBER%.7z * -t7z m0=lzma -mx=9 -mfb=64 -md=32m -ms=on
   - cd c:\projects\dewrecode
 
 artifacts:
