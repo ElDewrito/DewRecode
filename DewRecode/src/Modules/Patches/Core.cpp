@@ -121,6 +121,10 @@ namespace Modules
 			// Level load patch (?)
 			Patch("LevelLoad", 0x6D26DF, 0x90, 5),
 
+			// Adds the FMOD WASAPI output fix from FMODEx 4.44.56, which stops weird popping sound at startup
+			// TODO: maybe find a way to update HO's FMOD, HO is using 4.26.6 which is ancient
+			Patch("FmodWasapiFix", 0x140DA75, { 0x2 }),
+
 			/* TODO: find out if one of these patches is breaking game prefs
 			// Remove preferences.dat hash check
 			Patch("PrefsDatHashCheck", 0x50C99A, 0x90, 6),
