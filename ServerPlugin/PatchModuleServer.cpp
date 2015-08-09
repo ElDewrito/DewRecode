@@ -183,26 +183,29 @@ namespace
 		while (peerIdx != -1)
 		{
 			int playerIdx = session->MembershipInfo.GetPeerPlayer(peerIdx);
-			auto* player = &session->MembershipInfo.PlayerSessions[playerIdx];
-
-			std::stringstream uidStream;
-			uidStream << std::hex << player->Uid;
-			auto uidString = uidStream.str();
-
-			if (!PublicUtils->Trim(PublicUtils->ThinString(player->DisplayName)).compare(kickPlayerName) || !uidString.compare(kickPlayerName))
+			if (playerIdx != -1)
 			{
-				typedef bool(__cdecl *Network_squad_session_boot_playerPtr)(int playerIdx, int reason);
-				auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerPtr>(0x437D60);
+				auto* player = &session->MembershipInfo.PlayerSessions[playerIdx];
 
-				if (Network_squad_session_boot_player(peerIdx, 4))
+				std::stringstream uidStream;
+				uidStream << std::hex << player->Uid;
+				auto uidString = uidStream.str();
+
+				if (!PublicUtils->Trim(PublicUtils->ThinString(player->DisplayName)).compare(kickPlayerName) || !uidString.compare(kickPlayerName))
 				{
-					returnInfo = "Issued kick request for player " + kickPlayerName + " (peer: " + std::to_string(peerIdx) + " player: " + std::to_string(playerIdx) + ")";
-					return true;
-				}
-				else
-				{
-					returnInfo = "Failed to kick player " + kickPlayerName;
-					return false;
+					typedef bool(__cdecl *Network_squad_session_boot_playerPtr)(int playerIdx, int reason);
+					auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerPtr>(0x437D60);
+
+					if (Network_squad_session_boot_player(peerIdx, 4))
+					{
+						returnInfo = "Issued kick request for player " + kickPlayerName + " (peer: " + std::to_string(peerIdx) + " player: " + std::to_string(playerIdx) + ")";
+						return true;
+					}
+					else
+					{
+						returnInfo = "Failed to kick player " + kickPlayerName;
+						return false;
+					}
 				}
 			}
 
@@ -238,10 +241,13 @@ namespace
 		while (peerIdx != -1)
 		{
 			int playerIdx = session->MembershipInfo.GetPeerPlayer(peerIdx);
-			auto* player = &session->MembershipInfo.PlayerSessions[playerIdx];
+			if (playerIdx != -1)
+			{
+				auto* player = &session->MembershipInfo.PlayerSessions[playerIdx];
 
-			std::string name = PublicUtils->ThinString(player->DisplayName);
-			ss << std::dec << "(" << peerIdx << "/" << playerIdx << "): " << name << " (uid: 0x" << std::hex << player->Uid << ")" << std::endl;
+				std::string name = PublicUtils->ThinString(player->DisplayName);
+				ss << std::dec << "(" << peerIdx << "/" << playerIdx << "): " << name << " (uid: 0x" << std::hex << player->Uid << ")" << std::endl;
+			}
 
 			peerIdx = session->MembershipInfo.FindNextPeer(peerIdx);
 		}
