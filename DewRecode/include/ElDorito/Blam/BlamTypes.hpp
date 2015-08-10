@@ -460,9 +460,14 @@ namespace GameGlobals
 		const size_t TLSOffset = 0x5C;
 
 		const size_t Player0DatumIdx = 0x4;
-		const size_t Player1DatumIdx = 0x4;
-		const size_t Player2DatumIdx = 0x4;
-		const size_t Player3DatumIdx = 0x4;
+		const size_t Player1DatumIdx = 0x8;
+		const size_t Player2DatumIdx = 0xC;
+		const size_t Player3DatumIdx = 0x10;
+
+		const size_t Player0ObjectDatumIdx = 0x14;
+		const size_t Player1ObjectDatumIdx = 0x18;
+		const size_t Player2ObjectDatumIdx = 0x1C;
+		const size_t Player3ObjectDatumIdx = 0x20;
 	}
 
 	namespace ObjectHeader
