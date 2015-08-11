@@ -109,7 +109,7 @@ public:
 	/// <param name="address">The address to patch.</param>
 	/// <param name="data">The data to write.</param>
 	/// <returns>The created <see cref="Patch"/>.</returns>
-	virtual Patch* AddPatch(std::string name, size_t address, const PatchInitializerListType& data) = 0;
+	virtual Patch* AddPatch(const std::string& name, size_t address, const PatchInitializerListType& data) = 0;
 
 	/// <summary>
 	/// Adds a patch to the manager.
@@ -119,7 +119,7 @@ public:
 	/// <param name="fillByte">What byte to fill with.</param>
 	/// <param name="numBytes">Number of bytes to fill.</param>
 	/// <returns>The created <see cref="Patch"/>.</returns>
-	virtual Patch* AddPatch(std::string name, size_t address, unsigned char fillByte, size_t numBytes) = 0;
+	virtual Patch* AddPatch(const std::string& name, size_t address, unsigned char fillByte, size_t numBytes) = 0;
 
 	/// <summary>
 	/// Adds a hook to the manager.
@@ -129,7 +129,7 @@ public:
 	/// <param name="destFunc">The dest function.</param>
 	/// <param name="type">The type of hook.</param>
 	/// <returns>The created <see cref="Hook"/>.</returns>
-	virtual Hook* AddHook(std::string name, size_t address, void* destFunc, HookType type) = 0;
+	virtual Hook* AddHook(const std::string& name, size_t address, void* destFunc, HookType type) = 0;
 
 	/// <summary>
 	/// Adds a set of patches/hooks to the manager.
@@ -138,49 +138,49 @@ public:
 	/// <param name="patches">The patches to include in the patchset.</param>
 	/// <param name="hooks">The hooks to include in the patchset.</param>
 	/// <returns>The created <see cref="PatchSet"/>.</returns>
-	virtual PatchSet* AddPatchSet(std::string name, const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks = {}) = 0;
+	virtual PatchSet* AddPatchSet(const std::string& name, const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks = {}) = 0;
 
 	/// <summary>
 	/// Looks up a patch based on its name.
 	/// </summary>
 	/// <param name="name">The name of the patch.</param>
 	/// <returns>A pointer to the patch, if found.</returns>
-	virtual Patch* FindPatch(std::string name) = 0;
+	virtual Patch* FindPatch(const std::string& name) = 0;
 
 	/// <summary>
 	/// Looks up a hook based on its name.
 	/// </summary>
 	/// <param name="name">The name of the hook.</param>
 	/// <returns>A pointer to the hook, if found.</returns>
-	virtual Hook* FindHook(std::string name) = 0;
+	virtual Hook* FindHook(const std::string& name) = 0;
 
 	/// <summary>
 	/// Looks up a patch set based on its name.
 	/// </summary>
 	/// <param name="name">The name of the patch set.</param>
 	/// <returns>A pointer to the patch set, if found.</returns>
-	virtual PatchSet* FindPatchSet(std::string name) = 0;
+	virtual PatchSet* FindPatchSet(const std::string& name) = 0;
 
 	/// <summary>
 	/// Toggles a patch based on its name.
 	/// </summary>
 	/// <param name="name">The name of the patch.</param>
 	/// <returns>PatchStatus enum</returns>
-	virtual PatchStatus TogglePatch(std::string name) = 0;
+	virtual PatchStatus TogglePatch(const std::string& name) = 0;
 
 	/// <summary>
 	/// Toggles a hook based on its name.
 	/// </summary>
 	/// <param name="name">The name of the hook.</param>
 	/// <returns>PatchStatus enum</returns>
-	virtual PatchStatus ToggleHook(std::string name) = 0;
+	virtual PatchStatus ToggleHook(const std::string& name) = 0;
 
 	/// <summary>
 	/// Toggles a patch set (and all children patches/hooks) based on its name.
 	/// </summary>
 	/// <param name="name">The name of the patch set.</param>
 	/// <returns>PatchStatus enum</returns>
-	virtual PatchStatus TogglePatchSet(std::string name) = 0;
+	virtual PatchStatus TogglePatchSet(const std::string& name) = 0;
 
 	/// <summary>
 	/// Toggles a patch.
@@ -209,7 +209,7 @@ public:
 	/// <param name="name">The name of the patch.</param>
 	/// <param name="enable">Whether to enable it or not (default true)</param>
 	/// <returns>The status of the patch.</returns>
-	virtual PatchStatus EnablePatch(std::string name, bool enable = true) = 0;
+	virtual PatchStatus EnablePatch(const std::string& name, bool enable = true) = 0;
 
 	/// <summary>
 	/// Enables/disables a hook based on its name.
@@ -217,7 +217,7 @@ public:
 	/// <param name="hook">The name of the hook.</param>
 	/// <param name="enable">Whether to enable it or not (default true)</param>
 	/// <returns>The status of the hook.</returns>
-	virtual PatchStatus EnableHook(std::string name, bool enable = true) = 0;
+	virtual PatchStatus EnableHook(const std::string& name, bool enable = true) = 0;
 
 	/// <summary>
 	/// Enables/disables a patch set based on its name.
@@ -225,7 +225,7 @@ public:
 	/// <param name="patchSet">The name of the patch set.</param>
 	/// <param name="enable">Whether to enable it or not (default true)</param>
 	/// <returns>The status of the patch set.</returns>
-	virtual PatchStatus EnablePatchSet(std::string name, bool enable = true) = 0;
+	virtual PatchStatus EnablePatchSet(const std::string& name, bool enable = true) = 0;
 
 	/// <summary>
 	/// Enables/disables a patch.

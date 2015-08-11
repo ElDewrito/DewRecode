@@ -25,7 +25,7 @@ public:
 	/// <param name="module">The module the message originated from.</param>
 	/// <param name="format">The format of the message.</param>
 	/// <param name="">Additional formatting.</param>
-	virtual void Log(LogSeverity severity, std::string module, std::string format, ...) = 0;
+	virtual void Log(LogSeverity severity, const std::string& module, std::string format, ...) = 0;
 };
 
 #define DEBUGLOG_INTERFACE_VERSION001 "DebugLog001"

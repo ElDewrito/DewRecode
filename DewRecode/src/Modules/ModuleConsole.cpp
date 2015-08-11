@@ -37,7 +37,7 @@ namespace
 		return true;
 	}
 
-	void TestUserInputResult(std::string boxTag, std::string result)
+	void TestUserInputResult(const std::string& boxTag, const std::string& result)
 	{
 		ElDorito::Instance().Modules.Console.PrintToConsole(boxTag + " result: " + result);
 	}
@@ -66,7 +66,7 @@ namespace
 		return true;
 	}
 
-	void UserInputResult(std::string boxTag, std::string result)
+	void UserInputResult(const std::string& boxTag, const std::string& result)
 	{
 		ElDorito::Instance().Commands.Execute(boxTag + " \"" + result + "\"");
 	}
@@ -135,13 +135,13 @@ namespace Modules
 		PrintToConsole("ElDewrito Version: " + Utils::Version::GetVersionString() + " Build Date: " + __DATE__ + " " + __TIME__);
 	}
 
-	void ModuleConsole::Show(std::string group)
+	void ModuleConsole::Show(const std::string& group)
 	{
-		group = utils->ToLower(group);
-		if (activeGroup.compare(group) && getNumBuffersInGroup(group) > 0)
-			activeGroup = group;
+		auto newGroup = utils->ToLower(group);
+		if (activeGroup.compare(newGroup) && getNumBuffersInGroup(newGroup) > 0)
+			activeGroup = newGroup;
 
-		if (visible || getNumBuffersInGroup(group) <= 0)
+		if (visible || getNumBuffersInGroup(newGroup) <= 0)
 			return;
 
 		capsLockToggled = GetKeyState(VK_CAPITAL) & 1;
@@ -165,13 +165,7 @@ namespace Modules
 		unhookRawInput();
 	}
 
-	void ModuleConsole::ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback)
-	{
-		std::vector<std::string> choicesVect = choices;
-		ShowMessageBox(title, text, tag, choicesVect, callback);
-	}
-
-	void ModuleConsole::ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback)
+	void ModuleConsole::ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback)
 	{
 		UserInputBox box;
 		box.Title = title;
@@ -196,7 +190,7 @@ namespace Modules
 		}
 	}
 
-	void ModuleConsole::ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback)
+	void ModuleConsole::ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback)
 	{
 		UserInputBox box;
 		box.Title = title;
@@ -264,7 +258,7 @@ namespace Modules
 		rawInputHooked = false;
 	}
 
-	void ModuleConsole::PrintToConsole(std::string str)
+	void ModuleConsole::PrintToConsole(const std::string& str)
 	{
 		if (str.empty())
 			return;
@@ -1045,7 +1039,7 @@ namespace Modules
 		}
 	}
 
-	int ModuleConsole::getSelectedIdxForGroup(std::string group)
+	int ModuleConsole::getSelectedIdxForGroup(const std::string& group)
 	{
 		auto it = activeBufferIdx.find(group);
 		if (it == activeBufferIdx.end())
@@ -1058,7 +1052,7 @@ namespace Modules
 		return getSelectedIdxForGroup(activeGroup);
 	}
 
-	int ModuleConsole::getNumBuffersInGroup(std::string group)
+	int ModuleConsole::getNumBuffersInGroup(const std::string& group)
 	{
 		int count = 0;
 		for (auto buff : buffers)

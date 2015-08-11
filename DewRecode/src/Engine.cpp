@@ -162,7 +162,7 @@ bool Engine::OnWndProc(WNDPROC callback)
 /// <param name="eventName">The name of the event.</param>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
-bool Engine::OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback)
+bool Engine::OnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback)
 {
 	std::string eventId = eventNamespace + "." + eventName;
 	auto it = eventCallbacks.find(eventId);
@@ -208,7 +208,7 @@ bool Engine::RemoveOnWndProc(WNDPROC callback)
 /// <param name="eventName">The name of the event.</param>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was removed.</returns>
-bool Engine::RemoveOnEvent(std::string eventNamespace, std::string eventName, EventCallback callback)
+bool Engine::RemoveOnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback)
 {
 	std::string eventId = eventNamespace + "." + eventName;
 	auto it = eventCallbacks.find(eventId);
@@ -259,7 +259,7 @@ LRESULT Engine::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 /// <param name="eventNamespace">The namespace the event belongs to.</param>
 /// <param name="eventName">The name of the event.</param>
 /// <param name="param">The parameter to pass to the callbacks.</param>
-void Engine::Event(std::string eventNamespace, std::string eventName, void* param)
+void Engine::Event(const std::string& eventNamespace, const std::string& eventName, void* param)
 {
 	// TODO: find a way to optimize this?
 
@@ -292,7 +292,7 @@ void Engine::Event(std::string eventNamespace, std::string eventName, void* para
 /// <param name="interfaceName">Name of the interface.</param>
 /// <param name="ptrToInterface">Pointer to an instance of the interface.</param>
 /// <returns>true if the interface was registered, false if an interface already exists with this name</returns>
-bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
+bool Engine::RegisterInterface(const std::string& interfaceName, void* ptrToInterface)
 {
 	auto& dorito = ElDorito::Instance();
 
@@ -324,7 +324,7 @@ bool Engine::RegisterInterface(std::string interfaceName, void* ptrToInterface)
 /// <param name="interfaceName">Name of the interface.</param>
 /// <param name="returnCode">Returns 0 if the interface was found, otherwise 1 if it couldn't.</param>
 /// <returns>A pointer to the requested interface.</returns>
-void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
+void* Engine::CreateInterface(const std::string& interfaceName, int* returnCode)
 {
 	auto& dorito = ElDorito::Instance();
 
@@ -352,7 +352,7 @@ void* Engine::CreateInterface(std::string interfaceName, int* returnCode)
 /// Prints a string to the console UI.
 /// </summary>
 /// <param name="str">The string to print.</param>
-void Engine::PrintToConsole(std::string str)
+void Engine::PrintToConsole(const std::string& str)
 {
 	ElDorito::Instance().Modules.Console.PrintToConsole(str);
 }
@@ -378,23 +378,12 @@ bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
 }
 
 /// <summary>
-/// Shows a message box to the user with choices specified by the initializer list, the result the user chose is given to the callback.
-/// </summary>
-/// <param name="text">The text to show to the user.</param>
-/// <param name="choices">The choices the user can choose from.</param>
-/// <param name="callback">The function to call after the user has made a selection.</param>
-void Engine::ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback)
-{
-	ElDorito::Instance().Modules.Console.ShowMessageBox(title, text, tag, choices, callback);
-}
-
-/// <summary>
 /// Shows a message box to the user with choices specified by the vector, the result the user chose is given to the callback.
 /// </summary>
 /// <param name="text">The text to show to the user.</param>
 /// <param name="choices">The choices the user can choose from.</param>
 /// <param name="callback">The function to call after the user has made a selection.</param>
-void Engine::ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback)
+void Engine::ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback)
 {
 	ElDorito::Instance().Modules.Console.ShowMessageBox(title, text, tag, choices, callback);
 }
@@ -405,7 +394,7 @@ void Engine::ShowMessageBox(std::string title, std::string text, std::string tag
 /// <param name="text">The text to show to the user.</param>
 /// <param name="defaultText">The default text to fill the inputbox with.</param>
 /// <param name="callback">The function to call after the user has answered.</param>
-void Engine::ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback)
+void Engine::ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback)
 {
 	ElDorito::Instance().Modules.Console.ShowInputBox(title, text, tag, defaultText, callback);
 }

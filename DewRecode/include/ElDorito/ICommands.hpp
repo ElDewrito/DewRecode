@@ -127,7 +127,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>The output of the executed command.</returns>
-	virtual std::string Execute(std::vector<std::string> command, bool isUserInput = false) = 0;
+	virtual std::string Execute(const std::vector<std::string>& command, bool isUserInput = false) = 0;
 
 	/// <summary>
 	/// Executes a command string
@@ -135,7 +135,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>The output of the executed command.</returns>
-	virtual std::string Execute(std::string command, bool isUserInput = false) = 0;
+	virtual std::string Execute(const std::string& command, bool isUserInput = false) = 0;
 
 	/// <summary>
 	/// Executes a list of commands, seperated by new lines
@@ -143,7 +143,7 @@ public:
 	/// <param name="commands">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual std::string ExecuteList(std::string& commands, bool isUserInput = false) = 0;
+	virtual std::string ExecuteList(const std::string& commands, bool isUserInput = false) = 0;
 
 	/// <summary>
 	/// Executes a command string, returning a bool indicating success.
@@ -151,7 +151,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual bool ExecuteWithStatus(std::string command, bool isUserInput = false) = 0;
+	virtual bool ExecuteWithStatus(const std::string& command, bool isUserInput = false) = 0;
 
 	/// <summary>
 	/// Executes the command queue.
@@ -198,7 +198,7 @@ public:
 	/// <param name="value">The value to set.</param>
 	/// <param name="previousValue">The previous value of the variable.</param>
 	/// <returns>VariableSetReturnValue</returns>
-	virtual VariableSetReturnValue SetVariable(const std::string& name, std::string& value, std::string& previousValue) = 0;
+	virtual VariableSetReturnValue SetVariable(const std::string& name, const std::string& value, std::string& previousValue) = 0;
 
 	/// <summary>
 	/// Sets a variable from a string, string is converted to the proper variable type.
@@ -207,14 +207,14 @@ public:
 	/// <param name="value">The value to set.</param>
 	/// <param name="previousValue">The previous value of the variable.</param>
 	/// <returns>VariableSetReturnValue</returns>
-	virtual VariableSetReturnValue SetVariable(Command* command, std::string& value, std::string& previousValue) = 0;
+	virtual VariableSetReturnValue SetVariable(Command* command, const std::string& value, std::string& previousValue) = 0;
 
 	/// <summary>
 	/// Generates help text.
 	/// </summary>
 	/// <param name="moduleFilter">If set, only commands/variables belonging to this module will be printed.</param>
 	/// <returns>Help text.</returns>
-	virtual std::string GenerateHelpText(std::string moduleFilter = "") = 0;
+	virtual std::string GenerateHelpText(const std::string& moduleFilter = "") = 0;
 
 	/// <summary>
 	/// Generates help text for a command.
@@ -235,14 +235,14 @@ public:
 	/// <param name="key">The key to bind.</param>
 	/// <param name="command">The command to run (empty if clearing).</param>
 	/// <returns>BindingReturnValue</returns>
-	BindingReturnValue AddBinding(std::string key, std::string command);
+	BindingReturnValue AddBinding(const std::string& key, const std::string& command);
 
 	/// <summary>
 	/// Gets the binding for a key.
 	/// </summary>
 	/// <param name="key">The key.</param>
 	/// <returns>A pointer to the KeyBinding struct for this key.</returns>
-	KeyBinding* GetBinding(std::string key);
+	KeyBinding* GetBinding(const std::string& key);
 
 	/// <summary>
 	/// Gets the binding for a keycode.

@@ -10,24 +10,23 @@ class Engine : public IEngine
 public:
 	bool OnTick(TickCallback callback);
 	bool OnWndProc(WNDPROC callback);
-	bool OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback);
+	bool OnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback);
 
 	bool RemoveOnTick(TickCallback callback);
 	bool RemoveOnWndProc(WNDPROC callback);
-	bool RemoveOnEvent(std::string eventNamespace, std::string eventName, EventCallback callback);
+	bool RemoveOnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback);
 
-	void Event(std::string eventNamespace, std::string eventName, void* param = 0);
+	void Event(const std::string& eventNamespace, const std::string& eventName, void* param = 0);
 
-	bool RegisterInterface(std::string interfaceName, void* ptrToInterface);
-	void* CreateInterface(std::string interfaceName, int* returnCode);
+	bool RegisterInterface(const std::string& interfaceName, void* ptrToInterface);
+	void* CreateInterface(const std::string& interfaceName, int* returnCode);
 
-	void PrintToConsole(std::string str);
+	void PrintToConsole(const std::string& str);
 	ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer);
 	bool SetActiveConsoleBuffer(ConsoleBuffer* buffer);
 
-	void ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback);
-	void ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback);
-	void ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback);
+	void ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback);
+	void ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback);
 
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 

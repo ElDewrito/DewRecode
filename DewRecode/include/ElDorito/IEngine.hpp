@@ -39,7 +39,7 @@ struct ConsoleBuffer;
 typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
 typedef void(__cdecl* EventCallback)(void* param);
 typedef void(__cdecl* ConsoleInputCallback)(const std::string& input, ConsoleBuffer* buffer);
-typedef void(__cdecl* UserInputBoxCallback)(std::string boxTag, std::string result);
+typedef void(__cdecl* UserInputBoxCallback)(const std::string& boxTag, const std::string& result);
 typedef std::initializer_list<std::string> StringArrayInitializerType;
 
 struct PlayerInfo
@@ -110,7 +110,7 @@ public:
 	/// <param name="eventName">The name of the event.</param>
 	/// <param name="callback">The callback.</param>
 	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
-	virtual bool OnEvent(std::string eventNamespace, std::string eventName, EventCallback callback) = 0;
+	virtual bool OnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback) = 0;
 
 	/// <summary>
 	/// Unregisters a TickCallback.
@@ -133,7 +133,7 @@ public:
 	/// <param name="eventName">The name of the event.</param>
 	/// <param name="callback">The callback.</param>
 	/// <returns>True if the callback was removed.</returns>
-	virtual bool RemoveOnEvent(std::string eventNamespace, std::string eventName, EventCallback callback) = 0;
+	virtual bool RemoveOnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback) = 0;
 
 	/// <summary>
 	/// Calls each of the registered callbacks for the specified event.
@@ -141,7 +141,7 @@ public:
 	/// <param name="eventNamespace">The namespace the event belongs to.</param>
 	/// <param name="eventName">The name of the event.</param>
 	/// <param name="param">The parameter to pass to the callbacks.</param>
-	virtual void Event(std::string eventNamespace, std::string eventName, void* param = 0) = 0;
+	virtual void Event(const std::string& eventNamespace, const std::string& eventName, void* param = 0) = 0;
 
 	/// <summary>
 	/// Registers an interface, plugins can use this to share classes across plugins.
@@ -149,7 +149,7 @@ public:
 	/// <param name="interfaceName">Name of the interface.</param>
 	/// <param name="ptrToInterface">Pointer to an instance of the interface.</param>
 	/// <returns>true if the interface was registered, false if an interface already exists with this name</returns>
-	virtual bool RegisterInterface(std::string interfaceName, void* ptrToInterface) = 0;
+	virtual bool RegisterInterface(const std::string& interfaceName, void* ptrToInterface) = 0;
 
 	/// <summary>
 	/// Gets an instance of the specified interface, if its been registered.
@@ -157,13 +157,13 @@ public:
 	/// <param name="interfaceName">Name of the interface.</param>
 	/// <param name="returnCode">Returns 0 if the interface was found, otherwise 1 if it couldn't.</param>
 	/// <returns>A pointer to the requested interface.</returns>
-	virtual void* CreateInterface(std::string interfaceName, int* returnCode) = 0;
+	virtual void* CreateInterface(const std::string& interfaceName, int* returnCode) = 0;
 
 	/// <summary>
 	/// Prints a string to the console UI.
 	/// </summary>
 	/// <param name="str">The string to print.</param>
-	virtual void PrintToConsole(std::string str) = 0;
+	virtual void PrintToConsole(const std::string& str) = 0;
 
 	/// <summary>
 	/// Adds a new buffer/queue to the console UI.
@@ -180,16 +180,6 @@ public:
 	virtual bool SetActiveConsoleBuffer(ConsoleBuffer* buffer) = 0;
 
 	/// <summary>
-	/// Shows a message box to the user with choices specified by the initializer list, the result the user chose is given to the callback.
-	/// </summary>
-	/// <param name="text">The title of the box.</param>
-	/// <param name="text">The text to show to the user.</param>
-	/// <param name="tag">A tag/identifier value that gets passed to the callback function.</param>
-	/// <param name="choices">The choices the user can choose from.</param>
-	/// <param name="callback">The function to call after the user has made a selection.</param>
-	virtual void ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback) = 0;
-
-	/// <summary>
 	/// Shows a message box to the user with choices specified by the vector, the result the user chose is given to the callback.
 	/// </summary>
 	/// <param name="text">The title of the box.</param>
@@ -197,7 +187,7 @@ public:
 	/// <param name="tag">A tag/identifier value that gets passed to the callback function.</param>
 	/// <param name="choices">The choices the user can choose from.</param>
 	/// <param name="callback">The function to call after the user has made a selection.</param>
-	virtual void ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback) = 0;
+	virtual void ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback) = 0;
 
 	/// <summary>
 	/// Shows an input box to the user where the user can type in an answer, the answer is passed as a parameter to the callback.
@@ -207,7 +197,7 @@ public:
 	/// <param name="tag">A tag/identifier value that gets passed to the callback function.</param>
 	/// <param name="defaultText">The default text to fill the inputbox with.</param>
 	/// <param name="callback">The function to call after the user has answered.</param>
-	virtual void ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback) = 0;
+	virtual void ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback) = 0;
 
 	/// <summary>
 	/// Returns true if the main menu has been shown, signifying that the game has initialized.

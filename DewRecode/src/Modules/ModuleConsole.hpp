@@ -43,7 +43,7 @@ public:
 			CursorIndex++;
 	}
 
-	void Set(std::string value)
+	void Set(const std::string& value)
 	{
 		Text = value;
 		CursorIndex = value.length();
@@ -79,14 +79,13 @@ namespace Modules
 
 		ModuleConsole();
 
-		void Show(std::string group = "Console");
+		void Show(const std::string& group = "Console");
 		void Hide();
 		bool IsVisible() { return visible; }
-		void ShowMessageBox(std::string title, std::string text, std::string tag, const StringArrayInitializerType& choices, UserInputBoxCallback callback);
-		void ShowMessageBox(std::string title, std::string text, std::string tag, std::vector<std::string>& choices, UserInputBoxCallback callback);
-		void ShowInputBox(std::string title, std::string text, std::string tag, std::string defaultText, UserInputBoxCallback callback);
+		void ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback);
+		void ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback);
 
-		void PrintToConsole(std::string str);
+		void PrintToConsole(const std::string& str);
 
 		ConsoleBuffer* AddBuffer(ConsoleBuffer buffer);
 		bool SetActiveBuffer(ConsoleBuffer* buffer);
@@ -147,7 +146,7 @@ namespace Modules
 		bool tabHitLast = false;
 		int tryCount = 0;
 		std::string commandPriorComplete = "";
-		std::vector<std::string> currentCommandList = std::vector < std::string > {};
+		std::vector<std::string> currentCommandList = std::vector<std::string>{};
 
 		void initFonts(IDirect3DDevice9* device);
 
@@ -170,8 +169,8 @@ namespace Modules
 
 		void handleDefaultKeyInput(USHORT vKey, TextInput& inputBox);
 
-		int getSelectedIdxForGroup(std::string group);
-		int getNumBuffersInGroup(std::string group);
+		int getSelectedIdxForGroup(const std::string& group);
+		int getNumBuffersInGroup(const std::string& group);
 		int getSelectedIdx();
 		void switchToNextIdx();
 

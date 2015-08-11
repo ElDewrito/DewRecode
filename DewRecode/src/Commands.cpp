@@ -59,7 +59,7 @@ Command* Commands::Find(const std::string& name)
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-std::string Commands::Execute(std::vector<std::string> command, bool isUserInput)
+std::string Commands::Execute(const std::vector<std::string>& command, bool isUserInput)
 {
 	std::string commandStr = "";
 	for (auto cmd : command)
@@ -74,7 +74,7 @@ std::string Commands::Execute(std::vector<std::string> command, bool isUserInput
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-std::string Commands::Execute(std::string command, bool isUserInput)
+std::string Commands::Execute(const std::string& command, bool isUserInput)
 {
 	int numArgs = 0;
 	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
@@ -162,7 +162,7 @@ std::string Commands::Execute(std::string command, bool isUserInput)
 /// <param name="commands">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>Whether the command executed successfully.</returns>
-std::string Commands::ExecuteList(std::string& commands, bool isUserInput)
+std::string Commands::ExecuteList(const std::string& commands, bool isUserInput)
 {
 	std::istringstream stream(commands);
 	std::stringstream ss;
@@ -185,7 +185,7 @@ std::string Commands::ExecuteList(std::string& commands, bool isUserInput)
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>Whether the command executed successfully.</returns>
-bool Commands::ExecuteWithStatus(std::string command, bool isUserInput)
+bool Commands::ExecuteWithStatus(const std::string& command, bool isUserInput)
 {
 	int numArgs = 0;
 	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
@@ -316,7 +316,7 @@ bool Commands::GetVariableString(const std::string& name, std::string& value)
 /// <param name="value">The value to set.</param>
 /// <param name="previousValue">The previous value of the variable.</param>
 /// <returns>VariableSetReturnValue</returns>
-VariableSetReturnValue Commands::SetVariable(const std::string& name, std::string& value, std::string& previousValue)
+VariableSetReturnValue Commands::SetVariable(const std::string& name, const std::string& value, std::string& previousValue)
 {
 	auto command = Find(name);
 	if (!command)
@@ -332,7 +332,7 @@ VariableSetReturnValue Commands::SetVariable(const std::string& name, std::strin
 /// <param name="value">The value to set.</param>
 /// <param name="previousValue">The previous value of the variable.</param>
 /// <returns>VariableSetReturnValue</returns>
-VariableSetReturnValue Commands::SetVariable(Command* command, std::string& value, std::string& previousValue)
+VariableSetReturnValue Commands::SetVariable(Command* command, const std::string& value, std::string& previousValue)
 {
 	try {
 		switch (command->Type)
@@ -402,7 +402,7 @@ bool compare_commands(const Command& lhs, const Command& rhs)
 /// </summary>
 /// <param name="moduleFilter">If set, only commands/variables belonging to this module will be printed.</param>
 /// <returns>Help text.</returns>
-std::string Commands::GenerateHelpText(std::string moduleFilter)
+std::string Commands::GenerateHelpText(const std::string& moduleFilter)
 {
 	std::deque<Command> tempCommands(List);
 
@@ -522,7 +522,7 @@ std::string Commands::SaveVariables()
 /// <param name="key">The key to bind.</param>
 /// <param name="command">The command to run (empty if clearing).</param>
 /// <returns>BindingReturnValue</returns>
-BindingReturnValue Commands::AddBinding(std::string key, std::string command)
+BindingReturnValue Commands::AddBinding(const std::string& key, const std::string& command)
 {
 	// Get the key, convert it to lowercase, and translate it to a key code
 	auto actualKey = ElDorito::Instance().Utils.ToLower(key);
@@ -551,7 +551,7 @@ BindingReturnValue Commands::AddBinding(std::string key, std::string command)
 /// </summary>
 /// <param name="key">The key.</param>
 /// <returns>A pointer to the KeyBinding struct for this key.</returns>
-KeyBinding* Commands::GetBinding(std::string key)
+KeyBinding* Commands::GetBinding(const std::string& key)
 {
 	auto actualKey = ElDorito::Instance().Utils.ToLower(key);
 	auto it = keyCodes.find(key);

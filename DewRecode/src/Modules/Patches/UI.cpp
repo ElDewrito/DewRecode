@@ -26,9 +26,9 @@ namespace
 			void* UIData = UI_Alloc(0x3C);
 
 			// fill UIData with proper data
-			typedef void*(__thiscall * UI_OpenDialogByIdPtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
-			auto UI_OpenDialogById = reinterpret_cast<UI_OpenDialogByIdPtr>(0xA92780);
-			UI_OpenDialogById(UIData, menuIdToLoad, 0xFF, 4, 0x1000D);
+			typedef void*(__thiscall * UI_OpenDialogById_InitMessagePtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
+			auto UI_OpenDialogById_InitMessage = reinterpret_cast<UI_OpenDialogById_InitMessagePtr>(0xA92780);
+			UI_OpenDialogById_InitMessage(UIData, menuIdToLoad, 0xFF, 4, 0x1000D);
 
 			// post UI message
 			typedef int(*UI_PostMessagePtr)(void* uiDataStruct);

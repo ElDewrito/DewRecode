@@ -772,12 +772,12 @@ namespace
 		return true;
 	}
 
-	void SettingChangeCallback(std::string boxTag, std::string result)
+	void SettingChangeCallback(const std::string& boxTag, const std::string& result)
 	{
 		ElDorito::Instance().Commands.Execute(boxTag + " \"" + result + "\"");
 	}
 
-	void InitialSetupCallback(std::string boxTag, std::string result)
+	void InitialSetupCallback(const std::string& boxTag, const std::string& result)
 	{
 		auto& dorito = ElDorito::Instance();
 		dorito.Commands.Execute(boxTag + " \"" + result + "\"");
@@ -787,9 +787,9 @@ namespace
 		}
 	}
 
-	void MsgBoxCallback(std::string boxTag, std::string result);
+	void MsgBoxCallback(const std::string& boxTag, const std::string& result);
 
-	void SettingsMsgBoxCallback(std::string boxTag, std::string result)
+	void SettingsMsgBoxCallback(const std::string& boxTag, const std::string& result)
 	{
 		auto& dorito = ElDorito::Instance();
 		if (result == "Player Name")
@@ -843,7 +843,7 @@ namespace
 		return true;
 	}
 
-	void MsgBoxCallback(std::string boxTag, std::string result)
+	void MsgBoxCallback(const std::string& boxTag, const std::string& result)
 	{
 		CommandGameSettingsMenu({ result }, std::string());
 	}

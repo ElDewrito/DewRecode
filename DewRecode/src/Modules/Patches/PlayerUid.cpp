@@ -60,7 +60,7 @@ namespace Modules
 	{
 		EnsureValidUid();
 		auto& dorito = ElDorito::Instance();
-		return dorito.Utils.RSAReformatKey(true, dorito.Modules.Player.VarPlayerPrivKey->ValueString);
+		return dorito.Utils.RSAReformatKey(dorito.Modules.Player.VarPlayerPrivKey->ValueString, true);
 	}
 
 	void PatchModulePlayerUid::EnsureValidUid()

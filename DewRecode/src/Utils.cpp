@@ -31,7 +31,7 @@ static inline bool is_base64(unsigned char c) {
 	return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-std::string PublicUtils::RSAReformatKey(bool isPrivateKey, std::string key)
+std::string PublicUtils::RSAReformatKey(const std::string& key, bool isPrivateKey)
 {
 	size_t pos = 0;
 	std::string returnKey;
@@ -51,7 +51,7 @@ std::string PublicUtils::RSAReformatKey(bool isPrivateKey, std::string key)
 	return ss.str();
 }
 
-bool PublicUtils::RSACreateSignature(std::string privateKey, void* data, size_t dataSize, std::string& signature)
+bool PublicUtils::RSACreateSignature(const std::string& privateKey, void* data, size_t dataSize, std::string& signature)
 {
 	// privateKey has to be reformatted with -----RSA PRIVATE KEY----- header/footer and newlines after every 64 chars
 	// before calling this function
@@ -84,7 +84,7 @@ bool PublicUtils::RSACreateSignature(std::string privateKey, void* data, size_t 
 	return true;
 }
 
-bool PublicUtils::RSAVerifySignature(std::string pubKey, std::string signature, void* data, size_t dataSize)
+bool PublicUtils::RSAVerifySignature(const std::string& pubKey, const std::string& signature, void* data, size_t dataSize)
 {
 	BIO* pubKeyBuff = BIO_new_mem_buf((void*)pubKey.c_str(), pubKey.length());
 	if (!pubKeyBuff)
@@ -210,7 +210,7 @@ std::string PublicUtils::Base64Encode(unsigned char const* bytes_to_encode, unsi
 	return ret;
 }
 
-std::string PublicUtils::Base64Decode(std::string const& encoded_string)
+std::string PublicUtils::Base64Decode(const std::string& encoded_string)
 {
 	int in_len = encoded_string.size();
 	int i = 0;
@@ -294,13 +294,13 @@ int PublicUtils::Base64DecodeBinary(char* b64message, unsigned char* buffer, siz
 	return 0;
 }
 
-void PublicUtils::RemoveCharsFromString(std::string &str, char* charsToRemove)
+void PublicUtils::RemoveCharsFromString(std::string& str, char* charsToRemove)
 {
 	for (unsigned int i = 0; i < strlen(charsToRemove); ++i)
 		str.erase(remove(str.begin(), str.end(), charsToRemove[i]), str.end());
 }
 
-void PublicUtils::HexStringToBytes(const std::string &in, void *const data, size_t length)
+void PublicUtils::HexStringToBytes(const std::string& in, void *const data, size_t length)
 {
 	unsigned char   *byteData = reinterpret_cast<unsigned char*>(data);
 
@@ -321,7 +321,7 @@ void PublicUtils::HexStringToBytes(const std::string &in, void *const data, size
 	}
 }
 
-void PublicUtils::BytesToHexString(void *const data, const size_t dataLength, std::string &dest)
+void PublicUtils::BytesToHexString(void *const data, const size_t dataLength, std::string& dest)
 {
 	unsigned char       *byteData = reinterpret_cast<unsigned char*>(data);
 	std::stringstream   hexStringStream;
@@ -339,7 +339,7 @@ void PublicUtils::ReplaceCharacters(std::string& str, char find, char replaceWit
 			str[i] = replaceWith;
 }
 
-bool PublicUtils::ReplaceString(std::string &str, const std::string &replace, const std::string &with)
+bool PublicUtils::ReplaceString(std::string& str, const std::string& replace, const std::string& with)
 {
 	size_t start_pos = str.find(replace);
 	bool found = false;
@@ -353,26 +353,26 @@ bool PublicUtils::ReplaceString(std::string &str, const std::string &replace, co
 	return found;
 }
 
-std::wstring PublicUtils::WidenString(const std::string &s)
+std::wstring PublicUtils::WidenString(const std::string& s)
 {
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> utf16conv;
 	return utf16conv.from_bytes(s);
 }
 
-std::string PublicUtils::ThinString(const std::wstring &str)
+std::string PublicUtils::ThinString(const std::wstring& str)
 {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> utf8conv;
 	return utf8conv.to_bytes(str);
 }
 
-std::string PublicUtils::ToLower(const std::string &str)
+std::string PublicUtils::ToLower(const std::string& str)
 {
 	std::string retValue(str);
 	std::transform(retValue.begin(), retValue.end(), retValue.begin(), ::tolower);
 	return retValue;
 }
 
-std::vector<std::string> PublicUtils::SplitString(const std::string &stringToSplit, char delim)
+std::vector<std::string> PublicUtils::SplitString(const std::string& stringToSplit, char delim)
 {
 	std::vector<std::string> retValue;
 	std::stringstream ss(stringToSplit);
@@ -385,26 +385,26 @@ std::vector<std::string> PublicUtils::SplitString(const std::string &stringToSpl
 }
 
 // trim from start
-static inline std::string &ltrim(std::string &s)
+static inline std::string& ltrim(std::string& s)
 {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
 	return s;
 }
 
 // trim from end
-static inline std::string &rtrim(std::string &s)
+static inline std::string& rtrim(std::string& s)
 {
 	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 	return s;
 }
 
 // trim from both ends
-static inline std::string &trim(std::string &s)
+static inline std::string& trim(std::string& s)
 {
 	return ltrim(rtrim(s));
 }
 
-std::string PublicUtils::Trim(const std::string &string, bool fromEnd)
+std::string PublicUtils::Trim(const std::string& string, bool fromEnd)
 {
 	std::string retValue(string);
 	if( fromEnd ) // From End
@@ -419,7 +419,7 @@ std::string PublicUtils::Trim(const std::string &string, bool fromEnd)
 	return retValue;
 }
 
-std::vector<std::string> PublicUtils::Wrap(const std::string &string, size_t lineLength)
+std::vector<std::string> PublicUtils::Wrap(const std::string& string, size_t lineLength)
 {
 	std::stringstream sstream;
 	sstream << string;
@@ -455,7 +455,7 @@ std::vector<std::string> PublicUtils::Wrap(const std::string &string, size_t lin
 	return retValue;
 }
 
-HttpRequest PublicUtils::HttpSendRequest(const std::wstring &uri, const std::wstring &method, const std::wstring& userAgent, const std::wstring &username, const std::wstring &password, const std::wstring &headers, void *body, DWORD bodySize)
+HttpRequest PublicUtils::HttpSendRequest(const std::wstring& uri, const std::wstring& method, const std::wstring& userAgent, const std::wstring& username, const std::wstring& password, const std::wstring& headers, void* body, DWORD bodySize)
 {
 	DWORD dwSize;
 	DWORD dwDownloaded;
@@ -671,7 +671,7 @@ HttpRequest PublicUtils::HttpSendRequest(const std::wstring &uri, const std::wst
 	return retVal;
 }
 
-UPnPResult PublicUtils::UPnPForwardPort(bool tcp, int externalport, int internalport, std::string ruleName)
+UPnPResult PublicUtils::UPnPForwardPort(bool tcp, int externalport, int internalport, const std::string& ruleName)
 {
 	struct UPNPUrls urls;
 	struct IGDdatas data;

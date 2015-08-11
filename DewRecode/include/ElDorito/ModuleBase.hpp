@@ -7,7 +7,7 @@ namespace Modules
 	class ModuleBase
 	{
 	public:
-		ModuleBase(std::string moduleName)
+		ModuleBase(const std::string& moduleName)
 		{
 			this->moduleName = moduleName;
 			int retCode = 0;
@@ -132,7 +132,7 @@ namespace Modules
 		/// <param name="updateEvent">The function to call when the command is run.</param>
 		/// <param name="arguments">The arguments for this command.</param>
 		/// <returns>The created command</returns>
-		Command* AddCommand(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, CommandUpdateFunc updateEvent, std::initializer_list<std::string> arguments = {})
+		Command* AddCommand(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, CommandUpdateFunc updateEvent, std::initializer_list<const std::string> arguments = {})
 		{
 			Command command;
 			command.Name = moduleName + "." + name;
@@ -256,7 +256,7 @@ namespace Modules
 		/// <param name="defaultValue">The default value.</param>
 		/// <param name="updateEvent">The function to call when the variable is changed.</param>
 		/// <returns>The created variable</returns>
-		Command* AddVariableString(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, std::string defaultValue = "", CommandUpdateFunc updateEvent = 0)
+		Command* AddVariableString(const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, const std::string& defaultValue = "", CommandUpdateFunc updateEvent = 0)
 		{
 			Command command;
 			command.Name = moduleName + "." + name;

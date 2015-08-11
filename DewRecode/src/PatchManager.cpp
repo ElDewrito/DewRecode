@@ -40,7 +40,7 @@ std::vector<unsigned char> GetHookBytes(Hook* hook)
 /// <param name="address">The address to patch.</param>
 /// <param name="data">The data to write.</param>
 /// <returns>The created <see cref="Patch"/>.</returns>
-Patch* PatchManager::AddPatch(std::string name, size_t address, const PatchInitializerListType& data)
+Patch* PatchManager::AddPatch(const std::string& name, size_t address, const PatchInitializerListType& data)
 {
 	Patch patch(name, address, data);
 
@@ -59,7 +59,7 @@ Patch* PatchManager::AddPatch(std::string name, size_t address, const PatchIniti
 /// <param name="fillByte">What byte to fill with.</param>
 /// <param name="numBytes">Number of bytes to fill.</param>
 /// <returns>The created <see cref="Patch"/>.</returns>
-Patch* PatchManager::AddPatch(std::string name, size_t address, unsigned char fillByte, size_t numBytes)
+Patch* PatchManager::AddPatch(const std::string& name, size_t address, unsigned char fillByte, size_t numBytes)
 {
 	Patch patch(name, address, fillByte, numBytes);
 
@@ -78,7 +78,7 @@ Patch* PatchManager::AddPatch(std::string name, size_t address, unsigned char fi
 /// <param name="destFunc">The dest function.</param>
 /// <param name="type">The type of hook.</param>
 /// <returns>The created <see cref="Hook"/>.</returns>
-Hook* PatchManager::AddHook(std::string name, size_t address, void* destFunc, HookType type)
+Hook* PatchManager::AddHook(const std::string& name, size_t address, void* destFunc, HookType type)
 {
 	Hook hook(name, address, destFunc, type);
 
@@ -97,7 +97,7 @@ Hook* PatchManager::AddHook(std::string name, size_t address, void* destFunc, Ho
 /// <param name="patches">The patches to include in the patchset.</param>
 /// <param name="hooks">The hooks to include in the patchset.</param>
 /// <returns>The created <see cref="PatchSet"/>.</returns>
-PatchSet* PatchManager::AddPatchSet(std::string name, const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks)
+PatchSet* PatchManager::AddPatchSet(const std::string& name, const PatchSetInitializerListType& patches, const PatchSetHookInitializerListType& hooks)
 {
 	PatchSet patchSet(name, patches, hooks);
 
@@ -123,7 +123,7 @@ PatchSet* PatchManager::AddPatchSet(std::string name, const PatchSetInitializerL
 /// </summary>
 /// <param name="name">The name of the patch.</param>
 /// <returns>A pointer to the patch, if found.</returns>
-Patch* PatchManager::FindPatch(std::string name)
+Patch* PatchManager::FindPatch(const std::string& name)
 {
 	for (auto it = patches.begin(); it != patches.end(); ++it)
 	{
@@ -138,7 +138,7 @@ Patch* PatchManager::FindPatch(std::string name)
 /// </summary>
 /// <param name="name">The name of the hook.</param>
 /// <returns>A pointer to the hook, if found.</returns>
-Hook* PatchManager::FindHook(std::string name)
+Hook* PatchManager::FindHook(const std::string& name)
 {
 	for (auto it = hooks.begin(); it != hooks.end(); ++it)
 	{
@@ -153,7 +153,7 @@ Hook* PatchManager::FindHook(std::string name)
 /// </summary>
 /// <param name="name">The name of the patch set.</param>
 /// <returns>A pointer to the patch set, if found.</returns>
-PatchSet* PatchManager::FindPatchSet(std::string name)
+PatchSet* PatchManager::FindPatchSet(const std::string& name)
 {
 	for (auto it = patchSets.begin(); it != patchSets.end(); ++it)
 	{
@@ -168,7 +168,7 @@ PatchSet* PatchManager::FindPatchSet(std::string name)
 /// </summary>
 /// <param name="name">The name of the patch.</param>
 /// <returns>PatchStatus enum</returns>
-PatchStatus PatchManager::TogglePatch(std::string name)
+PatchStatus PatchManager::TogglePatch(const std::string& name)
 {
 	Patch* patch = FindPatch(name);
 	if (!patch)
@@ -182,7 +182,7 @@ PatchStatus PatchManager::TogglePatch(std::string name)
 /// </summary>
 /// <param name="name">The name of the hook.</param>
 /// <returns>PatchStatus enum</returns>
-PatchStatus PatchManager::ToggleHook(std::string name)
+PatchStatus PatchManager::ToggleHook(const std::string& name)
 {
 	Hook* hook = FindHook(name);
 	if (!hook)
@@ -196,7 +196,7 @@ PatchStatus PatchManager::ToggleHook(std::string name)
 /// </summary>
 /// <param name="name">The name of the patch set.</param>
 /// <returns>PatchStatus enum</returns>
-PatchStatus PatchManager::TogglePatchSet(std::string name)
+PatchStatus PatchManager::TogglePatchSet(const std::string& name)
 {
 	PatchSet* patchSet = FindPatchSet(name);
 	if (!patchSet)
@@ -263,7 +263,7 @@ bool PatchManager::TogglePatchSet(PatchSet* patchSet)
 /// <param name="name">The name of the patch.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
 /// <returns>The status of the patch.</returns>
-PatchStatus PatchManager::EnablePatch(std::string name, bool enable)
+PatchStatus PatchManager::EnablePatch(const std::string& name, bool enable)
 {
 	Patch* patch = FindPatch(name);
 	if (!patch)
@@ -278,7 +278,7 @@ PatchStatus PatchManager::EnablePatch(std::string name, bool enable)
 /// <param name="hook">The name of the hook.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
 /// <returns>The status of the hook.</returns>
-PatchStatus PatchManager::EnableHook(std::string name, bool enable)
+PatchStatus PatchManager::EnableHook(const std::string& name, bool enable)
 {
 	Hook* hook = FindHook(name);
 	if (!hook)
@@ -293,7 +293,7 @@ PatchStatus PatchManager::EnableHook(std::string name, bool enable)
 /// <param name="patchSet">The name of the patch set.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
 /// <returns>The status of the patch set.</returns>
-PatchStatus PatchManager::EnablePatchSet(std::string name, bool enable)
+PatchStatus PatchManager::EnablePatchSet(const std::string& name, bool enable)
 {
 	PatchSet* patchSet = FindPatchSet(name);
 	if (!patchSet)
