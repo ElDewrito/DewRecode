@@ -21,12 +21,12 @@ namespace
 
 		if (shouldUpdate)
 		{
-			typedef void*(__cdecl * UI_AllocPtr)(int size);
+			typedef void*(__cdecl *UI_AllocPtr)(int size);
 			auto UI_Alloc = reinterpret_cast<UI_AllocPtr>(0xAB4ED0);
 			void* UIData = UI_Alloc(0x3C);
 
 			// fill UIData with proper data
-			typedef void*(__thiscall * UI_OpenDialogById_InitMessagePtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
+			typedef void*(__thiscall *UI_OpenDialogById_InitMessagePtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
 			auto UI_OpenDialogById_InitMessage = reinterpret_cast<UI_OpenDialogById_InitMessagePtr>(0xA92780);
 			UI_OpenDialogById_InitMessage(UIData, menuIdToLoad, 0xFF, 4, 0x1000D);
 
@@ -54,7 +54,7 @@ namespace
 		return 1;
 	}
 
-	bool LocalizedStringHookImpl(int tagIndex, int stringId, wchar_t *outputBuffer)
+	bool LocalizedStringHookImpl(int tagIndex, int stringId, wchar_t* outputBuffer)
 	{
 		const size_t MaxStringLength = 0x400;
 
@@ -173,7 +173,7 @@ namespace
 				return 1; // ignore the dpad button presses
 		}
 
-		typedef int(__thiscall* c_start_menu__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
+		typedef int(__thiscall *c_start_menu__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
 		auto c_start_menu__ButtonPress = reinterpret_cast<c_start_menu__ButtonPressPtr>(0xB1F620);
 		return c_start_menu__ButtonPress(thisPtr, controllerStruct);
 	}
@@ -184,7 +184,7 @@ namespace
 		if (btnCode == Blam::ButtonCodes::eButtonCodesStart)
 			return UI_ShowHalo3PauseMenu(0, 0, 0, 0, 0);
 
-		typedef int(__thiscall* c_main_menu_screen_widget__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
+		typedef int(__thiscall *c_main_menu_screen_widget__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
 		auto c_main_menu_screen_widget__ButtonPress = reinterpret_cast<c_main_menu_screen_widget__ButtonPressPtr>(0xAE7660);
 		return c_main_menu_screen_widget__ButtonPress(thisPtr, controllerStruct);
 	}
@@ -195,14 +195,14 @@ namespace
 		uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
 		if (btnCode == Blam::ButtonCodes::eButtonCodesStart || btnCode == Blam::ButtonCodes::eButtonCodesX)
 		{
-			typedef int(__thiscall* c_gui_screen_pregame_lobby__OpenGameSettingsPtr)(void* thisPtr, uint32_t a2);
+			typedef int(__thiscall *c_gui_screen_pregame_lobby__OpenGameSettingsPtr)(void* thisPtr, uint32_t a2);
 			auto c_gui_screen_pregame_lobby__OpenGameSettings = reinterpret_cast<c_gui_screen_pregame_lobby__OpenGameSettingsPtr>(0xB225B0);
 			return c_gui_screen_pregame_lobby__OpenGameSettings(thisPtr, *(uint32_t*)(controllerStruct + 0x10));
 
 			return 1;
 		}
 
-		typedef int(__thiscall* c_gui_screen_pregame_lobby__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
+		typedef int(__thiscall *c_gui_screen_pregame_lobby__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
 		auto c_gui_screen_pregame_lobby__ButtonPress = reinterpret_cast<c_gui_screen_pregame_lobby__ButtonPressPtr>(0xB21A20);
 		return c_gui_screen_pregame_lobby__ButtonPress(thisPtr, controllerStruct);
 	}
@@ -295,7 +295,7 @@ namespace Modules
 				// seems like this func is meant to be called which returns the first arg to give AE0BE0, but it seems to only return 0?
 				/*
 				int test = 0;
-				typedef bool(__cdecl* sub_A933D0Ptr)(int a1, int a2, int a3, int a4);
+				typedef bool(__cdecl *sub_A933D0Ptr)(int a1, int a2, int a3, int a4);
 				auto sub_A933D0 = reinterpret_cast<sub_A933D0Ptr>(0xA933D0);
 
 				sub_A933D0(0xFFFFFFFF, 0xFF, 0xFF, (int)&test);
@@ -305,7 +305,7 @@ namespace Modules
 				// in H3E the call to this larger func is at 0x8211D334, in HO this call is at 0xAAC8A3
 				// the func in HO does some of what the H3E func does, but it call other funcs instead of this func we're calling
 				// the H3E equivalent to this func we call is at 0x825D5C7C
-				typedef bool(__cdecl* sub_AE0BE0Ptr)(int a1, int a2, int a3, int a4, void* a5, int a6);
+				typedef bool(__cdecl *sub_AE0BE0Ptr)(int a1, int a2, int a3, int a4, void* a5, int a6);
 				auto sub_AE0BE0 = reinterpret_cast<sub_AE0BE0Ptr>(0xAE0BE0);
 				sub_AE0BE0(0, 0, 0, 0, 0, 0);
 				DialogShow = false;
@@ -314,15 +314,15 @@ namespace Modules
 
 			if (!UIData) // the game can also free this mem at any time afaik, but it also looks like it resets this ptr to 0, so we can just alloc it again
 			{
-				typedef void*(__cdecl * UI_AllocPtr)(int size);
+				typedef void*(__cdecl *UI_AllocPtr)(int size);
 				auto UI_Alloc = reinterpret_cast<UI_AllocPtr>(0xAB4ED0);
 				UIData = UI_Alloc(0x40);
 			}
 
 			// fill UIData with proper data
-			typedef void*(__thiscall * UI_OpenDialogByIdPtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
-			auto UI_OpenDialogById = reinterpret_cast<UI_OpenDialogByIdPtr>(0xA92780);
-			UI_OpenDialogById(UIData, DialogStringId, DialogArg1, DialogFlags, DialogParentStringId);
+			typedef void*(__thiscall *UI_OpenDialogById_InitMessagePtr)(void* a1, unsigned int dialogStringId, int a3, int dialogFlags, unsigned int parentDialogStringId);
+			auto UI_OpenDialogById_InitMessage = reinterpret_cast<UI_OpenDialogById_InitMessagePtr>(0xA92780);
+			UI_OpenDialogById_InitMessage(UIData, DialogStringId, DialogArg1, DialogFlags, DialogParentStringId);
 
 			// post UI message
 			typedef int(*UI_PostMessagePtr)(void* uiDataStruct);

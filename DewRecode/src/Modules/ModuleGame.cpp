@@ -426,7 +426,7 @@ namespace
 		return true;
 	}
 
-	size_t GetFileSize(std::ifstream &file)
+	size_t GetFileSize(std::ifstream& file)
 	{
 		auto originalPos = file.tellg();
 		file.seekg(0, std::ios::end);
@@ -435,7 +435,7 @@ namespace
 		return size;
 	}
 
-	bool LoadMapVariant(std::ifstream &file, uint8_t *out)
+	bool LoadMapVariant(std::ifstream& file, uint8_t* out)
 	{
 		// TODO: Would it be better to figure out how to use the game's file
 		// functions here?
@@ -449,7 +449,7 @@ namespace
 		uint8_t* blfData = (uint8_t*)malloc(MapVariantBlfSize);
 		file.read(reinterpret_cast<char*>(blfData), MapVariantBlfSize);
 
-		typedef bool(__thiscall *ParseMapVariantBlfPtr)(void *blf, uint8_t *outVariant, bool *result);
+		typedef bool(__thiscall *ParseMapVariantBlfPtr)(void* blf, uint8_t* outVariant, bool* result);
 		auto ParseMapVariant = reinterpret_cast<ParseMapVariantBlfPtr>(0x573250);
 
 		bool retVal = ParseMapVariant(blfData, out, nullptr);
@@ -458,7 +458,7 @@ namespace
 		return retVal;
 	}
 
-	int GetMapId(const std::string &mapName)
+	int GetMapId(const std::string& mapName)
 	{
 		// Open the .map file
 		auto mapPath = "maps/" + mapName + ".map";
@@ -485,14 +485,14 @@ namespace
 		return mapId;
 	}
 
-	bool LoadDefaultMapVariant(const std::string &mapName, uint8_t *out)
+	bool LoadDefaultMapVariant(const std::string& mapName, uint8_t* out)
 	{
 		int mapId = GetMapId(mapName);
 		if (mapId < 0)
 			return false;
 
 		// Initialize an empty variant for the map
-		typedef void(__thiscall *InitializeMapVariantPtr)(uint8_t *outVariant, int mapId);
+		typedef void(__thiscall *InitializeMapVariantPtr)(uint8_t* outVariant, int mapId);
 		auto InitializeMapVariant = reinterpret_cast<InitializeMapVariantPtr>(0x581F70);
 		InitializeMapVariant(out, mapId);
 
@@ -512,7 +512,7 @@ namespace
 		return GetUiGameModeImpl();
 	}
 
-	void SaveMapVariantToPreferences(const uint8_t *data)
+	void SaveMapVariantToPreferences(const uint8_t* data)
 	{
 		// Check the lobby type so we know where to save the variant
 		size_t variantOffset;
@@ -536,7 +536,7 @@ namespace
 		*reinterpret_cast<bool*>(0x22C0129) = true;
 	}
 
-	void SaveGameVariantToPreferences(const uint8_t *data)
+	void SaveGameVariantToPreferences(const uint8_t* data)
 	{
 		if (GetUiGameMode() != 2)
 			return; // Only allow doing this from a customs lobby
@@ -591,7 +591,7 @@ namespace
 		}
 
 		// Submit a request to load the variant
-		typedef bool(*LoadMapVariantPtr)(uint8_t *variant, void *unknown);
+		typedef bool(*LoadMapVariantPtr)(uint8_t* variant, void* unknown);
 		auto LoadMapVariant = reinterpret_cast<LoadMapVariantPtr>(0xA83AF0);
 		if (!LoadMapVariant(variantData, nullptr))
 		{
@@ -605,7 +605,7 @@ namespace
 		return true;
 	}
 
-	bool LoadGameVariant(std::ifstream &file, uint8_t *out)
+	bool LoadGameVariant(std::ifstream& file, uint8_t* out)
 	{
 		// Verify file size
 		const auto GameVariantBlfSize = 0x3BC;
@@ -616,13 +616,13 @@ namespace
 		uint8_t blfData[GameVariantBlfSize];
 		file.read(reinterpret_cast<char*>(blfData), GameVariantBlfSize);
 
-		typedef bool(__thiscall *ParseGameVariantBlfPtr)(void *blf, uint8_t *outVariant, bool *result);
+		typedef bool(__thiscall *ParseGameVariantBlfPtr)(void* blf, uint8_t* outVariant, bool* result);
 		auto ParseGameVariant = reinterpret_cast<ParseGameVariantBlfPtr>(0x573150);
 		return ParseGameVariant(blfData, out, nullptr);
 	}
 
 	template<class T>
-	int FindDefaultGameVariant(const Blam::Tags::TagBlock<T> &variants, const std::string &name)
+	int FindDefaultGameVariant(const Blam::Tags::TagBlock<T>& variants, const std::string& name)
 	{
 		static_assert(std::is_base_of<Blam::Tags::GameVariantDefinition, T>::value, "T must be a GameVariantDefinition");
 		if (!variants)
@@ -635,7 +635,7 @@ namespace
 		return -1;
 	}
 
-	int FindDefaultGameVariant(Blam::Tags::GameEngineSettingsDefinition *wezr, Blam::GameType type, const std::string &name)
+	int FindDefaultGameVariant(Blam::Tags::GameEngineSettingsDefinition* wezr, Blam::GameType type, const std::string& name)
 	{
 		switch (type)
 		{
@@ -662,7 +662,7 @@ namespace
 		}
 	}
 
-	bool LoadDefaultGameVariant(const std::string &name, uint8_t *out)
+	bool LoadDefaultGameVariant(const std::string& name, uint8_t* out)
 	{
 		// Get a handle to the wezr tag
 		typedef Blam::Tags::GameEngineSettingsDefinition* (*GetWezrTagPtr)();
@@ -687,7 +687,7 @@ namespace
 		memset(out, 0, VariantDataSize);
 
 		// Ask the game to generate the variant data
-		typedef bool(*LoadBuiltInGameVariantPtr)(Blam::GameType type, int index, uint8_t *out);
+		typedef bool(*LoadBuiltInGameVariantPtr)(Blam::GameType type, int index, uint8_t* out);
 		auto LoadBuiltInGameVariant = reinterpret_cast<LoadBuiltInGameVariantPtr>(0x572270);
 		return LoadBuiltInGameVariant(static_cast<Blam::GameType>(type), index, out);
 	}
@@ -738,7 +738,7 @@ namespace
 		}
 
 		// Submit a request to load the variant
-		typedef bool(*LoadGameVariantPtr)(uint8_t *variant);
+		typedef bool(*LoadGameVariantPtr)(uint8_t* variant);
 		auto LoadGameVariant = reinterpret_cast<LoadGameVariantPtr>(0x439860);
 		if (!LoadGameVariant(variantData))
 		{
@@ -752,7 +752,7 @@ namespace
 
 	bool CommandGameStart(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		typedef bool(__thiscall *SetSessionModePtr)(void *thisptr, int mode);
+		typedef bool(__thiscall *SetSessionModePtr)(void* thisptr, int mode);
 		auto SetSessionMode = reinterpret_cast<SetSessionModePtr>(0x459A40);
 
 		// Note: this isn't necessarily a proper way of getting the this

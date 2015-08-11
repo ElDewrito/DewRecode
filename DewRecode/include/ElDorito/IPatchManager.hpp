@@ -12,7 +12,7 @@ struct Patch
 	size_t Address;
 	std::vector<unsigned char> Data, Orig;
 	bool Enabled;
-	Patch(std::string name, size_t address, std::vector<unsigned char> data)
+	Patch(const std::string& name, size_t address, std::vector<unsigned char> data)
 	{
 		Name = name;
 		Address = address;
@@ -21,7 +21,7 @@ struct Patch
 		Enabled = false;
 	}
 
-	Patch(std::string name, size_t address, PatchInitializerListType data)
+	Patch(const std::string& name, size_t address, PatchInitializerListType data)
 	{
 		Name = name;
 		Address = address;
@@ -30,7 +30,7 @@ struct Patch
 		Enabled = false;
 	}
 
-	Patch(std::string name, size_t address, unsigned char fillByte, size_t numBytes)
+	Patch(const std::string& name, size_t address, unsigned char fillByte, size_t numBytes)
 	{
 		Name = name;
 		Address = address;
@@ -58,7 +58,7 @@ struct Hook
 	std::vector<unsigned char> Orig;
 	bool Enabled;
 
-	Hook(std::string name, size_t address, void* destFunc, HookType type)
+	Hook(const std::string& name, size_t address, void* destFunc, HookType type)
 	{
 		Name = name;
 		Address = address;
@@ -78,7 +78,7 @@ struct PatchSet
 	std::deque<Hook> Hooks;
 	bool Enabled;
 
-	PatchSet(std::string name, PatchSetInitializerListType patches, PatchSetHookInitializerListType hooks)
+	PatchSet(const std::string& name, PatchSetInitializerListType patches, PatchSetHookInitializerListType hooks)
 	{
 		Name = name;
 		Patches = patches;

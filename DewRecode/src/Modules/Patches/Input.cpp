@@ -76,7 +76,7 @@ namespace
 		}
 	}
 
-	bool RawInputHookImpl(RAWINPUT *rwInput)
+	bool RawInputHookImpl(RAWINPUT* rwInput)
 	{
 		auto& dorito = ElDorito::Instance();
 

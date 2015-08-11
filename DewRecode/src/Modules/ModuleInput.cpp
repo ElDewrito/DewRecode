@@ -100,11 +100,11 @@ namespace
 		keyPressData[2] = std::stoul(Arguments[0], 0, 0); // button idx, corresponds with Blam::ButtonCodes
 		keyPressData[3] = 0xFF;
 
-		typedef void*(__cdecl* sub_AAD930Ptr)();
+		typedef void*(__cdecl *sub_AAD930Ptr)();
 		auto sub_AAD930 = reinterpret_cast<sub_AAD930Ptr>(0xAAD930);
 		void* classPtr = sub_AAD930();
 
-		typedef int(__thiscall* sub_AAB7D0Ptr)(void* thisPtr, void* a2);
+		typedef int(__thiscall *sub_AAB7D0Ptr)(void* thisPtr, void* a2);
 		auto sub_AAB7D0 = reinterpret_cast<sub_AAB7D0Ptr>(0xAAB7D0);
 		int retVal = sub_AAB7D0(classPtr, keyPressData);
 

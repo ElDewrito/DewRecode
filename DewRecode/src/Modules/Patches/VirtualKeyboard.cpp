@@ -10,7 +10,7 @@ namespace
 	class VirtualKeyboard
 	{
 	public:
-		VirtualKeyboard(const char *file, int line, int arg2, int arg3, int arg4, int arg5, int maxLength, int arg7, int arg8)
+		VirtualKeyboard(const char* file, int line, int arg2, int arg3, int arg4, int arg5, int maxLength, int arg7, int arg8)
 		{
 			unk4 = 0;
 			unk6 = 0;
@@ -35,17 +35,17 @@ namespace
 		virtual void Reset() { unk6 = 0; }
 		virtual int Stub20() { return 0; }
 
-		void SetDefaultValue(wchar_t *newDefaultValue)
+		void SetDefaultValue(wchar_t* newDefaultValue)
 		{
 			wcscpy_s(defaultValue, newDefaultValue);
 		}
 
-		void SetTitle(wchar_t *newTitle)
+		void SetTitle(wchar_t* newTitle)
 		{
 			wcscpy_s(title, newTitle);
 		}
 
-		void SetDescription(wchar_t *newDescription)
+		void SetDescription(wchar_t* newDescription)
 		{
 			wcscpy_s(description, newDescription);
 		}
@@ -63,26 +63,26 @@ namespace
 		int32_t maxLength;
 	};
 
-	VirtualKeyboard *CreateKeyboard(const char *file, int line, int unk2, int unk3, int unk4, int unk5, int maxLength, int unk7, int unk8)
+	VirtualKeyboard* CreateKeyboard(const char* file, int line, int unk2, int unk3, int unk4, int unk5, int maxLength, int unk7, int unk8)
 	{
 		// Does this need to be allocated properly by using the game's malloc?
 		return new VirtualKeyboard(file, line, unk2, unk3, unk4, unk5, maxLength, unk7, unk8);
 	}
 
 	// Technically thiscall
-	void __fastcall SetKeyboardDefaultValue(VirtualKeyboard *keyboard, void *unused, wchar_t *newDefaultValue)
+	void __fastcall SetKeyboardDefaultValue(VirtualKeyboard* keyboard, void* unused, wchar_t* newDefaultValue)
 	{
 		keyboard->SetDefaultValue(newDefaultValue);
 	}
 
 	// Technically thiscall
-	void __fastcall SetKeyboardTitle(VirtualKeyboard *keyboard, void *unused, wchar_t *newTitle)
+	void __fastcall SetKeyboardTitle(VirtualKeyboard* keyboard, void* unused, wchar_t* newTitle)
 	{
 		keyboard->SetTitle(newTitle);
 	}
 
 	// Technically thiscall
-	void __fastcall SetKeyboardDescription(VirtualKeyboard *keyboard, void *unused, wchar_t *newDescription)
+	void __fastcall SetKeyboardDescription(VirtualKeyboard* keyboard, void* unused, wchar_t* newDescription)
 	{
 		keyboard->SetDescription(newDescription);
 	}
@@ -102,7 +102,7 @@ namespace
 		return false;
 	}
 
-	bool ShowKeyboard(VirtualKeyboard *keyboard, const char *file, int line)
+	bool ShowKeyboard(VirtualKeyboard* keyboard, const char* file, int line)
 	{
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 		std::wstring converted = converter.from_bytes(inputLineText);

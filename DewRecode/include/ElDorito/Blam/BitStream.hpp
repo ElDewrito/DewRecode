@@ -47,17 +47,17 @@ namespace Blam
 		}
 
 	private:
-		uint8_t *start;      // 0x00
-		uint8_t *end;        // 0x04
+		uint8_t* start;      // 0x00
+		uint8_t* end;        // 0x04
 		uint32_t size;       // 0x08
 		uint32_t unkC;       // 0x0C
 		uint32_t unk10;      // 0x10 - mode?
-		void *unk14;         // 0x14
+		void* unk14;         // 0x14
 		uint32_t unk18;      // 0x18
 		uint32_t position;   // 0x1C
 		uint64_t window;     // 0x20
 		int windowBitsUsed;  // 0x28
-		uint8_t *currentPtr; // 0x2C
+		uint8_t* currentPtr; // 0x2C
 		uint32_t unk30;      // 0x30
 		uint8_t unk34[100];  // 0x34 - debug info? the constructor doesn't initialize this
 		uint32_t unk98;      // 0x98
@@ -68,8 +68,8 @@ namespace Blam
 
 		bool ReadBit()
 		{
-			typedef bool(__thiscall* ReadBitPtr)(BitStream *thisPtr);
-			ReadBitPtr ReadBit = reinterpret_cast<ReadBitPtr>(0x558570);
+			typedef bool(__thiscall *ReadBitPtr)(BitStream* thisPtr);
+			auto ReadBit = reinterpret_cast<ReadBitPtr>(0x558570);
 			return ReadBit(this);
 		}
 
@@ -77,14 +77,14 @@ namespace Blam
 		{
 			if (bits <= 32)
 			{
-				typedef uint32_t(__thiscall* ReadBits32Ptr)(BitStream *thisPtr, int bits);
-				ReadBits32Ptr ReadBits32 = reinterpret_cast<ReadBits32Ptr>(0x5589A0);
+				typedef uint32_t(__thiscall *ReadBits32Ptr)(BitStream* thisPtr, int bits);
+				auto ReadBits32 = reinterpret_cast<ReadBits32Ptr>(0x5589A0);
 				return ReadBits32(this, bits);
 			}
 
 			// To read more than 32 bits at a time, this function has to be called instead
-			typedef uint64_t(__thiscall* ReadBits64Ptr)(BitStream *thisPtr, int bits);
-			ReadBits64Ptr ReadBits64 = reinterpret_cast<ReadBits64Ptr>(0x559160);
+			typedef uint64_t(__thiscall *ReadBits64Ptr)(BitStream* thisPtr, int bits);
+			auto ReadBits64 = reinterpret_cast<ReadBits64Ptr>(0x559160);
 			return ReadBits64(this, bits);
 		}
 
@@ -99,8 +99,8 @@ namespace Blam
 			}
 			else
 			{
-				typedef void(__thiscall* WriteBitsPtr)(BitStream *thisPtr, uint64_t val, int bits);
-				WriteBitsPtr WriteBits = reinterpret_cast<WriteBitsPtr>(0x559EB0);
+				typedef void(__thiscall *WriteBitsPtr)(BitStream* thisPtr, uint64_t val, int bits);
+				auto WriteBits = reinterpret_cast<WriteBitsPtr>(0x559EB0);
 				return WriteBits(this, val, bits);
 			}
 		}

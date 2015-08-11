@@ -116,7 +116,7 @@ bool PublicUtils::RSAVerifySignature(const std::string& pubKey, const std::strin
 	return retVal == 1;
 }
 
-static int genrsa_cb(int p, int n, BN_GENCB *cb)
+static int genrsa_cb(int p, int n, BN_GENCB* cb)
 {
 	char c = '*';
 
@@ -300,9 +300,9 @@ void PublicUtils::RemoveCharsFromString(std::string& str, char* charsToRemove)
 		str.erase(remove(str.begin(), str.end(), charsToRemove[i]), str.end());
 }
 
-void PublicUtils::HexStringToBytes(const std::string& in, void *const data, size_t length)
+void PublicUtils::HexStringToBytes(const std::string& in, void* const data, size_t length)
 {
-	unsigned char   *byteData = reinterpret_cast<unsigned char*>(data);
+	unsigned char* byteData = reinterpret_cast<unsigned char*>(data);
 
 	std::stringstream hexStringStream; hexStringStream >> std::hex;
 	for (size_t strIndex = 0, dataIndex = 0; strIndex < (length * 2); ++dataIndex)
@@ -321,10 +321,10 @@ void PublicUtils::HexStringToBytes(const std::string& in, void *const data, size
 	}
 }
 
-void PublicUtils::BytesToHexString(void *const data, const size_t dataLength, std::string& dest)
+void PublicUtils::BytesToHexString(void* const data, const size_t dataLength, std::string& dest)
 {
-	unsigned char       *byteData = reinterpret_cast<unsigned char*>(data);
-	std::stringstream   hexStringStream;
+	unsigned char* byteData = reinterpret_cast<unsigned char*>(data);
+	std::stringstream hexStringStream;
 
 	hexStringStream << std::hex << std::setfill('0');
 	for (size_t index = 0; index < dataLength; ++index)

@@ -157,7 +157,7 @@ namespace Modules
 		void drawBox(IDirect3DDevice9* device, int x, int y, int width, int height, D3DCOLOR BorderColor, D3DCOLOR FillColor);
 		int centerTextHorizontally(const char* text, int x, int width, LPD3DXFONT pFont);
 
-		int getTextWidth(const char *szText, LPD3DXFONT pFont);
+		int getTextWidth(const char* szText, LPD3DXFONT pFont);
 		int getSpaceCharacterWidth(LPD3DXFONT pFont);
 
 		int getMsSinceLastConsoleBlink();

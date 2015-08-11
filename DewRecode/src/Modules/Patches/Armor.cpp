@@ -52,13 +52,13 @@ namespace
 	extern std::unordered_map<std::string, uint8_t> accIndexes;
 	extern std::unordered_map<std::string, uint8_t> pelvisIndexes;
 
-	uint8_t GetArmorIndex(const std::string &name, const std::unordered_map<std::string, uint8_t> &indexes)
+	uint8_t GetArmorIndex(const std::string& name, const std::unordered_map<std::string, uint8_t>& indexes)
 	{
 		auto it = indexes.find(name);
 		return (it != indexes.end()) ? it->second : 0;
 	}
 
-	void BuildCustomizationData(CustomizationData *out)
+	void BuildCustomizationData(CustomizationData* out)
 	{
 		memset(out, 0, sizeof(CustomizationData));
 
@@ -91,12 +91,12 @@ namespace
 	class ArmorExtension : public Modules::Patches::PlayerPropertiesExtension<CustomizationData>
 	{
 	protected:
-		void BuildData(int playerIndex, CustomizationData *out)
+		void BuildData(int playerIndex, CustomizationData* out)
 		{
 			BuildCustomizationData(out);
 		}
 
-		void ApplyData(int playerIndex, void *session, const CustomizationData &data)
+		void ApplyData(int playerIndex, void* session, const CustomizationData& data)
 		{
 			/*std::cout << "Applying customization data to player " << playerIndex << ":" << std::endl;
 			std::cout << "helmet    = " << static_cast<int>(data.armor.helmet) << std::endl;
@@ -107,11 +107,11 @@ namespace
 			std::cout << "acc       = " << static_cast<int>(data.armor.acc) << std::endl;
 			std::cout << "pelvis    = " << static_cast<int>(data.armor.pelvis) << std::endl;*/
 
-			CustomizationData *armorSessionData = reinterpret_cast<CustomizationData*>(reinterpret_cast<uint8_t*>(session)+0x6E8);
+			CustomizationData* armorSessionData = reinterpret_cast<CustomizationData*>(reinterpret_cast<uint8_t*>(session)+0x6E8);
 			*armorSessionData = data;
 		}
 
-		void Serialize(Blam::BitStream *stream, const CustomizationData &data)
+		void Serialize(Blam::BitStream* stream, const CustomizationData& data)
 		{
 			// Colors
 			for (int i = 0; i < ColorIndexes::Count; i++)
@@ -122,7 +122,7 @@ namespace
 				stream->WriteUnsigned<uint8_t>(data.armor[i], 0, MaxArmorIndexes[i]);
 		}
 
-		void Deserialize(Blam::BitStream *stream, CustomizationData *out)
+		void Deserialize(Blam::BitStream* stream, CustomizationData* out)
 		{
 			memset(out, 0, sizeof(CustomizationData));
 
@@ -169,8 +169,8 @@ namespace
 		BuildCustomizationData(&customization);
 
 		// Apply armor to the biped
-		typedef void(*ApplyArmorPtr)(CustomizationData *customization, uint32_t objectDatum);
-		ApplyArmorPtr ApplyArmor = reinterpret_cast<ApplyArmorPtr>(0x5A4430);
+		typedef void(*ApplyArmorPtr)(CustomizationData* customization, uint32_t objectDatum);
+		auto ApplyArmor = reinterpret_cast<ApplyArmorPtr>(0x5A4430);
 		ApplyArmor(&customization, bipedObject);
 
 		// Apply each color
@@ -178,19 +178,19 @@ namespace
 		{
 			// Convert the color data from RGB to float3
 			float colorData[3];
-			typedef void(*RgbToFloatColorPtr)(uint32_t rgbColor, float *result);
-			RgbToFloatColorPtr RgbToFloatColor = reinterpret_cast<RgbToFloatColorPtr>(0x521300);
+			typedef void(*RgbToFloatColorPtr)(uint32_t rgbColor, float* result);
+			auto RgbToFloatColor = reinterpret_cast<RgbToFloatColorPtr>(0x521300);
 			RgbToFloatColor(customization.colors[i], colorData);
 
 			// Apply the color
-			typedef void(*ApplyArmorColorPtr)(uint32_t objectDatum, int colorIndex, float *colorData);
-			ApplyArmorColorPtr ApplyArmorColor = reinterpret_cast<ApplyArmorColorPtr>(0xB328F0);
+			typedef void(*ApplyArmorColorPtr)(uint32_t objectDatum, int colorIndex, float* colorData);
+			auto ApplyArmorColor = reinterpret_cast<ApplyArmorColorPtr>(0xB328F0);
 			ApplyArmorColor(bipedObject, i, colorData);
 		}
 
 		// Need to call this or else colors don't actually show up
 		typedef void(*UpdateArmorColorsPtr)(uint32_t objectDatum);
-		UpdateArmorColorsPtr UpdateArmorColors = reinterpret_cast<UpdateArmorColorsPtr>(0x5A2FA0);
+		auto UpdateArmorColors = reinterpret_cast<UpdateArmorColorsPtr>(0x5A2FA0);
 		UpdateArmorColors(bipedObject);
 
 		// Give the biped a weapon (0x151E = tag index for Assault Rifle)

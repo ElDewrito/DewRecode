@@ -38,7 +38,7 @@ namespace Utils
 
 			LPVOID retbuf = NULL;
 
-			retVal = VerQueryValue(versionCopy, L"\\", &retbuf, (UINT *)&vLen);
+			retVal = VerQueryValue(versionCopy, L"\\", &retbuf, (UINT*)&vLen);
 			if (retVal && vLen == sizeof(VS_FIXEDFILEINFO))
 			{
 				VS_FIXEDFILEINFO* ffInfo = (VS_FIXEDFILEINFO*)retbuf;
@@ -78,7 +78,7 @@ namespace Utils
 			return versionStr;
 		}
 
-		std::string GetResourceInfo(const std::string &csEntry)
+		std::string GetResourceInfo(const std::string& csEntry)
 		{
 			std::string csRet;
 
@@ -112,7 +112,7 @@ namespace Utils
 
 			static char fileEntry[256];
 
-			retVal = VerQueryValue(versionCopy, L"\\VarFileInfo\\Translation", &retbuf, (UINT *)&vLen);
+			retVal = VerQueryValue(versionCopy, L"\\VarFileInfo\\Translation", &retbuf, (UINT*)&vLen);
 			if (retVal && vLen == 4)
 			{
 				memcpy(&langD, retbuf, 4);
@@ -126,7 +126,7 @@ namespace Utils
 				sprintf_s(fileEntry, "\\StringFileInfo\\%04X04B0\\%s", lang, csEntry.c_str());
 			}
 
-			if (VerQueryValueA(versionCopy, fileEntry, &retbuf, (UINT *)&vLen))
+			if (VerQueryValueA(versionCopy, fileEntry, &retbuf, (UINT*)&vLen))
 			{
 				strcpy_s(fileEntry, (const char*)retbuf);
 				csRet = fileEntry;

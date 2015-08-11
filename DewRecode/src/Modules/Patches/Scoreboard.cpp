@@ -19,7 +19,7 @@ namespace
 	// Player name string cache
 	PlayerNameString* playerNames[16];
 
-	int GetUtf16Length(const char16_t *str, int maxLength)
+	int GetUtf16Length(const char16_t* str, int maxLength)
 	{
 		int length = 0;
 		while (length < maxLength && str[length])
@@ -27,14 +27,14 @@ namespace
 		return length;
 	}
 
-	PlayerNameString* GetPlayerName(void *playerData, int index)
+	PlayerNameString* GetPlayerName(void* playerData, int index)
 	{
 		if (index == -1)
 			return nullptr;
 
 		// Get function pointers
-		typedef void* (*AllocateFunc)(size_t size);
-		AllocateFunc Allocate = (AllocateFunc)0xD874A0;
+		typedef void* (*AllocatePtr)(size_t size);
+		auto Allocate = reinterpret_cast<AllocatePtr>(0xD874A0);
 
 		// Get the player's display name
 		Pointer playerName = Pointer(playerData)(GameGlobals::Players::DisplayNameOffset);

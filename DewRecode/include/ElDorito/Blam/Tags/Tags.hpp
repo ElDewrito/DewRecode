@@ -28,7 +28,7 @@ namespace Blam
 		struct TagBlock
 		{
 			int Count;
-			T *Data;
+			T* Data;
 			int UnusedC;
 
 			// Accesses an element by index.
@@ -65,7 +65,7 @@ namespace Blam
 			uint32_t Size;
 			int Unused4;
 			int Unused8;
-			T *Data;
+			T* Data;
 			int Unused10;
 
 			// Determines whether the data reference is not null.

@@ -17,12 +17,12 @@ namespace Modules
 		ModuleIRC();
 
 		void Connect();
-		void ChannelJoin(std::string channel, bool globalChat);
-		void ChannelLeave(std::string channel);
-		void ChannelSendMsg(std::string channel, std::string line);
-		void UserKick(std::string nick);
+		void ChannelJoin(const std::string& channel, bool globalChat);
+		void ChannelLeave(const std::string& channel);
+		void ChannelSendMsg(const std::string& channel, const std::string& line);
+		void UserKick(const std::string& nick);
 
-		std::string GenerateIRCNick(std::string name, uint64_t uid);
+		std::string GenerateIRCNick(const std::string& name, uint64_t uid);
 	private:
 		char buffer[513];
 		SOCKET winSocket;
@@ -37,8 +37,8 @@ namespace Modules
 		bool initIRCChat();
 		void ircChatLoop();
 		void printMessageIntoBuffer(std::vector<std::string>& bufferSplitBySpace, ConsoleBuffer* buffer, size_t msgPos = 3, bool topic = false);
-		bool messageIsInChannel(std::vector<std::string>& bufferSplitBySpace, std::string channel, size_t channelPos = 2);
-		bool receivedPING(std::string line);
+		bool messageIsInChannel(std::vector<std::string>& bufferSplitBySpace, const std::string& channel, size_t channelPos = 2);
+		bool receivedPING(const std::string& line);
 		bool receivedMessageFromIRCServer(std::vector<std::string>& bufferSplitBySpace);
 		bool receivedWelcomeMessage(std::vector<std::string>& bufferSplitBySpace);
 		bool receivedChannelTopic(std::vector<std::string>& bufferSplitBySpace);

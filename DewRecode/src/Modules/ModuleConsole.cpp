@@ -398,7 +398,7 @@ namespace Modules
 				std::string& line = selectedBuffer.Messages.at(i);
 				if (line.size() > maxCharsPerLine)
 				{
-					std::vector<std::string> linesWrapped = std::vector < std::string > {};
+					std::vector<std::string> linesWrapped = std::vector<std::string>{};
 
 					for (size_t i = 0; i < line.size(); i += maxCharsPerLine)
 					{
@@ -614,7 +614,7 @@ namespace Modules
 		return x + (width - getTextWidth(text, pFont)) / 2;
 	}
 
-	int ModuleConsole::getTextWidth(const char *szText, LPD3DXFONT pFont)
+	int ModuleConsole::getTextWidth(const char* szText, LPD3DXFONT pFont)
 	{
 		RECT rcRect = { 0, 0, 0, 0 };
 		if (pFont)

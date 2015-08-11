@@ -5,14 +5,14 @@
 
 namespace
 {
-	void GameTickHook(int frames, float *deltaTimeInfo)
+	void GameTickHook(int frames, float* deltaTimeInfo)
 	{
 		// Tick ElDorito
 		float deltaTime = *deltaTimeInfo;
 		ElDorito::Instance().Engine.Tick(std::chrono::duration<double>(deltaTime));
 
 		// Tick the game
-		typedef void(*GameTickPtr)(int frames, float *deltaTimeInfo);
+		typedef void(*GameTickPtr)(int frames, float* deltaTimeInfo);
 		auto GameTick = reinterpret_cast<GameTickPtr>(0x5336F0);
 		GameTick(frames, deltaTimeInfo);
 	}
@@ -43,8 +43,8 @@ namespace
 		DWORD isOnline = *(DWORD*)a2;
 		bool isHost = (*(uint16_t *)(a2 + 284) & 1);
 
-		typedef DWORD(__cdecl *Network_managed_session_create_session_internalFunc)(int a1, int a2);
-		Network_managed_session_create_session_internalFunc Network_managed_session_create_session_internal = (Network_managed_session_create_session_internalFunc)0x481550;
+		typedef DWORD(__cdecl *Network_managed_session_create_session_internalPtr)(int a1, int a2);
+		auto Network_managed_session_create_session_internal = reinterpret_cast<Network_managed_session_create_session_internalPtr>(0x481550);
 		auto retval = Network_managed_session_create_session_internal(a1, a2);
 
 		if (isHost)
@@ -66,8 +66,8 @@ namespace
 		wchar_t playerName[0x10];
 		memcpy(playerName, (char*)uidOffset + 0x8, 0x10 * sizeof(wchar_t));
 
-		typedef bool(__thiscall *Network_leader_request_boot_machineFunc)(void *thisPtr, void* playerAddr, int reason);
-		const Network_leader_request_boot_machineFunc Network_leader_request_boot_machine = reinterpret_cast<Network_leader_request_boot_machineFunc>(0x45D4A0);
+		typedef bool(__thiscall *Network_leader_request_boot_machinePtr)(void* thisPtr, void* playerAddr, int reason);
+		auto Network_leader_request_boot_machine = reinterpret_cast<Network_leader_request_boot_machinePtr>(0x45D4A0);
 		bool retVal = Network_leader_request_boot_machine(thisPtr, playerAddr, reason);
 		PlayerInfo info = { ElDorito::Instance().Utils.ThinString(playerName), uid };
 		if (retVal)
@@ -80,8 +80,8 @@ namespace
 	{
 		ElDorito::Instance().Engine.Event("Core", "Game.End");
 
-		typedef char(__thiscall *Network_state_end_game_write_stats_enterFunc)(void* thisPtr, int a2, int a3, int a4);
-		Network_state_end_game_write_stats_enterFunc Network_state_end_game_write_stats_enter = reinterpret_cast<Network_state_end_game_write_stats_enterFunc>(0x492B50);
+		typedef char(__thiscall *Network_state_end_game_write_stats_enterPtr)(void* thisPtr, int a2, int a3, int a4);
+		auto Network_state_end_game_write_stats_enter = reinterpret_cast<Network_state_end_game_write_stats_enterPtr>(0x492B50);
 		return Network_state_end_game_write_stats_enter(thisPtr, a2, a3, a4);
 	}
 
@@ -89,8 +89,8 @@ namespace
 	{
 		ElDorito::Instance().Engine.Event("Core", "Game.Leave");
 
-		typedef char(__thiscall *Network_state_leaving_enterFunc)(void* thisPtr, int a2, int a3, int a4);
-		Network_state_leaving_enterFunc Network_state_leaving_enter = reinterpret_cast<Network_state_leaving_enterFunc>(0x4933E0);
+		typedef char(__thiscall *Network_state_leaving_enterPtr)(void* thisPtr, int a2, int a3, int a4);
+		auto Network_state_leaving_enter = reinterpret_cast<Network_state_leaving_enterPtr>(0x4933E0);
 		return Network_state_leaving_enter(thisPtr, a2, a3, a4);
 	}
 

@@ -45,7 +45,7 @@ DORITO_API int GetDoritoVersion()
 	return Utils::Version::GetVersionInt();
 }
 
-DORITO_API void* CreateInterface(const char *name, int *returnCode)
+DORITO_API void* CreateInterface(const char* name, int* returnCode)
 {
 	return ElDorito::Instance().Engine.CreateInterface(name, returnCode);
 }

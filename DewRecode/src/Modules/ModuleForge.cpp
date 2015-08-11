@@ -73,9 +73,9 @@ namespace
 			}
 		}
 
-		typedef char(__thiscall *UI_Forge_ButtonPressHandler)(void* a1, void* controllerStruct);
-		UI_Forge_ButtonPressHandler buttonHandler = (UI_Forge_ButtonPressHandler)0xAE2180;
-		return buttonHandler(a1, controllerStruct);
+		typedef char(__thiscall *UI_Forge_ButtonPressHandlerPtr)(void* a1, void* controllerStruct);
+		auto UI_Forge_ButtonPressHandler = reinterpret_cast<UI_Forge_ButtonPressHandlerPtr>(0xAE2180);
+		return UI_Forge_ButtonPressHandler(a1, controllerStruct);
 	}
 }
 namespace Modules

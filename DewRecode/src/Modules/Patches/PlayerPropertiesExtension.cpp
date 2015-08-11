@@ -12,10 +12,10 @@ namespace Modules
 			return result;
 		}
 
-		void PlayerPropertiesExtender::BuildData(int playerIndex, void *out)
+		void PlayerPropertiesExtender::BuildData(int playerIndex, void* out)
 		{
 			// Write all of the data structures in order
-			uint8_t *ptr = static_cast<uint8_t*>(out);
+			uint8_t* ptr = static_cast<uint8_t*>(out);
 			for (auto it = extensions.begin(); it != extensions.end(); ++it)
 			{
 				(*it)->BuildData(playerIndex, ptr);
@@ -23,10 +23,10 @@ namespace Modules
 			}
 		}
 
-		void PlayerPropertiesExtender::ApplyData(int playerIndex, void *session, const void *data)
+		void PlayerPropertiesExtender::ApplyData(int playerIndex, void* session, const void* data)
 		{
 			// Apply all of the data structures in order
-			const uint8_t *ptr = static_cast<const uint8_t*>(data);
+			const uint8_t* ptr = static_cast<const uint8_t*>(data);
 			for (auto it = extensions.begin(); it != extensions.end(); ++it)
 			{
 				(*it)->ApplyData(playerIndex, session, ptr);
@@ -34,10 +34,10 @@ namespace Modules
 			}
 		}
 
-		void PlayerPropertiesExtender::SerializeData(Blam::BitStream *stream, const void *data)
+		void PlayerPropertiesExtender::SerializeData(Blam::BitStream* stream, const void* data)
 		{
 			// Serialize all of the structures in order
-			const uint8_t *ptr = static_cast<const uint8_t*>(data);
+			const uint8_t* ptr = static_cast<const uint8_t*>(data);
 			for (auto it = extensions.begin(); it != extensions.end(); ++it)
 			{
 				(*it)->Serialize(stream, ptr);
@@ -45,10 +45,10 @@ namespace Modules
 			}
 		}
 
-		void PlayerPropertiesExtender::DeserializeData(Blam::BitStream *stream, void *out)
+		void PlayerPropertiesExtender::DeserializeData(Blam::BitStream* stream, void* out)
 		{
 			// Deserialize all of the structures in order
-			uint8_t *ptr = static_cast<uint8_t*>(out);
+			uint8_t* ptr = static_cast<uint8_t*>(out);
 			for (auto it = extensions.begin(); it != extensions.end(); ++it)
 			{
 				(*it)->Deserialize(stream, ptr);

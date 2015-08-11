@@ -56,11 +56,11 @@ namespace
 		}
 
 		typedef char(*Network_XnAddrToInAddrPtr)(void* pxna, void* pxnkid, void* in_addr);
-		auto XnAddrToInAddr = reinterpret_cast<Network_XnAddrToInAddrPtr>(0x52D840);
-		return XnAddrToInAddr(pxna, pxnkid, in_addr);
+		auto Network_XnAddrToInAddr = reinterpret_cast<Network_XnAddrToInAddrPtr>(0x52D840);
+		return Network_XnAddrToInAddr(pxna, pxnkid, in_addr);
 	}
 
-	char Network_InAddrToXnAddrHook(void* ina, void * pxna, void * pxnkid)
+	char Network_InAddrToXnAddrHook(void* ina, void* pxna, void* pxnkid)
 	{
 		uint32_t maxMachines = *(uint32_t*)(0x228E6D8);
 		uint8_t* syslinkDataPtr = (uint8_t*)*(uint32_t*)(0x228E6DC);
@@ -86,9 +86,9 @@ namespace
 			}
 		}
 
-		typedef char(*Network_InAddrToXnAddrPtr)(void* ina, void * pxna, void * pxnkid);
-		auto InAddrToXnAddr = reinterpret_cast<Network_InAddrToXnAddrPtr>(0x52D840);
-		return InAddrToXnAddr(ina, pxna, pxnkid);
+		typedef char(*Network_InAddrToXnAddrPtr)(void* ina, void* pxna, void* pxnkid);
+		auto Network_InAddrToXnAddr = reinterpret_cast<Network_InAddrToXnAddrPtr>(0x52D840);
+		return Network_InAddrToXnAddr(ina, pxna, pxnkid);
 	}
 
 	// Packet size constants
@@ -108,30 +108,30 @@ namespace
 	}
 
 	// Changes the size of the player-properties packet to include extension data
-	void __fastcall RegisterPlayerPropertiesPacketHook(void *thisPtr, void *unused, int packetId, const char *packetName, int arg8, int size1, int size2, void *serializeFunc, void *deserializeFunc, int arg1C, int arg20)
+	void __fastcall RegisterPlayerPropertiesPacketHook(void* thisPtr, void* unused, int packetId, const char* packetName, int arg8, int size1, int size2, void* serializeFunc, void* deserializeFunc, int arg1C, int arg20)
 	{
 		size_t newSize = GetPlayerPropertiesPacketSize();
-		typedef void(__thiscall *RegisterPacketPtr)(void *thisPtr, int packetId, const char *packetName, int arg8, int size1, int size2, void *serializeFunc, void *deserializeFunc, int arg1C, int arg20);
-		RegisterPacketPtr RegisterPacket = reinterpret_cast<RegisterPacketPtr>(0x4801B0);
+		typedef void(__thiscall *RegisterPacketPtr)(void* thisPtr, int packetId, const char* packetName, int arg8, int size1, int size2, void* serializeFunc, void* deserializeFunc, int arg1C, int arg20);
+		auto RegisterPacket = reinterpret_cast<RegisterPacketPtr>(0x4801B0);
 		RegisterPacket(thisPtr, packetId, packetName, arg8, newSize, newSize, serializeFunc, deserializeFunc, arg1C, arg20);
 	}
 
 	// Applies player properties data including extended properties
-	void __fastcall ApplyPlayerPropertiesExtended(uint8_t *thisPtr, void *unused, int playerIndex, uint32_t arg4, uint32_t arg8, uint8_t *properties, uint32_t arg10)
+	void __fastcall ApplyPlayerPropertiesExtended(uint8_t* thisPtr, void* unused, int playerIndex, uint32_t arg4, uint32_t arg8, uint8_t* properties, uint32_t arg10)
 	{
 		// Apply the base properties
-		typedef void(__thiscall *ApplyPlayerPropertiesPtr)(void *thisPtr, int playerIndex, uint32_t arg4, uint32_t arg8, void *properties, uint32_t arg10);
-		const ApplyPlayerPropertiesPtr ApplyPlayerProperties = reinterpret_cast<ApplyPlayerPropertiesPtr>(0x450890);
+		typedef void(__thiscall *ApplyPlayerPropertiesPtr)(void* thisPtr, int playerIndex, uint32_t arg4, uint32_t arg8, void* properties, uint32_t arg10);
+		auto ApplyPlayerProperties = reinterpret_cast<ApplyPlayerPropertiesPtr>(0x450890);
 		ApplyPlayerProperties(thisPtr, playerIndex, arg4, arg8, properties, arg10);
 
 		// Apply the extended properties
-		uint8_t *sessionData = thisPtr + 0x10A8 + playerIndex * 0x1648;
+		uint8_t* sessionData = thisPtr + 0x10A8 + playerIndex * 0x1648;
 		ElDorito::Instance().Modules.NetworkPatches.PlayerPropertiesExtender.ApplyData(playerIndex, sessionData, properties + PlayerPropertiesSize);
 	}
 
 	// This completely replaces c_network_session::peer_request_player_desired_properties_update
 	// Editing the existing function doesn't allow for a lot of flexibility
-	bool __fastcall PeerRequestPlayerDesiredPropertiesUpdateHook(uint8_t *thisPtr, void *unused, uint32_t arg0, uint32_t arg4, void *properties, uint32_t argC)
+	bool __fastcall PeerRequestPlayerDesiredPropertiesUpdateHook(uint8_t* thisPtr, void* unused, uint32_t arg0, uint32_t arg4, void* properties, uint32_t argC)
 	{
 		int unk0 = *reinterpret_cast<int*>(thisPtr + 0x25B870);
 		if (unk0 == 3)
@@ -139,10 +139,10 @@ namespace
 
 		// Get the player index
 		int unk1 = *reinterpret_cast<int*>(thisPtr + 0x1A3D40);
-		uint8_t *unk2 = thisPtr + 0x20;
-		uint8_t *unk3 = unk2 + unk1 * 0xF8 + 0x118;
-		typedef int(*GetPlayerIndexPtr)(void *arg0, int arg4);
-		GetPlayerIndexPtr GetPlayerIndex = reinterpret_cast<GetPlayerIndexPtr>(0x52E280);
+		uint8_t* unk2 = thisPtr + 0x20;
+		uint8_t* unk3 = unk2 + unk1 * 0xF8 + 0x118;
+		typedef int(*GetPlayerIndexPtr)(void* arg0, int arg4);
+		auto GetPlayerIndex = reinterpret_cast<GetPlayerIndexPtr>(0x52E280);
 		int playerIndex = GetPlayerIndex(unk3, 0x10);
 		if (playerIndex == -1)
 			return false;
@@ -173,8 +173,8 @@ namespace
 
 			// Initialize it
 			int id = *reinterpret_cast<int*>(thisPtr + 0x25BBF0);
-			typedef void(*InitPacketPtr)(int id, void *packet);
-			InitPacketPtr InitPacket = reinterpret_cast<InitPacketPtr>(0x482040);
+			typedef void(*InitPacketPtr)(int id, void* packet);
+			auto InitPacket = reinterpret_cast<InitPacketPtr>(0x482040);
 			InitPacket(id, &packet[0]);
 
 			// Set up the header and footer
@@ -187,21 +187,21 @@ namespace
 
 			// Send!
 			int unk7 = *reinterpret_cast<int*>(thisPtr + 0x10);
-			void *networkObserver = *reinterpret_cast<void**>(thisPtr + 0x8);
+			void* networkObserver = *reinterpret_cast<void**>(thisPtr + 0x8);
 
-			typedef void(__thiscall *ObserverChannelSendMessagePtr)(void *thisPtr, int arg0, int arg4, int arg8, int messageType, int messageSize, void *data);
-			ObserverChannelSendMessagePtr ObserverChannelSendMessage = reinterpret_cast<ObserverChannelSendMessagePtr>(0x4474F0);
+			typedef void(__thiscall *ObserverChannelSendMessagePtr)(void* thisPtr, int arg0, int arg4, int arg8, int messageType, int messageSize, void* data);
+			auto ObserverChannelSendMessage = reinterpret_cast<ObserverChannelSendMessagePtr>(0x4474F0);
 			ObserverChannelSendMessage(networkObserver, unk7, unk6, 0, 0x1A, packetSize, &packet[0]);
 		}
 		return true;
 	}
 
 	// Serializes extended player-properties data
-	void SerializePlayerPropertiesHook(Blam::BitStream *stream, uint8_t *buffer, bool flag)
+	void SerializePlayerPropertiesHook(Blam::BitStream* stream, uint8_t* buffer, bool flag)
 	{
 		// Serialize base data
-		typedef void(*SerializePlayerPropertiesPtr)(Blam::BitStream *stream, uint8_t *buffer, bool flag);
-		SerializePlayerPropertiesPtr SerializePlayerProperties = reinterpret_cast<SerializePlayerPropertiesPtr>(0x4433C0);
+		typedef void(*SerializePlayerPropertiesPtr)(Blam::BitStream* stream, uint8_t* buffer, bool flag);
+		auto SerializePlayerProperties = reinterpret_cast<SerializePlayerPropertiesPtr>(0x4433C0);
 		SerializePlayerProperties(stream, buffer, flag);
 
 		// Serialize extended data
@@ -209,11 +209,11 @@ namespace
 	}
 
 	// Deserializes extended player-properties data
-	bool DeserializePlayerPropertiesHook(Blam::BitStream *stream, uint8_t *buffer, bool flag)
+	bool DeserializePlayerPropertiesHook(Blam::BitStream* stream, uint8_t* buffer, bool flag)
 	{
 		// Deserialize base data
-		typedef bool(*DeserializePlayerPropertiesPtr)(Blam::BitStream *stream, uint8_t *buffer, bool flag);
-		DeserializePlayerPropertiesPtr DeserializePlayerProperties = reinterpret_cast<DeserializePlayerPropertiesPtr>(0x4432E0);
+		typedef bool(*DeserializePlayerPropertiesPtr)(Blam::BitStream* stream, uint8_t* buffer, bool flag);
+		auto DeserializePlayerProperties = reinterpret_cast<DeserializePlayerPropertiesPtr>(0x4432E0);
 		bool succeeded = DeserializePlayerProperties(stream, buffer, flag);
 
 		// Deserialize extended data

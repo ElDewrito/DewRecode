@@ -85,8 +85,8 @@ public:
 
 	virtual void RemoveCharsFromString(std::string& str, char* charsToRemove) = 0;
 
-	virtual void HexStringToBytes(const std::string& in, void *const data, size_t length) = 0;
-	virtual void BytesToHexString(void *const data, const size_t dataLength, std::string& dest) = 0;
+	virtual void HexStringToBytes(const std::string& in, void* const data, size_t length) = 0;
+	virtual void BytesToHexString(void* const data, const size_t dataLength, std::string& dest) = 0;
 
 	virtual std::string ToLower(const std::string& str) = 0;
 

@@ -39,10 +39,10 @@ namespace
 		fread(fileData, 1, 0xF0, file);
 		fclose(file);
 
-		typedef int(__cdecl *GlobalsArrayPushFunc)(void* globalArrayPtr);
-		GlobalsArrayPushFunc globalsArrayPush = (GlobalsArrayPushFunc)0x55B410;
+		typedef int(__cdecl *Globals_ArrayPushPtr)(void* globalArrayPtr);
+		auto Globals_ArrayPush = reinterpret_cast<Globals_ArrayPushPtr>(0x55B410);
 
-		int dataIdx = globalsArrayPush(contentItemsGlobal);
+		int dataIdx = Globals_ArrayPush(contentItemsGlobal);
 		uint8_t* dataBasePtr = (uint8_t*)*(uint32_t*)(contentItemsGlobal + 0x44);
 		uint8_t* dataPtr = dataBasePtr + (0x240 * (uint16_t)dataIdx);
 
@@ -57,7 +57,7 @@ namespace
 		return true;
 	}
 
-	bool AddContentItem(std::string itemPath)
+	bool AddContentItem(const std::string& itemPath)
 	{
 		// need to convert path from ASCII to unicode now
 		std::wstring unicode = ElDorito::Instance().Utils.WidenString(itemPath);
@@ -81,15 +81,15 @@ namespace
 			swprintf_s(dest, MaxCount, L"%ls\\mods\\maps\\%ls\\sandbox.map", currentDir, variantName);
 		else
 		{
-			typedef wchar_t*(__cdecl *FS_GetFileNameForItemTypeFunc)(uint32_t type);
-			FS_GetFileNameForItemTypeFunc FS_GetFileNameForItemType = (FS_GetFileNameForItemTypeFunc)0x526550;
+			typedef wchar_t*(__cdecl *FS_GetFileNameForItemTypePtr)(uint32_t type);
+			auto FS_GetFileNameForItemType = reinterpret_cast<FS_GetFileNameForItemTypePtr>(0x526550);
 			wchar_t* fileName = FS_GetFileNameForItemType(variantType);
 
 			swprintf_s(dest, MaxCount, L"%ls\\mods\\variants\\%ls\\%ls", currentDir, variantName, fileName);
 		}
 	}
 
-	void AddAllBLFContentItems(std::string path)
+	void AddAllBLFContentItems(const std::string& path)
 	{
 		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "Loading BLF files (dir: %s)", path.c_str());
 
@@ -136,8 +136,8 @@ namespace
 
 	char __fastcall Game_SetFlagAfterCopyBLFDataHook(uint8_t* flag, void* unused, char flagIdx, char set)
 	{
-		typedef char(__fastcall *Game_SetFlagFunc)(uint8_t* flag, void* unused, char flagIdx, char set);
-		Game_SetFlagFunc Game_SetFlag = (Game_SetFlagFunc)0x52BD40;
+		typedef char(__fastcall *Game_SetFlagPtr)(uint8_t* flag, void* unused, char flagIdx, char set);
+		auto Game_SetFlag = reinterpret_cast<Game_SetFlagPtr>(0x52BD40);
 		char ret = Game_SetFlag(flag, unused, flagIdx, set);
 
 		uint8_t* contentItem = flag - 4;
@@ -155,8 +155,8 @@ namespace
 
 	char __fastcall FS_GetFiloForContentItemHook(uint8_t* contentItem, void* unused, void* filo)
 	{
-		typedef void*(__cdecl *FSCallsSetupFiloStruct2Func)(void *destFilo, wchar_t *Src, char unk);
-		FSCallsSetupFiloStruct2Func fsCallsSetupFiloStruct2 = (FSCallsSetupFiloStruct2Func)0x5285B0;
+		typedef void*(__cdecl *FSCallsSetupFiloStruct2Ptr)(void* destFilo, wchar_t* Src, char unk);
+		auto fsCallsSetupFiloStruct2 = reinterpret_cast<FSCallsSetupFiloStruct2Ptr>(0x5285B0);
 		fsCallsSetupFiloStruct2(filo, (wchar_t*)(contentItem + 0x100), 0);
 
 		return 1;
@@ -164,8 +164,8 @@ namespace
 
 	char __fastcall FS_GetFiloForContentItemHook1(uint8_t* contentItem, void* unused, void* filo)
 	{
-		typedef void*(__cdecl *FSCallsSetupFiloStruct2Func)(void *destFilo, wchar_t *Src, char unk);
-		FSCallsSetupFiloStruct2Func fsCallsSetupFiloStruct2 = (FSCallsSetupFiloStruct2Func)0x5285B0;
+		typedef void*(__cdecl *FSCallsSetupFiloStruct2Ptr)(void* destFilo, wchar_t* Src, char unk);
+		auto fsCallsSetupFiloStruct2 = reinterpret_cast<FSCallsSetupFiloStruct2Ptr>(0x5285B0);
 		fsCallsSetupFiloStruct2(filo, (wchar_t*)(contentItem + 0x100), 1);
 
 		return 1;
@@ -178,7 +178,7 @@ namespace
 		return dest;
 	}
 
-	bool __fastcall SaveFileGetNameHook(uint8_t *blfStart, void* unused, int a2, wchar_t *Src, size_t MaxCount)
+	bool __fastcall SaveFileGetNameHook(uint8_t* blfStart, void* unused, int a2, wchar_t* Src, size_t MaxCount)
 	{
 		// TODO: moving this to Documents\\My Games\\Halo 3\\Saves\\Maps / Games / etc might be better, no need to worry about admin perms
 
@@ -213,11 +213,11 @@ namespace
 		return destPtr;
 	}
 
-	char* __cdecl AllocateGameGlobalMemory2Hook(char *Src, int a2, int a3, char a4, void* a5)
+	char* __cdecl AllocateGameGlobalMemory2Hook(char* Src, int a2, int a3, char a4, void* a5)
 	{
-		typedef char*(__cdecl *AllocateGameGlobalMemory)(char *Src, int a2, int a3, char a4, void* a5);
-		AllocateGameGlobalMemory allocateGlobal = (AllocateGameGlobalMemory)0x55AFA0;
-		char* retData = allocateGlobal(Src, a2, a3, a4, a5);
+		typedef char* (__cdecl *AllocateGameGlobalMemoryPtr)(char* Src, int a2, int a3, char a4, void* a5);
+		auto AllocateGameGlobalMemory = reinterpret_cast<AllocateGameGlobalMemoryPtr>(0x55AFA0);
+		char* retData = AllocateGameGlobalMemory(Src, a2, a3, a4, a5);
 
 		*(uint16_t*)(retData + 0x2A) = 0x3;
 

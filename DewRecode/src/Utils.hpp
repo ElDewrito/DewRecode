@@ -16,8 +16,8 @@ public:
 
 	void RemoveCharsFromString(std::string& str, char* charsToRemove);
 
-	void HexStringToBytes(const std::string& in, void *const data, size_t length);
-	void BytesToHexString(void *const data, const size_t dataLength, std::string& dest);
+	void HexStringToBytes(const std::string& in, void* const data, size_t length);
+	void BytesToHexString(void* const data, const size_t dataLength, std::string& dest);
 
 	std::string ToLower(const std::string& str);
 
@@ -38,5 +38,5 @@ public:
 	~PublicUtils();
 private:
 	int upnpDiscoverError;
-	struct UPNPDev * upnpDevice = nullptr;
+	struct UPNPDev* upnpDevice = nullptr;
 };

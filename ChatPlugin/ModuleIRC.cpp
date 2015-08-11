@@ -251,42 +251,43 @@ namespace Modules
 		globalBuffer->PushLine(errorString);
 	}
 
-	void ModuleIRC::ChannelSendMsg(std::string channel, std::string line)
+	void ModuleIRC::ChannelSendMsg(const std::string& channel, const std::string& line)
 	{
 		sprintf_s(buffer, "PRIVMSG %s :%s\r\n", channel.c_str(), line.c_str());
 		send(winSocket, buffer, strlen(buffer), 0);
-		line.clear();
 	}
 
-	void ModuleIRC::ChannelJoin(std::string channel, bool globalChat)
+	void ModuleIRC::ChannelJoin(const std::string& channel, bool globalChat)
 	{
-		channel = utils->ToLower(channel);
+		auto newChannel = utils->ToLower(channel);
 
 		if (globalChat)
-			GlobalChatChannel = channel;
+			GlobalChatChannel = newChannel;
 		else
 		{
 			if (!GameChatChannel.empty())
 				ChannelLeave(GameChatChannel);
-			GameChatChannel = channel;
+			GameChatChannel = newChannel;
 			engine->SetActiveConsoleBuffer(ingameBuffer);
 			ingameBuffer->Visible = true;
 		}
 
-		sprintf_s(buffer, "MODE %s %s\r\nJOIN %s\r\n", IRCNick.c_str(), userMode.c_str(), channel.c_str());
+		sprintf_s(buffer, "MODE %s %s\r\nJOIN %s\r\n", IRCNick.c_str(), userMode.c_str(), newChannel.c_str());
 		send(winSocket, buffer, strlen(buffer), 0);
 	}
 
-	void ModuleIRC::ChannelLeave(std::string channel)
+	void ModuleIRC::ChannelLeave(const std::string& channel)
 	{
-		sprintf_s(buffer, "MODE %s %s\r\nPART %s\r\n", IRCNick.c_str(), userMode.c_str(), channel.c_str());
+		auto newChannel = utils->ToLower(channel);
+
+		sprintf_s(buffer, "MODE %s %s\r\nPART %s\r\n", IRCNick.c_str(), userMode.c_str(), newChannel.c_str());
 		send(winSocket, buffer, strlen(buffer), 0);
 		GameChatChannel = "";
 		engine->SetActiveConsoleBuffer(globalBuffer);
 		ingameBuffer->Visible = false;
 	}
 
-	void ModuleIRC::UserKick(std::string userNick)
+	void ModuleIRC::UserKick(const std::string& userNick)
 	{
 		if (GameChatChannel.length() <= 0)
 			return;
@@ -316,12 +317,12 @@ namespace Modules
 		return strncmp(bufferSplitBySpace.at(1).c_str(), "PRIVMSG", 7) == 0;
 	}
 
-	bool ModuleIRC::receivedPING(std::string line)
+	bool ModuleIRC::receivedPING(const std::string& line)
 	{
 		return strncmp(line.c_str(), "PING ", 5) == 0;
 	}
 
-	bool ModuleIRC::messageIsInChannel(std::vector<std::string> &bufferSplitBySpace, std::string channel, size_t channelPos)
+	bool ModuleIRC::messageIsInChannel(std::vector<std::string> &bufferSplitBySpace, const std::string& channel, size_t channelPos)
 	{
 		if (bufferSplitBySpace.size() <= channelPos)
 			return false;
@@ -349,7 +350,7 @@ namespace Modules
 		buffer->PushLine(preparedLineForUI);
 	}
 
-	std::string ModuleIRC::GenerateIRCNick(std::string name, uint64_t uid)
+	std::string ModuleIRC::GenerateIRCNick(const std::string& name, uint64_t uid)
 	{
 		std::string ircNick;
 		utils->BytesToHexString(&uid, sizeof(uint64_t), ircNick);

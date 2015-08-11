@@ -33,8 +33,8 @@ namespace
 
 	bool VariableServerMaxPlayersUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		typedef char(__cdecl *NetworkSquadSessionSetMaximumPlayerCountFunc)(int count);
-		auto network_squad_session_set_maximum_player_count = (NetworkSquadSessionSetMaximumPlayerCountFunc)0x439BA0;
+		typedef char(__cdecl *Network_squad_session_set_maximum_player_countPtr)(int count);
+		auto network_squad_session_set_maximum_player_count = reinterpret_cast<Network_squad_session_set_maximum_player_countPtr>(0x439BA0);
 		char ret = network_squad_session_set_maximum_player_count(ElDorito::Instance().Modules.Server.VarServerMaxPlayers->ValueInt);
 		if (ret == 0)
 		{
@@ -46,7 +46,7 @@ namespace
 	}
 
 	// retrieves master server endpoints from dewrito.json
-	void GetEndpoints(std::vector<std::string>& destVect, std::string endpointType)
+	void GetEndpoints(std::vector<std::string>& destVect, const std::string& endpointType)
 	{
 		std::ifstream in("dewrito.json", std::ios::in | std::ios::binary);
 		if (in && in.is_open())
@@ -275,7 +275,7 @@ namespace
 			return false;
 		}
 
-		struct addrinfo *ptr = NULL;
+		struct addrinfo* ptr = NULL;
 		for (ptr = info; ptr != NULL; ptr = ptr->ai_next)
 		{
 			if (ptr->ai_family != AF_INET)

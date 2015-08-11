@@ -36,10 +36,10 @@ later:
 */
 
 struct ConsoleBuffer;
-typedef void(__cdecl* TickCallback)(const std::chrono::duration<double>& deltaTime);
-typedef void(__cdecl* EventCallback)(void* param);
-typedef void(__cdecl* ConsoleInputCallback)(const std::string& input, ConsoleBuffer* buffer);
-typedef void(__cdecl* UserInputBoxCallback)(const std::string& boxTag, const std::string& result);
+typedef void(__cdecl *TickCallback)(const std::chrono::duration<double>& deltaTime);
+typedef void(__cdecl *EventCallback)(void* param);
+typedef void(__cdecl *ConsoleInputCallback)(const std::string& input, ConsoleBuffer* buffer);
+typedef void(__cdecl *UserInputBoxCallback)(const std::string& boxTag, const std::string& result);
 typedef std::initializer_list<std::string> StringArrayInitializerType;
 
 struct PlayerInfo
@@ -62,7 +62,7 @@ struct ConsoleBuffer
 	bool Focused;
 	int TimeLastShown = 0;
 
-	ConsoleBuffer(std::string name, std::string group, ConsoleInputCallback inputCallback, bool visible = false)
+	ConsoleBuffer(const std::string& name, const std::string& group, ConsoleInputCallback inputCallback, bool visible = false)
 	{
 		Name = name;
 		Group = group;
@@ -73,7 +73,7 @@ struct ConsoleBuffer
 		MaxDisplayLines = 10;
 	}
 
-	void PushLine(std::string line)
+	void PushLine(const std::string& line)
 	{
 		Messages.push_back(line);
 		TimeLastShown = GetTickCount();

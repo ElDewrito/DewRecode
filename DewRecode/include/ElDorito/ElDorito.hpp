@@ -21,14 +21,14 @@ struct ElDoritoPluginInfo
 };
 
 /* exports from plugin dlls */
-typedef ElDoritoPluginInfo*(__cdecl* GetPluginInfoPtr)();
-typedef bool(__cdecl* InitializePluginPtr)();
+typedef ElDoritoPluginInfo*(__cdecl *GetPluginInfoPtr)();
+typedef bool(__cdecl *InitializePluginPtr)();
 
 /* exports from eldewrito */
 DORITO_API DWORD GetGameThreadID();
 DORITO_API HMODULE GetDoritoModuleHandle();
 DORITO_API int GetDoritoVersion();
-DORITO_API void* CreateInterface(const char *name, int *returnCode);
+DORITO_API void* CreateInterface(const char* name, int* returnCode);
 
 #include "Blam/BlamTypes.hpp"
 #include "Blam/Tags/GameEngineSettingsDefinition.hpp"

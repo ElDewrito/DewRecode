@@ -19,7 +19,7 @@ namespace Blam
 		struct PacketTable;
 		// Gets a pointer to the active network session.
 		// Can be null!
-		Session *GetActiveSession()
+		Session* GetActiveSession()
 		{
 			auto networkSessionPtr = Pointer(0x19AB848);
 			return networkSessionPtr.Read<Session*>();
@@ -27,7 +27,7 @@ namespace Blam
 
 		// Gets a pointer to the active packet table.
 		// Can be null!
-		PacketTable *GetPacketTable()
+		PacketTable* GetPacketTable()
 		{
 			auto packetTablePtr = Pointer(0x224A498);
 			return packetTablePtr.Read<PacketTable*>();
@@ -35,7 +35,7 @@ namespace Blam
 
 		// Sets the active packet table.
 		// Only use this if you know what you're doing!
-		void SetPacketTable(const PacketTable *newTable)
+		void SetPacketTable(const PacketTable* newTable)
 		{
 			auto packetTablePtr = Pointer(0x224A498);
 			packetTablePtr.Write<const PacketTable*>(newTable);
@@ -91,7 +91,7 @@ namespace Blam
 			// Finds the first available connected peer, or -1 if none.
 			int FindFirstPeer() const
 			{
-				typedef int(__thiscall *MembershipFindFirstPeerPtr)(const SessionMembership *thisPtr);
+				typedef int(__thiscall *MembershipFindFirstPeerPtr)(const SessionMembership* thisPtr);
 				auto MembershipFindFirstPeer = reinterpret_cast<MembershipFindFirstPeerPtr>(0x44E690);
 				return MembershipFindFirstPeer(this);
 			}
@@ -99,7 +99,7 @@ namespace Blam
 			// Finds the next available connected peer, or -1 if none.
 			int FindNextPeer(int lastPeer) const
 			{
-				typedef int(__thiscall *MembershipFindNextPeerPtr)(const SessionMembership *thisPtr, int lastPeer);
+				typedef int(__thiscall *MembershipFindNextPeerPtr)(const SessionMembership* thisPtr, int lastPeer);
 				auto MembershipFindNextPeer = reinterpret_cast<MembershipFindNextPeerPtr>(0x44E710);
 				return MembershipFindNextPeer(this, lastPeer);
 			}
@@ -107,7 +107,7 @@ namespace Blam
 			// Gets the player index corresponding to a peer, or -1 if none.
 			int GetPeerPlayer(int peer) const
 			{
-				typedef int(*MembershipGetPeerPlayerPtr)(const uint32_t *playerMasks, int max);
+				typedef int(*MembershipGetPeerPlayerPtr)(const uint32_t* playerMasks, int max);
 				auto MembershipGetPeerPlayer = reinterpret_cast<MembershipGetPeerPlayerPtr>(0x52E280);
 				return MembershipGetPeerPlayer(Peers[peer].PlayerMasks, 16);
 			}
@@ -130,7 +130,7 @@ namespace Blam
 			// Returns whether the parameter has data available.
 			bool IsAvailable() const
 			{
-				typedef bool(__thiscall *IsAvailablePtr)(const SessionParameter *thisPtr);
+				typedef bool(__thiscall *IsAvailablePtr)(const SessionParameter* thisPtr);
 				auto IsAvailable = reinterpret_cast<IsAvailablePtr>(0x450CF0);
 				return IsAvailable(this);
 			}
@@ -144,7 +144,7 @@ namespace Blam
 			// Gets the current variant data, or null if not available.
 			PBLAM_GAME_VARIANT Get() const
 			{
-				typedef PBLAM_GAME_VARIANT(__thiscall *GetGameVariantPtr)(const GameVariantSessionParameter *thisPtr);
+				typedef PBLAM_GAME_VARIANT(__thiscall *GetGameVariantPtr)(const GameVariantSessionParameter* thisPtr);
 				auto GetGameVariant = reinterpret_cast<GetGameVariantPtr>(0x456140);
 				return GetGameVariant(this);
 			}
@@ -162,7 +162,7 @@ namespace Blam
 			// TODO: Map out this enum
 			bool SetSessionMode(int mode)
 			{
-				typedef bool(__thiscall *SetSessionModePtr)(SessionParameters *thisPtr, int mode);
+				typedef bool(__thiscall *SetSessionModePtr)(SessionParameters* thisPtr, int mode);
 				auto SetSessionMode = reinterpret_cast<SetSessionModePtr>(0x459A40);
 				return SetSessionMode(this, mode);
 			}
@@ -176,14 +176,14 @@ namespace Blam
 		static_assert(sizeof(ObserverChannel) == 0x10D8, "Invalid ObserverChannel size");
 
 		// Packet serialization function pointer types.
-		typedef void(*SerializePacketFn)(BitStream *stream, int packetSize, const void *packet);
-		typedef bool(*DeserializePacketFn)(BitStream *stream, int packetSize, void *packet);
+		typedef void(*SerializePacketFn)(BitStream *stream, int packetSize, const void* packet);
+		typedef bool(*DeserializePacketFn)(BitStream *stream, int packetSize, void* packet);
 
 		// Contains information about a registered packet type.
 		struct RegisteredPacket
 		{
 			bool Initialized;
-			const char *Name;
+			const char* Name;
 			int Unknown8;
 			int MinSize;
 			int MaxSize;
@@ -202,9 +202,9 @@ namespace Blam
 			RegisteredPacket Packets[1];
 
 			// Registers a packet at an index.
-			void Register(int index, const char *name, int unk8, int minSize, int maxSize, SerializePacketFn serializeFunc, DeserializePacketFn deserializeFunc, int unk1C, int unk20)
+			void Register(int index, const char* name, int unk8, int minSize, int maxSize, SerializePacketFn serializeFunc, DeserializePacketFn deserializeFunc, int unk1C, int unk20)
 			{
-				typedef void(__thiscall *RegisterPacketPtr)(PacketTable *thisPtr, int id, const char *name, int unk8, int minSize, int maxSize, Blam::Network::SerializePacketFn serializeFunc, Blam::Network::DeserializePacketFn deserializeFunc, int unk1C, int unk20);
+				typedef void(__thiscall *RegisterPacketPtr)(PacketTable* thisPtr, int id, const char* name, int unk8, int minSize, int maxSize, Blam::Network::SerializePacketFn serializeFunc, Blam::Network::DeserializePacketFn deserializeFunc, int unk1C, int unk20);
 				auto RegisterPacket = reinterpret_cast<RegisterPacketPtr>(0x4801B0);
 				RegisterPacket(this, index, name, unk8, minSize, maxSize, serializeFunc, deserializeFunc, unk1C, unk20);
 			}
@@ -216,9 +216,9 @@ namespace Blam
 			uint8_t Unknown0[0x23F20]; // approx size
 
 			// Sends a message across a channel.
-			void ObserverChannelSendMessage(int ownerIndex, int channelIndex, bool secure, int id, int packetSize, const void *packet)
+			void ObserverChannelSendMessage(int ownerIndex, int channelIndex, bool secure, int id, int packetSize, const void* packet)
 			{
-				typedef int(__thiscall *ObserverChannelSendMessagePtr)(Observer *thisPtr, int ownerIndex, int channelIndex, bool secure, int id, int packetSize, const void *packet);
+				typedef int(__thiscall *ObserverChannelSendMessagePtr)(Observer* thisPtr, int ownerIndex, int channelIndex, bool secure, int id, int packetSize, const void* packet);
 				auto ObserverChannelSendMessage = reinterpret_cast<ObserverChannelSendMessagePtr>(0x4474F0);
 				ObserverChannelSendMessage(this, ownerIndex, channelIndex, secure, id, packetSize, packet);
 			}
@@ -236,8 +236,8 @@ namespace Blam
 		struct Session
 		{
 			uint32_t Unknown0;
-			MessageGateway *Gateway;
-			Observer *Observer;
+			MessageGateway* Gateway;
+			Observer* Observer;
 			uint32_t UnknownC;
 			uint32_t Unknown10;
 			uint32_t Unknown14;
@@ -255,17 +255,17 @@ namespace Blam
 
 			// Gets the index of the peer associated with a channel, or -1 on
 			// failure.
-			int GetChannelPeer(const ObserverChannel *channel) const
+			int GetChannelPeer(const ObserverChannel* channel) const
 			{
 				// Look up the channel index
-				typedef int(__thiscall *GetChannelIndexPtr)(const Network::Observer *thisPtr, uint32_t unk0, const ObserverChannel *channel);
+				typedef int(__thiscall *GetChannelIndexPtr)(const Network::Observer* thisPtr, uint32_t unk0, const ObserverChannel* channel);
 				auto GetChannelIndex = reinterpret_cast<GetChannelIndexPtr>(0x447150);
 				auto index = GetChannelIndex(Observer, Unknown10, channel);
 				if (index < 0)
 					return index;
 
 				// Use the channel index to look up the peer
-				typedef int(__thiscall *GetChannelPeerPtr)(const SessionMembership *thisPtr, int channelIndex);
+				typedef int(__thiscall *GetChannelPeerPtr)(const SessionMembership* thisPtr, int channelIndex);
 				auto GetChannelPeer = reinterpret_cast<GetChannelPeerPtr>(0x44E860);
 				return GetChannelPeer(&MembershipInfo, index);
 			}
@@ -290,8 +290,6 @@ namespace Blam
 		};
 		static_assert(sizeof(Session) == 0x25BC40, "Invalid c_network_session size");
 
-
-
 		// Header for a packet buffer.
 		struct PacketHeader
 		{
@@ -306,7 +304,7 @@ namespace Blam
 					return;
 				}
 
-				typedef void(*InitPacketPtr)(int addressIndex, PacketHeader *packet);
+				typedef void(*InitPacketPtr)(int addressIndex, PacketHeader* packet);
 				auto InitPacket = reinterpret_cast<InitPacketPtr>(0x482040);
 				InitPacket(session->AddressIndex, this);
 			}

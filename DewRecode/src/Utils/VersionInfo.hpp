@@ -13,6 +13,6 @@ namespace Utils
 	{
 		DWORD GetVersionInt();
 		std::string GetVersionString();
-		std::string GetResourceInfo(const std::string &csEntry);
+		std::string GetResourceInfo(const std::string& csEntry);
 	}
 }

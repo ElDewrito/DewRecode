@@ -9,22 +9,22 @@ namespace
 	class UidExtension : public Modules::Patches::PlayerPropertiesExtension<uint64_t>
 	{
 	protected:
-		void BuildData(int playerIndex, uint64_t *out)
+		void BuildData(int playerIndex, uint64_t* out)
 		{
 			*out = ElDorito::Instance().Modules.PlayerUidPatches.GetUid();
 		}
 
-		void ApplyData(int playerIndex, void *session, const uint64_t &data)
+		void ApplyData(int playerIndex, void* session, const uint64_t& data)
 		{
 			*reinterpret_cast<uint64_t*>(static_cast<uint8_t*>(session)+0x50) = data;
 		}
 
-		void Serialize(Blam::BitStream *stream, const uint64_t &data)
+		void Serialize(Blam::BitStream* stream, const uint64_t& data)
 		{
 			stream->WriteUnsigned(data, 64);
 		}
 
-		void Deserialize(Blam::BitStream *stream, uint64_t *out)
+		void Deserialize(Blam::BitStream* stream, uint64_t* out)
 		{
 			*out = stream->ReadUnsigned<uint64_t>(64);
 		}
