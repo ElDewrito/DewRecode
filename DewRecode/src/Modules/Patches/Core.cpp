@@ -254,9 +254,13 @@ namespace
 			add		ecx, ebx						; local player object address
 			mov		ecx, [ecx]						; local player object data address
 
-			; check if damaging local player object and descope if so
+			; check if damaging local player object
 			cmp		edi, ecx
 			jne		orig
+
+			; only descope if health is decreasing
+			comiss	xmm0, dword ptr ds:[edi + 100h]
+			jae		orig
 
 			; descope local player
 			mov		edx, dword ptr ds:[eax + 0C4h]		; player control globals
@@ -294,9 +298,13 @@ namespace
 			add		edx, ebx						; local player object address
 			mov		edx, [edx]						; local player object data address
 
-			; check if damaging local player object and descope if so
+			; check if damaging local player object
 			cmp		ecx, edx
 			jne		orig
+
+			; only descope if shield is decreasing
+			comiss	xmm0, dword ptr ds:[ecx + 0FCh]
+			jae		orig
 
 			; descope local player
 			mov		edx, dword ptr ds:[eax + 0C4h]		; player control globals
