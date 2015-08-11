@@ -258,9 +258,13 @@ namespace
 			cmp		edi, ecx
 			jne		orig
 
-			; only descope if health is decreasing
-			comiss	xmm0, dword ptr ds:[edi + 100h]
-			jae		orig
+			; only descope if shield is decreasing at a rate greater than epsilon
+			mov		esi, 03C23D70Ah						; use an epsilon of 0.01f
+			movd	xmm7, esi
+			movss	xmm6, dword ptr ds:[edi + 100h]		; get original health
+			subss	xmm6, xmm0							; get negative health delta (orig - new)
+			comiss	xmm6, xmm7							; compare health delta with epsilon
+			jb		orig								; skip descope if delta is less than epsilon
 
 			; descope local player
 			mov		edx, dword ptr ds:[eax + 0C4h]		; player control globals
@@ -302,9 +306,13 @@ namespace
 			cmp		ecx, edx
 			jne		orig
 
-			; only descope if shield is decreasing
-			comiss	xmm0, dword ptr ds:[ecx + 0FCh]
-			jae		orig
+			; only descope if shield is decreasing at a rate greater than epsilon
+			mov		esi, 03C23D70Ah						; use an epsilon of 0.01f
+			movd	xmm7, esi
+			movss	xmm6, dword ptr ds:[ecx + 0FCh]		; get original shield
+			subss	xmm6, xmm0							; get negative shield delta (orig - new)
+			comiss	xmm6, xmm7							; compare shield delta with epsilon
+			jb		orig								; skip descope if delta is less than epsilon
 
 			; descope local player
 			mov		edx, dword ptr ds:[eax + 0C4h]		; player control globals
