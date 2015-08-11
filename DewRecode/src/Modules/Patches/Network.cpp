@@ -87,7 +87,7 @@ namespace
 		}
 
 		typedef char(*Network_InAddrToXnAddrPtr)(void* ina, void* pxna, void* pxnkid);
-		auto Network_InAddrToXnAddr = reinterpret_cast<Network_InAddrToXnAddrPtr>(0x52D840);
+		auto Network_InAddrToXnAddr = reinterpret_cast<Network_InAddrToXnAddrPtr>(0x52D970);
 		return Network_InAddrToXnAddr(ina, pxna, pxnkid);
 	}
 
