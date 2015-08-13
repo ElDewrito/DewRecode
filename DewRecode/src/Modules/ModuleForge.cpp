@@ -84,7 +84,10 @@ namespace Modules
 	{
 		AddCommand("DeleteItem", "forge_delete", "Deletes the Forge item under the crosshairs", eCommandFlagsNone, CommandForgeDeleteItem);
 
-		AddModulePatches({},
+		AddModulePatches(
+		{
+			Patch("TeleporterRadius", 0xAE4796, 0x90, 0x66)
+		},
 		{
 			Hook("UpdateForgeInput", 0x59D482, UpdateForgeInputHook, HookType::Call)
 		});
