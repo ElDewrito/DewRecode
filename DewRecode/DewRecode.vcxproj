@@ -123,6 +123,7 @@
   <ItemGroup>
     <ClInclude Include="include\ElDorito\Blam\BlamNetwork.hpp" />
     <ClInclude Include="include\ElDorito\Blam\Tags\GameEngineSettingsDefinition.hpp" />
+    <ClInclude Include="include\ElDorito\Blam\Tags\Scenario.hpp" />
     <ClInclude Include="include\ElDorito\Blam\Tags\Tags.hpp" />
     <ClInclude Include="include\ElDorito\Blam\BlamTypes.hpp" />
     <ClInclude Include="include\ElDorito\ElDorito.hpp" />

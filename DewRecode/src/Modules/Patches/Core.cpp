@@ -1,5 +1,7 @@
 #include "Core.hpp"
 #include "../../ElDorito.hpp"
+#include <ElDorito/Blam/Tags/Scenario.hpp>
+
 namespace
 {
 	// TODO: refactor most of the functions below elsewhere, properly interfacing with the game's memory structures
@@ -325,6 +327,59 @@ namespace
 			ret
 		}
 	}
+
+	void GrenadeLoadoutHookImpl(uint8_t* unit)
+	{
+		// Based off of 0x8227B48C in H3 non-TU
+
+		// TODO: Clean this up, hardcoded offsets are hacky
+		const size_t GrenadeCountOffset = 0x320;
+		const size_t ControllingPlayerOffset = 0x198;
+		auto grenadeCounts = unit + GrenadeCountOffset; // 0 = frag, 1 = plasma, 2 = spike, 3 = firebomb
+		auto playerIndex = *reinterpret_cast<int16_t*>(unit + ControllingPlayerOffset);
+		if (playerIndex < 0)
+		{
+			memset(grenadeCounts, 0, 4);
+			return;
+		}
+
+		// Get the player's grenade setting (haxhaxhax)
+		const size_t DatumArrayPtrOffset = 0x44;
+		const size_t PlayerSize = 0x2F08;
+		const size_t GrenadeSettingOffset = 0x2DB4;
+		auto grenadeSettingPtr = ElDorito::Instance().Engine.GetMainTls(GameGlobals::Players::TLSOffset)[0][DatumArrayPtrOffset](PlayerSize * playerIndex + GrenadeSettingOffset);
+		auto grenadeSetting = grenadeSettingPtr.Read<int16_t>();
+
+		// Get the current scenario tag
+		auto scenario = Blam::Tags::GetCurrentScenario();
+
+		// If the setting is none (2) or the scenario has invalid starting
+		// profile data, set the grenade counts to 0 and return
+		if (grenadeSetting == 2 || !scenario->StartingProfile)
+		{
+			memset(grenadeCounts, 0, 4);
+			return;
+		}
+
+		// Load the grenade counts from the scenario tag
+		auto profile = &scenario->StartingProfile[0];
+		grenadeCounts[0] = profile->FragGrenades;
+		grenadeCounts[1] = profile->PlasmaGrenades;
+		grenadeCounts[2] = profile->SpikeGrenades;
+		grenadeCounts[3] = profile->FirebombGrenades;
+	}
+
+	__declspec(naked) void GrenadeLoadoutHook()
+	{
+		__asm
+		{
+			push edi // Unit object data
+			call GrenadeLoadoutHookImpl
+			add esp, 4
+			push 0x5A32C7
+			ret
+		}
+	}
 }
 namespace Modules
 {
@@ -374,7 +429,9 @@ namespace Modules
 			Hook("HostObjectHealthHook", 0xB553A0, HostObjectHealthHook, HookType::Jmp),
 			Hook("HostObjectShieldHook", 0xB54B4E, HostObjectShieldHook, HookType::Jmp),
 			Hook("ClientObjectHealthHook", 0xB33F13, ClientObjectHealthHook, HookType::Jmp),
-			Hook("ClientObjectShieldHook", 0xB329CE, ClientObjectShieldHook, HookType::Jmp)
+			Hook("ClientObjectShieldHook", 0xB329CE, ClientObjectShieldHook, HookType::Jmp),
+
+			Hook("GrenadeLoadoutHook", 0x5A3267, GrenadeLoadoutHook, HookType::Jmp)
 		});
 	}
 }
