@@ -166,7 +166,7 @@ namespace
 
 		std::string kickPlayerName = Arguments[0];
 
-		auto* session = Blam::Network::GetActiveSession();
+		auto* session = Engine->GetActiveNetworkSession();
 		if (!session || !session->IsEstablished())
 		{
 			returnInfo = "No session found, are you hosting a game?";
@@ -224,7 +224,7 @@ namespace
 		// TODO: find an addr where we can find this data in clients memory
 		// so people could use it to find peoples UIDs and report them for cheating etc
 
-		auto* session = Blam::Network::GetActiveSession();
+		auto* session = Engine->GetActiveNetworkSession();
 		if (!session || !session->IsEstablished())
 		{
 			returnInfo = "No session found, are you hosting a game?";

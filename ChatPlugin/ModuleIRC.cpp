@@ -58,6 +58,11 @@ namespace
 			IRCModule.ChannelLeave(IRCModule.GameChatChannel);
 	}
 
+	void CallbackPlayerChangeName(void* param)
+	{
+		IRCModule.ChangeNick(((Command*)param)->ValueString);
+	}
+
 	bool CommandIRCConnect(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
 		CallbackIRCConnect(0);
@@ -105,6 +110,7 @@ namespace Modules
 		engine->OnEvent("Core", "Server.PlayerKick", CallbackServerPlayerKick);
 		engine->OnEvent("Core", "Game.Joining", CallbackGameJoining);
 		engine->OnEvent("Core", "Game.Leave", CallbackGameLeave);
+		engine->OnEvent("Core", "Player.ChangeName", CallbackPlayerChangeName);
 
 		VarIRCServer = AddVariableString("Server", "irc_server", "The IRC server for the global and game chats", eCommandFlagsArchived, "irc.snoonet.org");
 
@@ -127,8 +133,6 @@ namespace Modules
 	void ModuleIRC::Connect()
 	{
 		Connected = true;
-		commands->GetVariableString("Player.Name", IRCNick); // TODO: error if this don't work?
-		IRCNick = GenerateIRCNick(IRCNick, Pointer(0x19AB730).Read<uint64_t>());
 
 		for (int i = 0; !initIRCChat(); i++)
 		{
@@ -190,8 +194,8 @@ namespace Modules
 
 		sprintf_s(buffer, "USER %s 0 * :#ElDorito player\r\n", IRCNick.c_str());
 		send(winSocket, buffer, strlen(buffer), 0);
-		sprintf_s(buffer, "NICK %s\r\n", IRCNick.c_str());
-		send(winSocket, buffer, strlen(buffer), 0);
+		commands->GetVariableString("Player.Name", IRCNick);
+		ChangeNick(IRCNick);
 		return true;
 	}
 
@@ -287,12 +291,19 @@ namespace Modules
 		ingameBuffer->Visible = false;
 	}
 
-	void ModuleIRC::UserKick(const std::string& userNick)
+	void ModuleIRC::UserKick(const std::string& nick)
 	{
 		if (GameChatChannel.length() <= 0)
 			return;
 
-		sprintf_s(buffer, "KICK %s %s\r\n", GameChatChannel.c_str(), userNick.c_str());
+		sprintf_s(buffer, "KICK %s %s\r\n", GameChatChannel.c_str(), nick.c_str());
+		send(winSocket, buffer, strlen(buffer), 0);
+	}
+
+	void ModuleIRC::ChangeNick(const std::string& nick)
+	{
+		IRCNick = GenerateIRCNick(nick, Pointer(0x19AB730).Read<uint64_t>());
+		sprintf_s(buffer, "NICK %s\r\n", IRCNick.c_str());
 		send(winSocket, buffer, strlen(buffer), 0);
 	}
 

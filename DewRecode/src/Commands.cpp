@@ -92,7 +92,7 @@ std::string Commands::Execute(const std::string& command, bool isUserInput)
 		return "Command queued until mainmenu shows";
 	}
 
-	Blam::Network::Session* session = Blam::Network::GetActiveSession();
+	auto* session = ElDorito::Instance().Engine.GetActiveNetworkSession();
 
 	if ((cmd->Flags & eCommandFlagsMustBeHosting))
 		if (!session || !session->IsEstablished() || !session->IsHost())

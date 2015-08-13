@@ -21,6 +21,7 @@ namespace Modules
 		void ChannelLeave(const std::string& channel);
 		void ChannelSendMsg(const std::string& channel, const std::string& line);
 		void UserKick(const std::string& nick);
+		void ChangeNick(const std::string& nick);
 
 		std::string GenerateIRCNick(const std::string& name, uint64_t uid);
 	private:

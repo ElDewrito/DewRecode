@@ -4,6 +4,7 @@
 #include "BlamTypes.hpp"
 #include "BitStream.hpp"
 #include "../Pointer.hpp"
+#include <ElDorito/IEngine.hpp>
 
 namespace Blam
 {
@@ -14,32 +15,6 @@ namespace Blam
 
 		// The maximum number of players in a network session.
 		const int MaxPlayers = 16;
-
-		struct Session;
-		struct PacketTable;
-		// Gets a pointer to the active network session.
-		// Can be null!
-		Session* GetActiveSession()
-		{
-			auto networkSessionPtr = Pointer(0x19AB848);
-			return networkSessionPtr.Read<Session*>();
-		}
-
-		// Gets a pointer to the active packet table.
-		// Can be null!
-		PacketTable* GetPacketTable()
-		{
-			auto packetTablePtr = Pointer(0x224A498);
-			return packetTablePtr.Read<PacketTable*>();
-		}
-
-		// Sets the active packet table.
-		// Only use this if you know what you're doing!
-		void SetPacketTable(const PacketTable* newTable)
-		{
-			auto packetTablePtr = Pointer(0x224A498);
-			packetTablePtr.Write<const PacketTable*>(newTable);
-		}
 
 		struct PeerInfo
 		{
@@ -297,7 +272,12 @@ namespace Blam
 			// current session.
 			PacketHeader()
 			{
-				auto session = GetActiveSession();
+				int retCode = 0;
+				IEngine* engine = reinterpret_cast<IEngine*>(CreateInterface(ENGINE_INTERFACE_LATEST, &retCode));
+				if (retCode != 0)
+					throw std::runtime_error("Failed to create engine interface");
+
+				auto session = engine->GetActiveNetworkSession();
 				if (!session)
 				{
 					memset(this, 0, sizeof(*this));

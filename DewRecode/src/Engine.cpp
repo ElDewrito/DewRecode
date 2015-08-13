@@ -408,9 +408,46 @@ uint32_t Engine::GetServerIP()
 	return *(uint32_t*)(ElDorito::Instance().Modules.Server.SyslinkData + 0x170);
 }
 
+/// <summary>
+/// Gets the name of the player.
+/// </summary>
+/// <returns>The name of the player.</returns>
 std::string Engine::GetPlayerName()
 {
 	return ElDorito::Instance().Modules.Player.VarPlayerName->ValueString;
+}
+
+/// <summary>
+/// Gets a pointer to the active network session.
+/// Can be null!
+/// </summary>
+/// <returns>A pointer to the active network session.</returns>
+Blam::Network::Session* Engine::GetActiveNetworkSession()
+{
+	auto networkSessionPtr = Pointer(0x19AB848);
+	return networkSessionPtr.Read<Blam::Network::Session*>();
+}
+
+/// <summary>
+/// Gets a pointer to the active packet table.
+/// Can be null!
+/// </summary>
+/// <returns>A pointer to the active packet table.</returns>
+Blam::Network::PacketTable* Engine::GetPacketTable()
+{
+	auto packetTablePtr = Pointer(0x224A498);
+	return packetTablePtr.Read<Blam::Network::PacketTable*>();
+}
+
+/// <summary>
+/// Sets the active packet table.
+/// Only use this if you know what you're doing!
+/// </summary>
+/// <param name="newTable">The new packet table.</param>
+void Engine::SetPacketTable(const Blam::Network::PacketTable* newTable)
+{
+	auto packetTablePtr = Pointer(0x224A498);
+	packetTablePtr.Write<const Blam::Network::PacketTable*>(newTable);
 }
 
 /// <summary>

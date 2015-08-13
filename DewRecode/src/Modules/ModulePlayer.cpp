@@ -1,6 +1,7 @@
 #include "ModulePlayer.hpp"
 #include <sstream>
 #include "../ElDorito.hpp"
+#include <ElDorito/Blam/BlamNetwork.hpp>
 
 namespace
 {
@@ -15,9 +16,17 @@ namespace
 		auto& dorito = ElDorito::Instance();
 		std::string name = dorito.Modules.Player.VarPlayerName->ValueString;
 
+		auto* session = dorito.Engine.GetActiveNetworkSession();
+		if (session && session->IsEstablished())
+		{
+			returnInfo = "You can only change your name when you're disconnected.";
+			return false;
+		}
+
 		std::wstring nameStr = dorito.Utils.WidenString(name);
 		wcscpy_s(dorito.Modules.Player.UserName, 16, nameStr.c_str());
 		std::string actualName = dorito.Utils.ThinString(dorito.Modules.Player.UserName);
+		dorito.Engine.Event("Core", "Player.ChangeName", dorito.Modules.Player.VarPlayerName);
 
 		return true;
 	}

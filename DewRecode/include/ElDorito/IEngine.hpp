@@ -1,6 +1,14 @@
 #pragma once
 #include "Pointer.hpp"
 #include <chrono>
+namespace Blam
+{
+	namespace Network
+	{
+		struct Session;
+		struct PacketTable;
+	}
+}
 
 /* 
 List of events registered by ED (eventNamespace/eventName seperated by a period, parameter in parens):
@@ -18,6 +26,8 @@ List of events registered by ED (eventNamespace/eventName seperated by a period,
 	Core.Game.End - when a game has finished (ez)
 
 	Core.Direct3D.EndScene - when the game is about to call D3DDevice::EndScene
+
+	Core.Player.ChangeName - when the user successfully changes their name
 
 (soon):
     Core.Direct3D.Present - when the game is about to call D3DDevice::Present
@@ -248,6 +258,27 @@ public:
 	/// </summary>
 	/// <returns>The name of the player.</returns>
 	virtual std::string GetPlayerName() = 0;
+
+	/// <summary>
+	/// Gets a pointer to the active network session.
+	/// Can be null!
+	/// </summary>
+	/// <returns>A pointer to the active network session.</returns>
+	virtual Blam::Network::Session* GetActiveNetworkSession() = 0;
+
+	/// <summary>
+	/// Gets a pointer to the active packet table.
+	/// Can be null!
+	/// </summary>
+	/// <returns>A pointer to the active packet table.</returns>
+	virtual Blam::Network::PacketTable* GetPacketTable() = 0;
+
+	/// <summary>
+	/// Sets the active packet table.
+	/// Only use this if you know what you're doing!
+	/// </summary>
+	/// <param name="newTable">The new packet table.</param>
+	virtual void SetPacketTable(const Blam::Network::PacketTable* newTable) = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

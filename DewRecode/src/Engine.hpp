@@ -44,6 +44,10 @@ public:
 	uint32_t GetServerIP();
 	std::string GetPlayerName();
 
+	Blam::Network::Session* GetActiveNetworkSession();
+	Blam::Network::PacketTable* GetPacketTable();
+	void SetPacketTable(const Blam::Network::PacketTable* newTable);
+
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);
 	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
