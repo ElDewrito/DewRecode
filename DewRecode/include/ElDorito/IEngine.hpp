@@ -222,6 +222,15 @@ public:
 	virtual HWND GetGameHWND() = 0;
 
 	/// <summary>
+	/// Executes the specified exe with the specified parameters.
+	/// </summary>
+	/// <param name="fullPathToExe">The full path to the exe.</param>
+	/// <param name="parameters">The parameters/arguments to pass to the exe.</param>
+	/// <param name="secondsToWait">How many seconds to wait for the process to exit.</param>
+	/// <returns>The return value of the process.</returns>
+	virtual size_t ExecuteProcess(const std::wstring& fullPathToExe, std::wstring& parameters, size_t secondsToWait) = 0;
+
+	/// <summary>
 	/// Gets the main TLS address (optionally with an offset added)
 	/// </summary>
 	/// <param name="offset">The offset to add to the TLS address.</param>

@@ -2,6 +2,7 @@
 #include <ElDorito/ElDorito.hpp>
 #include <map>
 #include "Utils/Utils.hpp"
+#include <string>
 
 // handles game events and callbacks for different modules/plugins
 // if you make any changes to this class make sure to update the exported interface (create a new interface + inherit from it if the interface already shipped)
@@ -31,6 +32,9 @@ public:
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 
 	HWND GetGameHWND() { return Pointer(0x199C014).Read<HWND>(); }
+
+	size_t ExecuteProcess(const std::wstring& fullPathToExe, std::wstring& parameters, size_t secondsToWait);
+
 	Pointer GetMainTls(size_t offset = 0);
 
 	std::string GetDoritoVersionString() { return Utils::Version::GetVersionString(); }

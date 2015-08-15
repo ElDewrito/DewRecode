@@ -451,6 +451,64 @@ void Engine::SetPacketTable(const Blam::Network::PacketTable* newTable)
 }
 
 /// <summary>
+/// Executes the specified exe with the specified parameters.
+/// </summary>
+/// <param name="fullPathToExe">The full path to the exe.</param>
+/// <param name="parameters">The parameters/arguments to pass to the exe.</param>
+/// <param name="secondsToWait">How many seconds to wait for the process to exit.</param>
+/// <returns>The return value of the process.</returns>
+size_t Engine::ExecuteProcess(const std::wstring& fullPathToExe, std::wstring& parameters, size_t secondsToWait)
+{
+	// taken from https://stackoverflow.com/questions/9970241/how-do-you-run-external-programs-with-parameters-without-the-cmd-window-showing
+	size_t iMyCounter = 0, iReturnVal = 0, iPos = 0;
+	DWORD dwExitCode = 0;
+	std::wstring sTempStr = L"";
+
+	/* - NOTE - You should check here to see if the exe even exists */
+
+	/* Add a space to the beginning of the Parameters */
+	if (parameters.size() != 0)
+		if (parameters[0] != L' ')
+			parameters.insert(0, L" ");
+
+	/* The first parameter needs to be the exe itself */
+	sTempStr = fullPathToExe;
+	iPos = sTempStr.find_last_of(L"\\");
+	sTempStr.erase(0, iPos + 1);
+	parameters = sTempStr.append(parameters);
+
+	/* CreateProcessW can modify Parameters thus we allocate needed memory */
+	wchar_t * pwszParam = new wchar_t[parameters.size() + 1];
+	if (pwszParam == 0)
+		return 1;
+
+	const wchar_t* pchrTemp = parameters.c_str();
+	wcscpy_s(pwszParam, parameters.size() + 1, pchrTemp);
+
+	/* CreateProcess API initialization */
+	STARTUPINFOW siStartupInfo;
+	PROCESS_INFORMATION piProcessInfo;
+	memset(&siStartupInfo, 0, sizeof(siStartupInfo));
+	memset(&piProcessInfo, 0, sizeof(piProcessInfo));
+	siStartupInfo.cb = sizeof(siStartupInfo);
+
+	if (CreateProcessW(const_cast<LPCWSTR>(fullPathToExe.c_str()), pwszParam, 0, 0, false, CREATE_DEFAULT_ERROR_MODE, 0, 0, &siStartupInfo, &piProcessInfo) != false)
+		dwExitCode = WaitForSingleObject(piProcessInfo.hProcess, (secondsToWait * 1000)); // Watch the process.
+	else
+		iReturnVal = GetLastError(); // CreateProcess failed
+
+	/* Free memory */
+	delete[]pwszParam;
+	pwszParam = 0;
+
+	/* Release handles */
+	CloseHandle(piProcessInfo.hProcess);
+	CloseHandle(piProcessInfo.hThread);
+
+	return iReturnVal;
+}
+
+/// <summary>
 /// Gets the main TLS address (optionally with an offset added)
 /// </summary>
 /// <param name="offset">The offset to add to the TLS address.</param>

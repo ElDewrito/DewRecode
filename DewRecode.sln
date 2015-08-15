@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DewRecode", "DewRecode\DewRecode.vcxproj", "{A737B7B0-D18C-4625-9137-6DE99BE398AC}"
 EndProject
@@ -16,6 +16,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerPlugin", "ServerPlugi
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChatPlugin", "ChatPlugin\ChatPlugin.vcxproj", "{AD5AF798-EC8B-4F9E-A89C-43DBFF9C91FD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A737B7B0-D18C-4625-9137-6DE99BE398AC} = {A737B7B0-D18C-4625-9137-6DE99BE398AC}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UpdaterPlugin", "UpdaterPlugin\UpdaterPlugin.vcxproj", "{C57BFD2C-2531-42CE-B45A-50963E032E46}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A737B7B0-D18C-4625-9137-6DE99BE398AC} = {A737B7B0-D18C-4625-9137-6DE99BE398AC}
 	EndProjectSection
@@ -42,6 +47,10 @@ Global
 		{AD5AF798-EC8B-4F9E-A89C-43DBFF9C91FD}.Debug|Win32.Build.0 = Debug|Win32
 		{AD5AF798-EC8B-4F9E-A89C-43DBFF9C91FD}.Release|Win32.ActiveCfg = Release|Win32
 		{AD5AF798-EC8B-4F9E-A89C-43DBFF9C91FD}.Release|Win32.Build.0 = Release|Win32
+		{C57BFD2C-2531-42CE-B45A-50963E032E46}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C57BFD2C-2531-42CE-B45A-50963E032E46}.Debug|Win32.Build.0 = Debug|Win32
+		{C57BFD2C-2531-42CE-B45A-50963E032E46}.Release|Win32.ActiveCfg = Release|Win32
+		{C57BFD2C-2531-42CE-B45A-50963E032E46}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
