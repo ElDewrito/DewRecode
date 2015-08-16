@@ -69,6 +69,12 @@ namespace
 
 		return true;
 	}
+
+	void ExceptionHook(char* msg)
+	{
+		ElDorito::Instance().Logger.Log(LogSeverity::Fatal, "GameCrash", std::string(msg));
+		std::exit(0);
+	}
 }
 
 namespace Modules
@@ -79,10 +85,15 @@ namespace Modules
 		VarMemcpyDst = AddVariableInt("MemcpyDst", "memcpy_dst", "Allows breakpointing memcpy based on specified destination address filter.", eCommandFlagsHidden, 0, MemcpyDstFilterUpdate);
 		VarMemsetDst = AddVariableInt("MemsetDst", "memset_dst", "Allows breakpointing memset based on specified destination address filter.", eCommandFlagsHidden, 0, MemsetDstFilterUpdate);
 
-		Hook memcpyHook = Hook("Memcpy", 0xBEF260, Debug_MemcpyHook, HookType::Jmp);
-		Hook memsetHook = Hook("Memset", 0xBEE2E0, Debug_MemsetHook, HookType::Jmp);
-
-		patches->EnableHook(&memcpyHook, true);
-		patches->EnableHook(&memsetHook, true);
+		AddModulePatches(
+		{
+			Patch("CrashLog1", 0x51C158, { 0x8D, 0x85, 0x00, 0xFC, 0xFF, 0xFF, 0x50 }),
+			Patch("CrashLog2", 0x51C165, { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 })
+		},
+		{
+			Hook("Memcpy", 0xBEF260, Debug_MemcpyHook, HookType::Jmp),
+			Hook("Memset", 0xBEE2E0, Debug_MemsetHook, HookType::Jmp),
+			Hook("CrashLogHook", 0x51C15F, ExceptionHook, HookType::Call)
+		});
 	}
 }

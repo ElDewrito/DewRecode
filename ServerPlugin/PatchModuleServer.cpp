@@ -293,7 +293,6 @@ namespace
 		}
 	}
 
-
 	DWORD WINAPI CommandServerAnnounce_Thread(LPVOID lpParam)
 	{
 		std::stringstream ss;
