@@ -72,7 +72,13 @@ namespace
 
 	void ExceptionHook(char* msg)
 	{
+		auto* except = *Pointer(0x238E880).Read<EXCEPTION_RECORD**>();
+
 		ElDorito::Instance().Logger.Log(LogSeverity::Fatal, "GameCrash", std::string(msg));
+
+		ElDorito::Instance().Logger.Log(LogSeverity::Fatal, "GameCrash", "Code: 0x%x, flags: 0x%x, record: 0x%x, addr: 0x%x, numparams: 0x%x",
+			except->ExceptionCode, except->ExceptionFlags, except->ExceptionRecord, except->ExceptionAddress, except->NumberParameters);
+
 		std::exit(0);
 	}
 }
