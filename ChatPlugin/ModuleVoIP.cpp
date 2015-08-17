@@ -141,7 +141,7 @@ namespace
 
 	DWORD __stdcall StartClient(LPVOID)
 	{
-		return StartTeamspeakClient(VoipModule);
+		return StartTeamspeakClient(&VoipModule);
 	}
 
 	DWORD __stdcall StartServer(LPVOID)

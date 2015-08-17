@@ -1146,7 +1146,7 @@ UINT64 VoIPGetscHandlerID()
 	return scHandlerID;
 }
 
-DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP& voipModule)
+DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP* voipModule)
 {
 	unsigned int error;
 	char* mode;
@@ -1327,7 +1327,7 @@ DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP& voipModule)
 		engine->PrintToConsole("VoIP name is: " + playerName);
 #endif
 
-	unsigned int port = voipModule.VarVoIPServerPort->ValueInt; // TODO1: get this from server info json
+	unsigned int port = voipModule->VarVoIPServerPort->ValueInt; // TODO1: get this from server info json
 	if ((error = ts3client_startConnection(scHandlerID, identity, std::string(ipAddrStr).c_str(), port, playerName.c_str(), NULL, "", "secret")) != ERROR_ok)
 	{
 		if (engine != nullptr)
@@ -1355,33 +1355,32 @@ DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP& voipModule)
 	SLEEP(300);
 
 	//Sets the VoIP volume
-	if ((error = ts3client_setPlaybackConfigValue(scHandlerID, "volume_modifier", voipModule.VarVoIPVolumeModifier->ValueString.c_str())) != ERROR_ok)
+	if ((error = ts3client_setPlaybackConfigValue(scHandlerID, "volume_modifier", voipModule->VarVoIPVolumeModifier->ValueString.c_str())) != ERROR_ok)
 	{
 		if (engine != nullptr)
 			engine->PrintToConsole("Error toggling VoIP agc: " + std::to_string(error));
 	}
 	//Sets Automatic Gain Control
-	if ((error = ts3client_setPreProcessorConfigValue(scHandlerID, "agc", voipModule.VarVoIPAGC->ValueInt ? "true" : "false")) != ERROR_ok)
+	if ((error = ts3client_setPreProcessorConfigValue(scHandlerID, "agc", voipModule->VarVoIPAGC->ValueInt ? "true" : "false")) != ERROR_ok)
 	{
 		if (engine != nullptr)
 			engine->PrintToConsole("Error toggling VoIP agc: " + std::to_string(error));
 	}
 	//Sets Echo Cancelling
-	if ((error = ts3client_setPreProcessorConfigValue(scHandlerID, "echo_canceling", voipModule.VarVoIPEchoCancellation->ValueInt ? "true" : "false")) != ERROR_ok)
+	if ((error = ts3client_setPreProcessorConfigValue(scHandlerID, "echo_canceling", voipModule->VarVoIPEchoCancellation->ValueInt ? "true" : "false")) != ERROR_ok)
 	{
 		if (engine != nullptr)
 			engine->PrintToConsole("Error toggling VoIP echo_canceling: " + std::to_string(error));
 	}
 
-
 	//Sets Voice activation detection
-	if ((error = ts3client_setPreProcessorConfigValue(scHandlerID, "vad", voipModule.VarVoIPPushToTalk->ValueInt ? "true" : "false")) != ERROR_ok)
+	if ((error = ts3client_setPreProcessorConfigValue(scHandlerID, "vad", voipModule->VarVoIPPushToTalk->ValueInt ? "true" : "false")) != ERROR_ok)
 	{
 		if (engine != nullptr)
 			engine->PrintToConsole("Error toggling VoIP VAD: " + std::to_string(error));
 	}
 
-	if ((error = ts3client_setPreProcessorConfigValue(scHandlerID, "voiceactivation_level", voipModule.VarVoIPPushToTalk->ValueInt ? "-50" : voipModule.VarVoIPVADLevel->ValueString.c_str())) != ERROR_ok)
+	if ((error = ts3client_setPreProcessorConfigValue(scHandlerID, "voiceactivation_level", voipModule->VarVoIPPushToTalk->ValueInt ? "-50" : voipModule->VarVoIPVADLevel->ValueString.c_str())) != ERROR_ok)
 	{
 		if (engine != nullptr)
 			engine->PrintToConsole("Error setting VoIP VAD level: " + std::to_string(error));
@@ -1389,12 +1388,14 @@ DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP& voipModule)
 
 	VoIPClientRunning = true;
 
+	engine->PrintToConsole("Voip: Entering main loop!");
+
 	while (!abort) {
 		//BEGIN PUSH TO TALK
 		//TODO: only actually change these if something has changed instead of calling the functions all the time.
-		if (voipModule.VarVoIPPushToTalk->ValueInt == 1)
+		if (voipModule->VarVoIPPushToTalk->ValueInt == 1)
 		{
-			if ((error = ts3client_setClientSelfVariableAsInt(scHandlerID, CLIENT_INPUT_DEACTIVATED, voipModule.VarVoIPTalk->ValueInt ? INPUT_ACTIVE : INPUT_DEACTIVATED)) != ERROR_ok)
+			if ((error = ts3client_setClientSelfVariableAsInt(scHandlerID, CLIENT_INPUT_DEACTIVATED, voipModule->VarVoIPTalk->ValueInt ? INPUT_ACTIVE : INPUT_DEACTIVATED)) != ERROR_ok)
 			{
 				char* errorMsg;
 				if (ts3client_getErrorMessage(error, &errorMsg) != ERROR_ok)
