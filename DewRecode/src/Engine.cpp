@@ -94,7 +94,7 @@ namespace
 		return Network_state_leaving_enter(thisPtr, a2, a3, a4);
 	}
 
-	HRESULT D3D9Device_EndSceneHook(IDirect3DDevice9* device)
+	HRESULT __stdcall D3D9Device_EndSceneHook(IDirect3DDevice9* device)
 	{
 		ElDorito::Instance().Engine.Event("Core", "Direct3D.EndScene", device);
 		return device->EndScene();
