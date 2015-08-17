@@ -90,6 +90,9 @@ namespace
 	wchar_t* inputLineText;
 	INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
+		if (uMsg == WM_INITDIALOG)
+			SetFocus(GetDlgItem(hwndDlg, IDTEXT));
+
 		if (uMsg == WM_COMMAND && wParam == 1)
 		{
 			HWND textEditHandle = GetDlgItem(hwndDlg, IDTEXT);
