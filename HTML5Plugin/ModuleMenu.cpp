@@ -19,7 +19,7 @@ namespace
 
 	bool CommandMenuShow(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		shouldShow = true;
+		shouldShow = !shouldShow;
 		return true;
 	}
 }
@@ -109,8 +109,9 @@ namespace Modules
 
 		browser = CefBrowserHost::CreateBrowserSync(windowInfo, this, VarMenuURL->ValueString.c_str(), browserSettings, NULL);
 
+		auto res = engine->GetGameResolution();
 		if (!texture)
-			device->CreateTexture(1280, 720, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+			device->CreateTexture(res.first, res.second, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
 	}
 	CefRefPtr<CefLoadHandler> ModuleMenu::GetLoadHandler()
 	{
@@ -141,14 +142,11 @@ namespace Modules
 
 	bool ModuleMenu::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 	{
-		D3DSURFACE_DESC SurfaceDesc;
-//		m_pD3DSurface->GetDesc(&SurfaceDesc);
-		SurfaceDesc.Width = 1280;
-		SurfaceDesc.Height = 720;
+		auto res = engine->GetGameResolution();
 		rect.x = 0;
 		rect.y = 0;
-		rect.width = SurfaceDesc.Width;
-		rect.height = SurfaceDesc.Height;
+		rect.width = res.first;
+		rect.height = res.second;
 		return true;
 	}
 
