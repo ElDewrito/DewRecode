@@ -1,7 +1,7 @@
 # Changes since ED
 - UPnP port forwarding for game/info server/voip, and standardized port ranges (game uses 11774 - 11783, info server uses 11784 - 11793, voip uses 11794 - 11803, users can just forward 11774-11803 and forget about it)
 - Plugin support (99% of main code is exported for plugins, modules can easily be swapped to and from the main DLL into a satellite plugin DLL)
- Fixed H3 menus (menu options don't go superspeed anymore, pause menu can be closed, the main menu settings menu can be shown but probably isn't needed)
+- Fixed H3 menus (menu options don't go superspeed anymore, pause menu can be closed, the main menu settings menu can be shown but probably isn't needed)
 - Dual-wielding, and semi-working equipment
 
 # Soon(tm)
