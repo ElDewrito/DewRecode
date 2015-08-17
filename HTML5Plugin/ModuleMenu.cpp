@@ -1,6 +1,5 @@
 #include "ModuleMenu.hpp"
-#include <Awesomium/BitmapSurface.h>
-#include <Awesomium/STLHelpers.h>
+
 Modules::ModuleMenu Menu;
 
 namespace
@@ -31,7 +30,7 @@ namespace Modules
 	{
 		engine->OnEvent("Core", "Direct3D.EndScene", OnEndScene);
 		engine->OnEvent("Core", "Engine.MainMenuShown", OnMainMenuShown);
-		VarMenuURL = AddVariableString("URL", "menu_url", "The URL for the menu", eCommandFlagsArchived, "https://thefeeltrain.github.io/");
+		VarMenuURL = AddVariableString("URL", "menu_url", "The URL for the menu", eCommandFlagsArchived, "https://google.com/");
 		AddCommand("Show", "menu_show", "Starts drawing the menu", eCommandFlagsNone, CommandMenuShow);
 	}
 
