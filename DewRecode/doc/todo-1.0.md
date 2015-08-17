@@ -6,11 +6,11 @@
 
 # Soon(tm)
 - Port latest ElDorito additions (grenade fix, custom packets, VoIP disabling/muting...)
+- Improved code, seperating hooks from modules and allowing code to be reused much easier.
 - Built-in update checker using a small update exe to perform the actual update. Updates will also be signed to prevent people from tampering with updates.
 - No more launcher/file verification on start. Instead an installer will take the launchers responsibilites of verifying files and installing the latest DR files.
-- Matchmaking: Master servers could create lobbies for users trying to find a game, with the masters also holding stats data a ranking system could also be implemented. Matchmaking games could have stats in a different area to "casual" stats too.
 - A proper menu built-in to DR instead of an overlay will allow us to fully utilize a new menu, events can be forwarded to and from the new menu directly via binded events/callbacks, making the menu actually feel part of the game properly.
-- Improved code, seperating hooks from modules and allowing code to be reused much easier.
+- Matchmaking: Master servers could create lobbies for users trying to find a game, with the masters also holding stats data a ranking system could also be implemented. Matchmaking games could have stats in a different area to "casual" stats too.
 
 #### Revamped stats:
 Luckily the old stats system wasn't used, but the new one will track stats per-event, recording:
