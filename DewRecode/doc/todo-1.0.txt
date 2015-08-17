@@ -1,6 +1,0 @@
-Fix Release build crashing when PatchModuleUI is enabled (crashes after UI_MenuUpdateHook is called and the Tick function tries opening mainmenu)
-Fix Debug (probably release too) build crashing on exit when PatchModuleVirtualKeyboard is enabled
-
-Fix starting grenades - zombies shouldn't spawn with 2 grenades
-Add dualwielding
-Add equipment
