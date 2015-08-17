@@ -1,0 +1,11 @@
+All the lib files and headers needed to build are in the repo (include folder has to be at the HTML5Plugin root because of the weird way CEF headers include themselves...)
+After building grab cef_binary_3.2478.1304.ga63d646_windows32 or newer from https://cefbuilds.com
+Then either copy the contents of the \cef_binary_3.2478.1304.ga63d646_windows32\Release folder or the contents of the \cef_binary_3.2478.1304.ga63d646_windows32\Debug folder depending on your build
+Also copy the contents of \cef_binary_3.2478.1304.ga63d646_windows32\Resources
+^ copy to the root of your HO install
+
+Todo:
+- see which files we actually need to copy to the HO install
+- get keyboard input sent to CEF (probably need the input states code from ED)
+- fix crashing on exit (probably not deleting something properly)
+- add a lot more error checking

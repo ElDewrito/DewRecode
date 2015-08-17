@@ -36,6 +36,7 @@ namespace Modules
 		virtual void OnPaint(CefRefPtr<CefBrowser> browser, CefRenderHandler::PaintElementType paintType, const CefRenderHandler::RectList& dirtyRects, const void* buffer, int width, int height) override;
 
 		ModuleMenu();
+		~ModuleMenu();
 
 		// Implement smartpointer methods (all Cef-classes require that since they are derived from CefBase)
 		IMPLEMENT_REFCOUNTING(ModuleMenu);

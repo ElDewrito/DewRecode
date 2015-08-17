@@ -36,8 +36,15 @@ namespace Modules
 		engine->OnEvent("Core", "Direct3D.EndScene", OnEndScene);
 		engine->OnEvent("Core", "Engine.MainMenuShown", OnMainMenuShown);
 		engine->OnWndProc(MenuWndProc);
-		VarMenuURL = AddVariableString("URL", "menu_url", "The URL for the menu", eCommandFlagsArchived, "https://google.com/");
+		VarMenuURL = AddVariableString("URL", "menu_url", "The URL for the menu", eCommandFlagsArchived, "http://dewmenu.halo.click/");
 		AddCommand("Show", "menu_show", "Starts drawing the menu", eCommandFlagsNone, CommandMenuShow);
+	}
+
+	ModuleMenu::~ModuleMenu()
+	{
+		if (!browser)
+			return;
+		CefShutdown();
 	}
 
 	void ModuleMenu::Draw(IDirect3DDevice9* device)
@@ -104,6 +111,7 @@ namespace Modules
 #endif
 
 		settings.single_process = true;
+		//settings.log_severity = LOGSEVERITY_VERBOSE;
 		//settings.multi_threaded_message_loop = true;
 
 		logger->Log(LogSeverity::Debug, "ModuleMenu", "Initing browser...");
@@ -112,6 +120,17 @@ namespace Modules
 		CefBrowserSettings browserSettings;
 		CefWindowInfo windowInfo;
 		windowInfo.SetAsWindowless(engine->GetGameHWND(), true); // Enable offscreen rendering
+
+		wchar_t currentDir[256];
+		memset(currentDir, 0, 256 * sizeof(wchar_t));
+		GetCurrentDirectoryW(256, currentDir);
+
+		swprintf_s(currentDir, 256, L"%ls\\mods\\menus\\temp\\", currentDir);
+
+		std::wstring path(currentDir);
+
+		CefRefPtr<CefCookieManager> manager = CefCookieManager::GetGlobalManager(NULL);
+		manager->SetStoragePath(path, true, NULL);
 
 		browser = CefBrowserHost::CreateBrowserSync(windowInfo, this, VarMenuURL->ValueString.c_str(), browserSettings, NULL);
 
@@ -163,7 +182,17 @@ namespace Modules
 
 	void ModuleMenu::OnLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, ErrorCode errorCode, const CefString& errorText, const CefString& failedUrl)
 	{
-		// Todo: Add a Lua event
+		// Don't display an error for downloaded files.
+		if (errorCode == ERR_ABORTED)
+			return;
+
+		// Display a load error message.
+		std::stringstream ss;
+		ss << "<html><body bgcolor=\"white\">"
+			"<h2>Failed to load URL " << std::string(failedUrl) <<
+			" with error " << std::string(errorText) << " (" << errorCode <<
+			").</h2></body></html>";
+		frame->LoadString(ss.str(), failedUrl);
 	}
 
 	bool ModuleMenu::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)

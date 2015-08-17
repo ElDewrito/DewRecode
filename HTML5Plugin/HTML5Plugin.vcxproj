@@ -48,7 +48,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../Debug/;$(DXSDK_DIR)Lib/x86;../ThirdParty/cef_binary_3.2171.1979_windows32/Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Debug/;$(DXSDK_DIR)Lib/x86;../ThirdParty/cef_binary_3.2478.1304.ga63d646_windows32/Debug</AdditionalLibraryDirectories>
       <AdditionalDependencies>mtndew.lib;d3dx9.lib;libcef.lib;libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -70,7 +70,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../Release/;$(DXSDK_DIR)Lib/x86;../ThirdParty/cef_binary_3.2171.1979_windows32/Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../Release/;$(DXSDK_DIR)Lib/x86;../ThirdParty/cef_binary_3.2478.1304.ga63d646_windows32/Release</AdditionalLibraryDirectories>
       <AdditionalDependencies>mtndew.lib;d3dx9.lib;libcef.lib;libcef_dll_wrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
