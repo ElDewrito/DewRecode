@@ -251,7 +251,7 @@ int writeKeyPairToFile(const char *fileName, const char* keyPair) {
 	return 0;
 }
 
-DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
+DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP* voipModule)
 {
 	char *version;
 	uint64 serverID;
@@ -318,7 +318,9 @@ DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
 
 		return 1;
 	}
-	printf("Server lib version: %s\n", version);
+	if (sEngine != nullptr)
+		sEngine->PrintToConsole("Server inited, version: " + std::string(version));
+
 	ts3server_freeMemory(version);  /* Release dynamically allocated memory */
 
 	/* Attempt to load keypair from file */
@@ -342,8 +344,8 @@ DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
 
 	// TODO5: make this use ports from 11794 - 11804 (11774 - 11784 is reserved for game, game tries each port in that range until it finds an unused one, info server does the same with 11784 - 11794)
 	// TODO5: also print the port
-	unsigned int port = voipModule.VarVoIPServerPort->ValueInt;
-	while (port <= (voipModule.VarVoIPServerPort->ValueInt + 10))
+	unsigned int port = voipModule->VarVoIPServerPort->ValueInt;
+	while (port <= (voipModule->VarVoIPServerPort->ValueInt + 10))
 	{
 		if ((error = ts3server_createVirtualServer(port, "0.0.0.0", "Eldewrito VoIP Server", keyPair, 16, &serverID)) != ERROR_ok)
 		{
@@ -357,7 +359,7 @@ DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
 			continue;
 		}
 		if (commands != nullptr)
-			commands->SetVariable(voipModule.VarVoIPServerPort, std::to_string(port), std::string());
+			commands->SetVariable(voipModule->VarVoIPServerPort, std::to_string(port), std::string());
 		if (utils != nullptr && commands != nullptr && sEngine != nullptr)
 		{
 			auto err = utils->UPnPForwardPort(true, port, port, "DewritoVoIPServer");
@@ -437,6 +439,11 @@ DWORD WINAPI StartTeamspeakServer(Modules::ModuleVoIP& voipModule)
 	if (sEngine != nullptr)
 		sEngine->PrintToConsole("Stopped VoIP server");
 	return 0;
+}
+
+bool IsTeamspeakServerRunning()
+{
+	return VoIPServerRunning;
 }
 
 void StopTeamspeakServer(){

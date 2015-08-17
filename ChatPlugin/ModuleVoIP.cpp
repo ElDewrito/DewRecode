@@ -139,20 +139,28 @@ namespace
 		return true;
 	}
 
+	bool isServer = false;
 	DWORD __stdcall StartClient(LPVOID)
 	{
+		if (isServer)
+			while (!IsTeamspeakServerRunning())
+				Sleep(1000); // wait for server to finish starting
+
 		return StartTeamspeakClient(&VoipModule);
 	}
 
 	DWORD __stdcall StartServer(LPVOID)
 	{
-		return StartTeamspeakServer(VoipModule);
+		auto retVal = StartTeamspeakServer(&VoipModule);
+		isServer = false;
+		return retVal;
 	}
 
 	void CallbackServerStop(void* param)
 	{
 		StopTeamspeakClient();
 		StopTeamspeakServer();
+		isServer = false;
 	}
 
 	// TODO5: kick players from TS
@@ -170,6 +178,8 @@ namespace
 
 	void CallbackServerStart(void* param)
 	{
+		isServer = true;
+
 		// Start the Teamspeak VoIP Server since this is the host
 		CreateThread(0, 0, StartServer, 0, 0, 0);
 

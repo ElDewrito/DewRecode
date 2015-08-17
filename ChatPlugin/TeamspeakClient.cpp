@@ -1388,8 +1388,6 @@ DWORD WINAPI StartTeamspeakClient(Modules::ModuleVoIP* voipModule)
 
 	VoIPClientRunning = true;
 
-	engine->PrintToConsole("Voip: Entering main loop!");
-
 	while (!abort) {
 		//BEGIN PUSH TO TALK
 		//TODO: only actually change these if something has changed instead of calling the functions all the time.
