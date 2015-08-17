@@ -20,6 +20,7 @@ namespace Modules
 
 		void Draw(IDirect3DDevice9* device);
 		void Initialize(IDirect3DDevice9* device);
+		LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 		// CefClient methods
 		virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override;

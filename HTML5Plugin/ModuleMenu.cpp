@@ -4,8 +4,8 @@ Modules::ModuleMenu Menu;
 
 namespace
 {
-	bool shouldShow = false;
-	bool shouldInit = false;
+	bool menuShouldShow = false;
+	bool menuShouldInit = false;
 
 	void OnEndScene(void* param)
 	{
@@ -14,13 +14,18 @@ namespace
 
 	void OnMainMenuShown(void* param)
 	{
-		shouldInit = true;
+		menuShouldInit = true;
 	}
 
 	bool CommandMenuShow(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		shouldShow = !shouldShow;
+		menuShouldShow = !menuShouldShow;
 		return true;
+	}
+
+	LRESULT __stdcall MenuWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return Menu.WndProc(hWnd, msg, wParam, lParam);
 	}
 }
 
@@ -30,6 +35,7 @@ namespace Modules
 	{
 		engine->OnEvent("Core", "Direct3D.EndScene", OnEndScene);
 		engine->OnEvent("Core", "Engine.MainMenuShown", OnMainMenuShown);
+		engine->OnWndProc(MenuWndProc);
 		VarMenuURL = AddVariableString("URL", "menu_url", "The URL for the menu", eCommandFlagsArchived, "https://google.com/");
 		AddCommand("Show", "menu_show", "Starts drawing the menu", eCommandFlagsNone, CommandMenuShow);
 	}
@@ -39,10 +45,10 @@ namespace Modules
 		if (initFailed)
 			return;
 
-		if (!browser && shouldInit)
+		if (!browser && menuShouldInit)
 			Initialize(device);
 
-		if (!shouldShow)
+		if (!menuShouldShow)
 			return;
 
 		POINT p;
@@ -113,6 +119,26 @@ namespace Modules
 		if (!texture)
 			device->CreateTexture(res.first, res.second, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
 	}
+	
+	LRESULT ModuleMenu::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		if (!menuShouldShow)
+			return 0;
+		if (msg != WM_LBUTTONDOWN && msg != WM_LBUTTONUP)
+			return 0;
+
+		POINT p;
+		if (!GetCursorPos(&p) || !ScreenToClient(engine->GetGameHWND(), &p))
+			return 0;
+
+		CefMouseEvent mouse_event;
+		mouse_event.x = p.x;
+		mouse_event.y = p.y;
+
+		browser->GetHost()->SendMouseClickEvent(mouse_event, MBT_LEFT, msg == WM_LBUTTONUP, 1);
+		return 1;
+	}
+
 	CefRefPtr<CefLoadHandler> ModuleMenu::GetLoadHandler()
 	{
 		// Well, we're a CefLoadHandler
