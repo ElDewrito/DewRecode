@@ -246,7 +246,7 @@ namespace Modules
 		{
 			// Fix storage device checks, so storage device funcs return 0 instead of 0xCACACACA
 			Patch("StorageCheck1", 0x5A7A80, { 0x31, 0xC0, 0xC3 }),
-			Patch("StorageCheck2", 0x54D570, { 0x31, 0xC0, 0xC3 }),
+			Patch("StorageCheck2", 0x74D570, { 0x31, 0xC0, 0xC3 }),
 
 			// needed for the game to load our items in "content items" global
 			Patch("ContentItemsGlobal1", 0xADA59A, 0x90, 6),

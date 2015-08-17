@@ -87,14 +87,14 @@ namespace
 		keyboard->SetDescription(newDescription);
 	}
 
-	char* inputLineText;
+	wchar_t* inputLineText;
 	INT_PTR CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (uMsg == WM_COMMAND && wParam == 1)
 		{
 			HWND textEditHandle = GetDlgItem(hwndDlg, IDTEXT);
 			int len = SendMessage(textEditHandle, WM_GETTEXTLENGTH, 0, 0);
-			inputLineText = new char[len + 1];
+			inputLineText = new wchar_t[len + 1];
 			SendMessage(textEditHandle, WM_GETTEXT, (WPARAM)len + 1, (LPARAM)inputLineText);
 			EndDialog(hwndDlg, 0);
 			return true;
@@ -104,11 +104,8 @@ namespace
 
 	bool ShowKeyboard(VirtualKeyboard* keyboard, const char* file, int line)
 	{
-		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-		std::wstring converted = converter.from_bytes(inputLineText);
-
 		DialogBoxParam(GetDoritoModuleHandle(), MAKEINTRESOURCE(IDD_DIALOG1), ElDorito::Instance().Engine.GetGameHWND(), &DialogProc, 0);
-		wcscpy_s(keyboard->text, converted.c_str());
+		wcscpy_s(keyboard->text, inputLineText);
 		delete inputLineText;
 
 		// Not 100% sure on this next line,
