@@ -407,6 +407,9 @@ namespace Modules
 			// TODO: maybe find a way to update HO's FMOD, HO is using 4.26.6 which is ancient
 			Patch("FmodWasapiFix", 0x140DA75, { 0x2 }),
 
+			// Patch IDirect3D9::CreateDevice BehaviourFlags to include D3DCREATE_MULTITHREADED
+			Patch("CreateDeviceFlags", 0xA220B2, { 0x54 })
+
 			/* TODO: find out if one of these patches is breaking game prefs
 			// Remove preferences.dat hash check
 			Patch("PrefsDatHashCheck", 0x50C99A, 0x90, 6),

@@ -47,33 +47,34 @@ namespace Modules
 		CefShutdown();
 	}
 
+	int lastPosX = 0;
+	int lastPosY = 0;
+
 	void ModuleMenu::Draw(IDirect3DDevice9* device)
 	{
 		if (initFailed)
 			return;
 
-		if (!browser && menuShouldInit)
+		if (!browser && menuShouldInit && !inited)
 			Initialize(device);
+
+		if (!browser)
+			return;
 
 		if (!menuShouldShow)
 			return;
 
 		POINT p;
-		if (GetCursorPos(&p))
+		if (GetCursorPos(&p) && ScreenToClient(engine->GetGameHWND(), &p) && (lastPosX != p.x || lastPosY != p.y))
 		{
-			if (ScreenToClient(engine->GetGameHWND(), &p))
-			{
-				CefMouseEvent mouse_event;
-				mouse_event.x = p.x;
-				mouse_event.y = p.y;
-				browser->GetHost()->SendMouseMoveEvent(mouse_event, false);
-			}
+			CefMouseEvent mouse_event;
+			mouse_event.x = p.x;
+			mouse_event.y = p.y;
+			browser->GetHost()->SendMouseMoveEvent(mouse_event, false);
+
+			lastPosX = p.x;
+			lastPosY = p.y;
 		}
-
-		CefDoMessageLoopWork();
-
-		device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0),
-			1.0f, 0);
 
 		if (!sprite)
 			D3DXCreateSprite(device, &sprite);
@@ -86,7 +87,9 @@ namespace Modules
 
 	void ModuleMenu::Initialize(IDirect3DDevice9* device)
 	{
+		this->device = device;
 		logger->Log(LogSeverity::Debug, "ModuleMenu", "Initing CEF...");
+
 		// Start rendering process
 		CefMainArgs mainArgs;
 		int exitCode = CefExecuteProcess(mainArgs, NULL, NULL);
@@ -112,7 +115,7 @@ namespace Modules
 
 		settings.single_process = true;
 		//settings.log_severity = LOGSEVERITY_VERBOSE;
-		//settings.multi_threaded_message_loop = true;
+		settings.multi_threaded_message_loop = true;
 
 		logger->Log(LogSeverity::Debug, "ModuleMenu", "Initing browser...");
 		bool init = CefInitialize(mainArgs, settings, NULL, sandboxInfo);
@@ -132,11 +135,9 @@ namespace Modules
 		CefRefPtr<CefCookieManager> manager = CefCookieManager::GetGlobalManager(NULL);
 		manager->SetStoragePath(path, true, NULL);
 
-		browser = CefBrowserHost::CreateBrowserSync(windowInfo, this, VarMenuURL->ValueString.c_str(), browserSettings, NULL);
+		CefBrowserHost::CreateBrowser(windowInfo, this, VarMenuURL->ValueString.c_str(), browserSettings, NULL);
 
-		auto res = engine->GetGameResolution();
-		if (!texture)
-			device->CreateTexture(res.first, res.second, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+		inited = true;
 	}
 	
 	LRESULT ModuleMenu::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -158,6 +159,12 @@ namespace Modules
 		return 1;
 	}
 
+	void ModuleMenu::OnAfterCreated(CefRefPtr<CefBrowser> browser)
+	{
+		this->browser = browser;
+		CefLifeSpanHandler::OnAfterCreated(browser);
+	}
+
 	CefRefPtr<CefLoadHandler> ModuleMenu::GetLoadHandler()
 	{
 		// Well, we're a CefLoadHandler
@@ -167,6 +174,12 @@ namespace Modules
 	CefRefPtr<CefRenderHandler> ModuleMenu::GetRenderHandler()
 	{
 		// Well, we're a CefRenderHandler
+		return this;
+	}
+
+	CefRefPtr<CefLifeSpanHandler> ModuleMenu::GetLifeSpanHandler()
+	{
+		// Well, we're a CefLifeSpanHandler
 		return this;
 	}
 
@@ -207,11 +220,14 @@ namespace Modules
 
 	void ModuleMenu::OnPaint(CefRefPtr<CefBrowser> browser, CefRenderHandler::PaintElementType paintType, const CefRenderHandler::RectList& dirtyRects, const void* buffer, int width, int height)
 	{
-		if (!texture)
-			return;
+		if (!menuShouldShow)
+			return; // don't update if it's not showing
 
-		D3DSURFACE_DESC desc;
-		texture->GetLevelDesc(0, &desc);
+		if (!texture)
+		{
+			auto res = engine->GetGameResolution();
+			device->CreateTexture(res.first, res.second, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+		}
 
 		D3DLOCKED_RECT lr;
 		texture->LockRect(0, &lr, nullptr, 0);

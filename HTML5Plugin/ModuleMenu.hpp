@@ -8,13 +8,16 @@
 
 namespace Modules
 {
-	class ModuleMenu : public ModuleBase, public CefClient, public CefLoadHandler, public CefRenderHandler
+	class ModuleMenu : public ModuleBase, public CefClient, public CefLifeSpanHandler, public CefLoadHandler, public CefRenderHandler
 	{
 	private:
+		IDirect3DDevice9* device;
 		CefRefPtr<CefBrowser> browser;
 		IDirect3DTexture9* texture;
 		ID3DXSprite* sprite;
 		bool initFailed = false;
+		bool inited = false;
+
 	public:
 		Command* VarMenuURL;
 
@@ -25,6 +28,10 @@ namespace Modules
 		// CefClient methods
 		virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override;
 		virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override;
+		virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override;
+
+		// CefLifeSpanHandler methods
+		virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
 
 		// CefLoadHandler methods
 		virtual void OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) override;
