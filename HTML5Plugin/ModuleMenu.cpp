@@ -33,10 +33,9 @@ void CEFApp::OnBeforeCommandLineProcessing(const CefString& processType, CefRefP
 {
 	commandLine->AppendSwitch("off-screen-rendering-enabled");
 	commandLine->AppendSwitchWithValue("off-screen-frame-rate", "60");
-	commandLine->AppendSwitch("disable-gpu");
-	commandLine->AppendSwitch("disable-gpu-compositing");
+	//commandLine->AppendSwitch("disable-gpu");
+	//commandLine->AppendSwitch("disable-gpu-compositing");
 	commandLine->AppendSwitch("enable-begin-frame-scheduling");
-	commandLine->AppendSwitch("enable-media-stream");
 }
 
 namespace Modules
