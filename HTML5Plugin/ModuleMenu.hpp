@@ -6,6 +6,18 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
+
+class CEFApp : public CefApp
+{
+private:
+	IMPLEMENT_REFCOUNTING(CEFApp);
+
+public:
+
+	// CefApp:
+	virtual void OnBeforeCommandLineProcessing(const CefString& processType, CefRefPtr<CefCommandLine> commandLine) override;
+};
+
 namespace Modules
 {
 	class ModuleMenu : public ModuleBase, public CefClient, public CefLifeSpanHandler, public CefLoadHandler, public CefRenderHandler

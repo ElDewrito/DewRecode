@@ -29,6 +29,16 @@ namespace
 	}
 }
 
+void CEFApp::OnBeforeCommandLineProcessing(const CefString& processType, CefRefPtr<CefCommandLine> commandLine)
+{
+	commandLine->AppendSwitch("off-screen-rendering-enabled");
+	commandLine->AppendSwitchWithValue("off-screen-frame-rate", "60");
+	commandLine->AppendSwitch("disable-gpu");
+	commandLine->AppendSwitch("disable-gpu-compositing");
+	commandLine->AppendSwitch("enable-begin-frame-scheduling");
+	commandLine->AppendSwitch("enable-media-stream");
+}
+
 namespace Modules
 {
 	ModuleMenu::ModuleMenu() : ModuleBase("Menu"), texture(0)
@@ -83,7 +93,9 @@ namespace Modules
 
 		// Start rendering process
 		CefMainArgs mainArgs;
-		int exitCode = CefExecuteProcess(mainArgs, NULL, NULL);
+		CefRefPtr<CEFApp> app(new CEFApp());
+
+		int exitCode = CefExecuteProcess(mainArgs, app.get(), NULL);
 
 		void* sandboxInfo = NULL;
 #if CEF_ENABLE_SANDBOX
