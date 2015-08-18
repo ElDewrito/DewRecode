@@ -52,10 +52,7 @@ namespace Modules
 
 	void ModuleMenu::Draw(IDirect3DDevice9* device)
 	{
-		if (initFailed)
-			return;
-
-		if (!browser && menuShouldInit && !inited)
+		if (menuShouldInit && !inited)
 			Initialize(device);
 
 		if (!browser)
@@ -63,21 +60,6 @@ namespace Modules
 
 		if (!menuShouldShow)
 			return;
-
-		POINT p;
-		if (GetCursorPos(&p) && ScreenToClient(engine->GetGameHWND(), &p) && (lastPosX != p.x || lastPosY != p.y))
-		{
-			CefMouseEvent mouse_event;
-			mouse_event.x = p.x;
-			mouse_event.y = p.y;
-			browser->GetHost()->SendMouseMoveEvent(mouse_event, false);
-
-			lastPosX = p.x;
-			lastPosY = p.y;
-		}
-
-		if (!sprite)
-			D3DXCreateSprite(device, &sprite);
 
 		sprite->Begin(D3DXSPRITE_ALPHABLEND);
 		sprite->Draw(texture, NULL, NULL, &D3DXVECTOR3(0, 0, 0), 0xFFFFFFFF);
@@ -89,6 +71,15 @@ namespace Modules
 	{
 		this->device = device;
 		logger->Log(LogSeverity::Debug, "ModuleMenu", "Initing CEF...");
+
+		if (!texture)
+		{
+			auto res = engine->GetGameResolution();
+			device->CreateTexture(res.first, res.second, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+		}
+
+		if (!sprite)
+			D3DXCreateSprite(device, &sprite);
 
 		// Start rendering process
 		CefMainArgs mainArgs;
@@ -144,7 +135,7 @@ namespace Modules
 	{
 		if (!menuShouldShow)
 			return 0;
-		if (msg != WM_LBUTTONDOWN && msg != WM_LBUTTONUP)
+		if (msg != WM_LBUTTONDOWN && msg != WM_LBUTTONUP && msg != WM_MOUSEMOVE)
 			return 0;
 
 		POINT p;
@@ -155,7 +146,10 @@ namespace Modules
 		mouse_event.x = p.x;
 		mouse_event.y = p.y;
 
-		browser->GetHost()->SendMouseClickEvent(mouse_event, MBT_LEFT, msg == WM_LBUTTONUP, 1);
+		if (msg == WM_MOUSEMOVE)
+			browser->GetHost()->SendMouseMoveEvent(mouse_event, false);
+		else
+			browser->GetHost()->SendMouseClickEvent(mouse_event, MBT_LEFT, msg == WM_LBUTTONUP, 1);
 		return 1;
 	}
 
@@ -220,15 +214,6 @@ namespace Modules
 
 	void ModuleMenu::OnPaint(CefRefPtr<CefBrowser> browser, CefRenderHandler::PaintElementType paintType, const CefRenderHandler::RectList& dirtyRects, const void* buffer, int width, int height)
 	{
-		if (!menuShouldShow)
-			return; // don't update if it's not showing
-
-		if (!texture)
-		{
-			auto res = engine->GetGameResolution();
-			device->CreateTexture(res.first, res.second, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
-		}
-
 		D3DLOCKED_RECT lr;
 		texture->LockRect(0, &lr, nullptr, 0);
 		memcpy(lr.pBits, buffer, width * height * 4);
