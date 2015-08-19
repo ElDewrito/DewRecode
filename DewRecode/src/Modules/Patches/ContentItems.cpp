@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <ShlObj.h>
 #include "../../ElDorito.hpp"
-#include <ElDorito/Blam/ArrayGlobal.hpp>
 
 namespace
 {
