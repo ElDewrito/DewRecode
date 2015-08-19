@@ -109,13 +109,13 @@ namespace
 
 	void UIPatches_ApplyMapNameFixes(void* param)
 	{
-		uint32_t levelsGlobalPtr = Pointer(0x189E2E0).Read<uint32_t>();
+		auto* levelsGlobalPtr = Pointer(0x189E2E0).Read<Blam::ArrayGlobal*>();
 		if (!levelsGlobalPtr)
 			return;
 
 		// TODO: map out these global arrays, content items seems to use same format
 
-		uint32_t numLevels = Pointer(levelsGlobalPtr + 0x34).Read<uint32_t>();
+		uint32_t numLevels = levelsGlobalPtr->GetCount();
 
 		const wchar_t* search[6] = { L"guardian", L"riverworld", L"s3d_avalanche", L"s3d_edge", L"s3d_reactor", L"s3d_turf" };
 		const wchar_t* names[6] = { L"Guardian", L"Valhalla", L"Diamondback", L"Edge", L"Reactor", L"Icebox" };
@@ -130,8 +130,9 @@ namespace
 		};
 		for (uint32_t i = 0; i < numLevels; i++)
 		{
-			Pointer levelNamePtr = Pointer(levelsGlobalPtr + 0x54 + (0x360 * i) + 0x8);
-			Pointer levelDescPtr = Pointer(levelsGlobalPtr + 0x54 + (0x360 * i) + 0x8 + 0x40);
+			auto levelPtr = levelsGlobalPtr->GetEntry(i);
+			Pointer levelNamePtr = levelPtr(0x8);
+			Pointer levelDescPtr = levelPtr(0x48);
 
 			wchar_t levelName[0x21] = { 0 };
 			levelNamePtr.Read(levelName, sizeof(wchar_t) * 0x20);

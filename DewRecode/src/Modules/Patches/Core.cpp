@@ -70,9 +70,9 @@ namespace
 	uint32_t GetObjectDataAddress(uint32_t objectDatum)
 	{
 		uint32_t objectIndex = objectDatum & UINT16_MAX;
-		Pointer &objectHeaderPtr = ElDorito::Instance().Engine.GetMainTls(GameGlobals::ObjectHeader::TLSOffset)[0];
-		uint32_t objectAddress = objectHeaderPtr(0x44).Read<uint32_t>() + 0xC + objectIndex * 0x10;
-		return *(uint32_t*)(objectAddress);
+		auto* objectHeaderPtr = ElDorito::Instance().Engine.GetArrayGlobal(GameGlobals::ObjectHeader::TLSOffset);
+		auto objectAddress = objectHeaderPtr->GetEntry(objectIndex);
+		return objectAddress(0xC).Read<uint32_t>();
 	}
 
 	uint32_t GetLocalPlayerObjectDataAddress()
@@ -344,11 +344,10 @@ namespace
 		}
 
 		// Get the player's grenade setting (haxhaxhax)
-		const size_t DatumArrayPtrOffset = 0x44;
-		const size_t PlayerSize = 0x2F08;
 		const size_t GrenadeSettingOffset = 0x2DB4;
-		auto grenadeSettingPtr = ElDorito::Instance().Engine.GetMainTls(GameGlobals::Players::TLSOffset)[0][DatumArrayPtrOffset](PlayerSize * playerIndex + GrenadeSettingOffset);
-		auto grenadeSetting = grenadeSettingPtr.Read<int16_t>();
+
+		auto playerPtr = ElDorito::Instance().Engine.GetArrayGlobal(GameGlobals::Players::TLSOffset)->GetEntry(playerIndex);
+		auto grenadeSetting = playerPtr(GrenadeSettingOffset).Read<int16_t>();
 
 		// Get the current scenario tag
 		auto scenario = Blam::Tags::GetCurrentScenario();

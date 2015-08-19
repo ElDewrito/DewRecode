@@ -121,6 +121,7 @@
     <ClCompile Include="src\Utils\VersionInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\ElDorito\Blam\ArrayGlobal.hpp" />
     <ClInclude Include="include\ElDorito\Blam\BlamNetwork.hpp" />
     <ClInclude Include="include\ElDorito\Blam\Tags\GameEngineSettingsDefinition.hpp" />
     <ClInclude Include="include\ElDorito\Blam\Tags\Scenario.hpp" />

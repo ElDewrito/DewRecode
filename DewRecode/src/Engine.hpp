@@ -32,6 +32,7 @@ public:
 
 	HWND GetGameHWND() { return Pointer(0x199C014).Read<HWND>(); }
 	Pointer GetMainTls(size_t offset = 0);
+	Blam::ArrayGlobal* GetArrayGlobal(size_t offset);
 
 	std::string GetDoritoVersionString() { return Utils::Version::GetVersionString(); }
 	DWORD GetDoritoVersionInt() { return Utils::Version::GetVersionInt(); }

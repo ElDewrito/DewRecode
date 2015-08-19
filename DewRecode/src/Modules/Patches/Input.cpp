@@ -94,8 +94,8 @@ namespace
 		Pointer InputPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
 		if (!InputPtr)
 			return true;
-		Pointer &horizPtr = InputPtr(GameGlobals::Input::HorizontalViewAngle);
-		Pointer &vertPtr = InputPtr(GameGlobals::Input::VerticalViewAngle);
+		Pointer &horizPtr = InputPtr(GameGlobals::Input::ViewAngleHorizontal);
+		Pointer &vertPtr = InputPtr(GameGlobals::Input::ViewAngleVertical);
 		float currentHoriz = horizPtr.Read<float>();
 		float currentVert = vertPtr.Read<float>();
 		float weaponSensitivity = Pointer(0x50DEF14).Read<float>();
@@ -114,13 +114,13 @@ namespace
 		float yaxisSens = (float)yaxisPtr.Read<uint32_t>() / 25.f;
 		float xaxisSens = (float)xaxisPtr.Read<uint32_t>() / 25.f;
 
-		Pointer PlayerData = dorito.Engine.GetMainTls(GameGlobals::PlayerAlt::TLSOffset)[0];
+		Pointer PlayerData = dorito.Engine.GetMainTls(GameGlobals::Observer::TLSOffset)[0];
 		if (!PlayerData)
 			return true;
-		Pointer vehicleData = Pointer(PlayerData(GameGlobals::PlayerAlt::VehicleData).Read<uint32_t>()); // Note: this has data for each local player, but since there's no splitscreen support yet, player index is always 0
+		Pointer vehicleData = Pointer(PlayerData(GameGlobals::Observer::VehicleData).Read<uint32_t>()); // Note: this has data for each local player, but since there's no splitscreen support yet, player index is always 0
 		char isInVehicle = 0;
 		if (vehicleData)
-			isInVehicle = vehicleData(GameGlobals::PlayerAlt::VehicleDataIsInVehicle).Read<char>();
+			isInVehicle = vehicleData(GameGlobals::Observer::VehicleDataIsInVehicle).Read<char>();
 
 		if (isInVehicle != 0)
 		{

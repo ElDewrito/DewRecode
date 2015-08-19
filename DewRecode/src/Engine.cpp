@@ -1,7 +1,7 @@
 #include "Engine.hpp"
 #include "ElDorito.hpp"
 #include <d3d9.h>
-#include <algorithm> 
+#include <algorithm>
 
 namespace
 {
@@ -496,4 +496,15 @@ Pointer Engine::GetMainTls(size_t offset)
 	}
 
 	return ThreadLocalStorage(offset);
+}
+
+/// <summary>
+/// Returns an ArrayGlobal pointer to the specified TLS global.
+/// </summary>
+/// <param name="offset">The offset to the global in the TLS.</param>
+/// <returns>A pointer to the ArrayGlobal.</returns>
+Blam::ArrayGlobal* Engine::GetArrayGlobal(size_t offset)
+{
+	auto ptr = GetMainTls(offset)[0];
+	return reinterpret_cast<Blam::ArrayGlobal*>((void*)ptr);
 }

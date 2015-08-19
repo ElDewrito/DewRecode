@@ -377,6 +377,27 @@ namespace GameGlobals
 	namespace Observer
 	{
 		const size_t TLSOffset = 0xE8;
+		const size_t VehicleData = 0x8; // pointer
+		const size_t VehicleDataIsInVehicle = 0xA0;
+
+		const size_t CameraPositionX = 0x180;
+		const size_t CameraPositionY = 0x184;
+		const size_t CameraPositionZ = 0x188;
+		const size_t CameraShiftX = 0x18C;
+		const size_t CameraShiftY = 0x190;
+		const size_t CameraShiftZ = 0x194;
+		const size_t CameraShiftHorizontal = 0x198;
+		const size_t CameraShiftVertical = 0x19C;
+		const size_t CameraDepth = 0x1A0;
+		const size_t CameraFieldOfView = 0x1A4;
+		const size_t CameraForwardI = 0x1A8;
+		const size_t CameraForwardJ = 0x1AC;
+		const size_t CameraForwardK = 0x1B0;
+		const size_t CameraUpI = 0x1B4;
+		const size_t CameraUpJ = 0x1B8;
+		const size_t CameraUpK = 0x1BC;
+
+		const size_t PlayerObjectSize = 0x3C8;
 	}
 
 	namespace DepthOfField
@@ -397,8 +418,6 @@ namespace GameGlobals
 	namespace Players
 	{
 		const size_t TLSOffset = 0x40;
-		const size_t ArrayHeaderLength = 0x54;
-		const size_t PlayerEntryLength = 0x2F08;
 		const size_t ScoresEntryLength = 0x34; // size of scores entry per player
 
 		const size_t DisplayNameOffset = 0xA8;
@@ -414,8 +433,8 @@ namespace GameGlobals
 	{
 		const size_t TLSOffset = 0xC4;
 		const size_t DisablePlayerInputIndex = 6;
-		const size_t HorizontalViewAngle = 0x30C;
-		const size_t VerticalViewAngle = 0x310;
+		const size_t ViewAngleHorizontal = 0x30C;
+		const size_t ViewAngleVertical = 0x310;
 	}
 
 	namespace GameInfo
@@ -444,15 +463,6 @@ namespace GameGlobals
 		const size_t XAxisSensitivity = 0x83C7C;
 		const size_t VehicleYAxisSensitivity = 0x83C80;
 		const size_t VehicleXAxisSensitivity = 0x83C84;
-	}
-
-	namespace PlayerAlt // todo: find out what this global is actually for
-	{
-		const size_t TLSOffset = 0xe8;
-		const size_t VehicleData = 0x8; // pointer
-		const size_t VehicleDataIsInVehicle = 0xA0;
-
-		const size_t PlayerObjectSize = 0x3C8;
 	}
 
 	namespace LocalPlayers

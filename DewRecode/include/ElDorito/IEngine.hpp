@@ -3,6 +3,8 @@
 #include <chrono>
 namespace Blam
 {
+	class ArrayGlobal;
+
 	namespace Network
 	{
 		struct Session;
@@ -227,6 +229,13 @@ public:
 	/// <param name="offset">The offset to add to the TLS address.</param>
 	/// <returns>A Pointer to the TLS.</returns>
 	virtual Pointer GetMainTls(size_t offset = 0) = 0;
+
+	/// <summary>
+	/// Returns an ArrayGlobal pointer to the specified TLS global.
+	/// </summary>
+	/// <param name="offset">The offset to the global in the TLS.</param>
+	/// <returns>A pointer to the ArrayGlobal.</returns>
+	virtual Blam::ArrayGlobal* GetArrayGlobal(size_t offset) = 0;
 
 	/// <summary>
 	/// Gets the ElDorito dll version as a string.

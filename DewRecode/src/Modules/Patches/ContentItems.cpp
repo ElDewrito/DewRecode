@@ -2,10 +2,11 @@
 #include <filesystem>
 #include <ShlObj.h>
 #include "../../ElDorito.hpp"
+#include <ElDorito/Blam/ArrayGlobal.hpp>
 
 namespace
 {
-	uint8_t* contentItemsGlobal = 0;
+	Blam::ArrayGlobal* contentItemsGlobal = 0;
 	bool enumerated = false;
 
 	bool AddContentItem(wchar_t* itemPath)
@@ -39,20 +40,16 @@ namespace
 		fread(fileData, 1, 0xF0, file);
 		fclose(file);
 
-		typedef int(__cdecl *Globals_ArrayPushPtr)(void* globalArrayPtr);
-		auto Globals_ArrayPush = reinterpret_cast<Globals_ArrayPushPtr>(0x55B410);
+		auto dataPtr = contentItemsGlobal->AddEntry();
+		if (dataPtr == nullptr)
+			return false;
 
-		int dataIdx = Globals_ArrayPush(contentItemsGlobal);
-		uint8_t* dataBasePtr = (uint8_t*)*(uint32_t*)(contentItemsGlobal + 0x44);
-		uint8_t* dataPtr = dataBasePtr + (0x240 * (uint16_t)dataIdx);
+		dataPtr(0x4).Write<uint32_t>(0x11);
+		dataPtr(0x8).Write<uint32_t>(4); // this is a blf/variant/content item type field, but setting it to 4 (slayer) works for everything
+		dataPtr(0xC).Write<char*>((char*)dataPtr);
 
-		*(uint32_t*)(dataPtr + 4) = 0x11;
-		*(uint32_t*)(dataPtr + 8) = 4; // this is a blf/variant/content item type field, but setting it to 4 (slayer) works for everything
-		*(uint32_t*)(dataPtr + 0xC) = (uint32_t)dataPtr;
-
-
-		memcpy(dataPtr + 0x10, fileData, 0xF0);
-		wcscpy_s((wchar_t*)(dataPtr + 0x100), 0xA0, itemPath);
+		memcpy((char*)dataPtr + 0x10, fileData, 0xF0);
+		wcscpy_s((wchar_t*)((char*)dataPtr + 0x100), 0xA0, itemPath);
 
 		return true;
 	}
@@ -116,7 +113,7 @@ namespace
 
 		auto mapsPath = variantPath;
 		variantPath /= "variants";
-		mapsPath /= "variants";
+		mapsPath /= "maps";
 
 		AddAllBLFContentItems(variantPath);
 		AddAllBLFContentItems(mapsPath);
@@ -226,7 +223,7 @@ namespace
 			// set some bytes thats needed in the contentfile related funcs
 			*(uint8_t*)(retData + 0x29) = 1;
 			*(uint32_t*)(retData + 0x40) = 1;
-			contentItemsGlobal = (uint8_t*)retData;
+			contentItemsGlobal = reinterpret_cast<Blam::ArrayGlobal*>(retData);
 		}
 
 		return retData;

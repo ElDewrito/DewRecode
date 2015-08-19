@@ -11,6 +11,7 @@
 
 #include "Utils/Utils.hpp"
 #include <ElDorito/Pointer.hpp>
+#include <ElDorito/Blam/ArrayGlobal.hpp>
 
 class ElDorito
 {

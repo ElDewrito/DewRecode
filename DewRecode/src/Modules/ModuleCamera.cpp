@@ -176,9 +176,8 @@ namespace
 		unsigned long index = dorito.Modules.Camera.VarSpectatorIndex->ValueInt;
 
 		// get current player count and clamp index within bounds
-		Pointer &players = dorito.Engine.GetMainTls(GameGlobals::Players::TLSOffset)[0];
-		int playerCount = players(0x38).Read<int>();
-		int clampedIndex = index % playerCount;
+		auto* players = dorito.Engine.GetArrayGlobal(GameGlobals::Players::TLSOffset);
+		int clampedIndex = index % players->GetCount();
 		dorito.Modules.Camera.VarSpectatorIndex->ValueInt = clampedIndex;
 
 		std::stringstream ss;
@@ -245,43 +244,43 @@ namespace
 		if (!mode.compare("first")) // c_first_person_camera
 		{
 			offset = 0x166ACB0;
-			observerGlobalsPtr(0x18C).Write(0.0f);			// x camera shift
-			observerGlobalsPtr(0x190).Write(0.0f);			// y camera shift
-			observerGlobalsPtr(0x194).Write(0.0f);			// z camera shift
-			observerGlobalsPtr(0x198).Write(0.0f);			// horizontal look shift
-			observerGlobalsPtr(0x19C).Write(0.0f);			// vertical look shift
-			observerGlobalsPtr(0x1A0).Write(0.0f);			// depth
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftX).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftY).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftZ).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftHorizontal).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftVertical).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraDepth).Write(0.0f);
 		}
 		else if (!mode.compare("third")) // c_following_camera
 		{
 			offset = 0x16724D4;
-			observerGlobalsPtr(0x18C).Write(0.0f);			// x camera shift
-			observerGlobalsPtr(0x190).Write(0.0f);			// y camera shift
-			observerGlobalsPtr(0x194).Write(0.1f);			// z camera shift
-			observerGlobalsPtr(0x198).Write(0.0f);			// horizontal look shift
-			observerGlobalsPtr(0x19C).Write(0.0f);			// vertical look shift
-			observerGlobalsPtr(0x1A0).Write(0.5f);			// depth
-			observerGlobalsPtr(0x1A4).Write(1.91986218f);	// 110 degrees
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftX).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftY).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftZ).Write(0.1f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftHorizontal).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftVertical).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraDepth).Write(0.5f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraFieldOfView).Write(1.91986218f);	// 110 degrees
 		}
 		else if (!mode.compare("flying")) // c_flying_camera
 		{
 			offset = 0x16726D0;
-			observerGlobalsPtr(0x18C).Write(0.0f);			// x camera shift
-			observerGlobalsPtr(0x190).Write(0.0f);			// y camera shift
-			observerGlobalsPtr(0x194).Write(0.0f);			// z camera shift
-			observerGlobalsPtr(0x198).Write(0.0f);			// horizontal look shift
-			observerGlobalsPtr(0x19C).Write(0.0f);			// vertical look shift
-			observerGlobalsPtr(0x1A0).Write(0.0f);			// depth
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftX).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftY).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftZ).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftHorizontal).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftVertical).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraDepth).Write(0.0f);
 		}
 		else if (!mode.compare("static") || !mode.compare("spectator")) // c_static_camera
 		{
 			offset = 0x16728A8;
-			observerGlobalsPtr(0x18C).Write(0.0f);			// x camera shift
-			observerGlobalsPtr(0x190).Write(0.0f);			// y camera shift
-			observerGlobalsPtr(0x194).Write(0.0f);			// z camera shift
-			observerGlobalsPtr(0x198).Write(0.0f);			// horizontal look shift
-			observerGlobalsPtr(0x19C).Write(0.0f);			// vertical look shift
-			observerGlobalsPtr(0x1A0).Write(0.0f);			// depth
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftX).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftY).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftZ).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftHorizontal).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftVertical).Write(0.0f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraDepth).Write(0.0f);
 		}
 
 		/*
@@ -417,8 +416,8 @@ namespace Modules
 
 		Pointer &observerGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Observer::TLSOffset)[0];
 		Pointer &playerControlGlobalsPtr = dorito.Engine.GetMainTls(GameGlobals::Input::TLSOffset)[0];
-		Pointer &playersPtr = dorito.Engine.GetMainTls(GameGlobals::Players::TLSOffset)[0];
-		Pointer &objectHeaderPtr = dorito.Engine.GetMainTls(GameGlobals::ObjectHeader::TLSOffset)[0];
+		auto* playersPtr = dorito.Engine.GetArrayGlobal(GameGlobals::Players::TLSOffset);
+		auto* objectHeaderPtr = dorito.Engine.GetArrayGlobal(GameGlobals::ObjectHeader::TLSOffset);
 
 		// only allow flycam input outside of cli/chat
 		if (!mode.compare("flying") && !dorito.Modules.Console.IsVisible())
@@ -427,24 +426,24 @@ namespace Modules
 			float lookDelta = 0.01f;	// not used yet
 
 			// current values
-			float hLookAngle = playerControlGlobalsPtr(0x30C).Read<float>();
-			float vLookAngle = playerControlGlobalsPtr(0x310).Read<float>();
-			float xPos = observerGlobalsPtr(0x180).Read<float>();
-			float yPos = observerGlobalsPtr(0x184).Read<float>();
-			float zPos = observerGlobalsPtr(0x188).Read<float>();
-			float xShift = observerGlobalsPtr(0x18C).Read<float>();
-			float yShift = observerGlobalsPtr(0x190).Read<float>();
-			float zShift = observerGlobalsPtr(0x194).Read<float>();
-			float hShift = observerGlobalsPtr(0x198).Read<float>();
-			float vShift = observerGlobalsPtr(0x19C).Read<float>();
-			float depth = observerGlobalsPtr(0x1A0).Read<float>();
-			float fov = observerGlobalsPtr(0x1A4).Read<float>();
-			float iForward = observerGlobalsPtr(0x1A8).Read<float>();
-			float jForward = observerGlobalsPtr(0x1AC).Read<float>();
-			float kForward = observerGlobalsPtr(0x1B0).Read<float>();
-			float iUp = observerGlobalsPtr(0x1B4).Read<float>();
-			float jUp = observerGlobalsPtr(0x1B8).Read<float>();
-			float kUp = observerGlobalsPtr(0x1BC).Read<float>();
+			float hLookAngle = playerControlGlobalsPtr(GameGlobals::Input::ViewAngleHorizontal).Read<float>();
+			float vLookAngle = playerControlGlobalsPtr(GameGlobals::Input::ViewAngleVertical).Read<float>();
+			float xPos = observerGlobalsPtr(GameGlobals::Observer::CameraPositionX).Read<float>();
+			float yPos = observerGlobalsPtr(GameGlobals::Observer::CameraPositionY).Read<float>();
+			float zPos = observerGlobalsPtr(GameGlobals::Observer::CameraPositionZ).Read<float>();
+			float xShift = observerGlobalsPtr(GameGlobals::Observer::CameraShiftX).Read<float>();
+			float yShift = observerGlobalsPtr(GameGlobals::Observer::CameraShiftY).Read<float>();
+			float zShift = observerGlobalsPtr(GameGlobals::Observer::CameraShiftZ).Read<float>();
+			float hShift = observerGlobalsPtr(GameGlobals::Observer::CameraShiftHorizontal).Read<float>();
+			float vShift = observerGlobalsPtr(GameGlobals::Observer::CameraShiftVertical).Read<float>();
+			float depth = observerGlobalsPtr(GameGlobals::Observer::CameraDepth).Read<float>();
+			float fov = observerGlobalsPtr(GameGlobals::Observer::CameraFieldOfView).Read<float>();
+			float iForward = observerGlobalsPtr(GameGlobals::Observer::CameraForwardI).Read<float>();
+			float jForward = observerGlobalsPtr(GameGlobals::Observer::CameraForwardJ).Read<float>();
+			float kForward = observerGlobalsPtr(GameGlobals::Observer::CameraForwardK).Read<float>();
+			float iUp = observerGlobalsPtr(GameGlobals::Observer::CameraUpI).Read<float>();
+			float jUp = observerGlobalsPtr(GameGlobals::Observer::CameraUpJ).Read<float>();
+			float kUp = observerGlobalsPtr(GameGlobals::Observer::CameraUpK).Read<float>();
 			float iRight = cos(hLookAngle + 3.14159265359f / 2);
 			float jRight = sin(hLookAngle + 3.14159265359f / 2);
 
@@ -519,32 +518,32 @@ namespace Modules
 			}
 
 			// update position
-			observerGlobalsPtr(0x180).Write<float>(xPos);
-			observerGlobalsPtr(0x184).Write<float>(yPos);
-			observerGlobalsPtr(0x188).Write<float>(zPos);
+			observerGlobalsPtr(GameGlobals::Observer::CameraPositionX).Write<float>(xPos);
+			observerGlobalsPtr(GameGlobals::Observer::CameraPositionY).Write<float>(yPos);
+			observerGlobalsPtr(GameGlobals::Observer::CameraPositionZ).Write<float>(zPos);
 
 			// update look angles
-			observerGlobalsPtr(0x1A8).Write<float>(cos(hLookAngle) * cos(vLookAngle));
-			observerGlobalsPtr(0x1AC).Write<float>(sin(hLookAngle) * cos(vLookAngle));
-			observerGlobalsPtr(0x1B0).Write<float>(sin(vLookAngle));
-			observerGlobalsPtr(0x1B4).Write<float>(-cos(hLookAngle) * sin(vLookAngle));
-			observerGlobalsPtr(0x1B8).Write<float>(-sin(hLookAngle) * sin(vLookAngle));
-			observerGlobalsPtr(0x1BC).Write<float>(cos(vLookAngle));
+			observerGlobalsPtr(GameGlobals::Observer::CameraForwardI).Write<float>(cos(hLookAngle) * cos(vLookAngle));
+			observerGlobalsPtr(GameGlobals::Observer::CameraForwardJ).Write<float>(sin(hLookAngle) * cos(vLookAngle));
+			observerGlobalsPtr(GameGlobals::Observer::CameraForwardK).Write<float>(sin(vLookAngle));
+			observerGlobalsPtr(GameGlobals::Observer::CameraUpI).Write<float>(-cos(hLookAngle) * sin(vLookAngle));
+			observerGlobalsPtr(GameGlobals::Observer::CameraUpJ).Write<float>(-sin(hLookAngle) * sin(vLookAngle));
+			observerGlobalsPtr(GameGlobals::Observer::CameraUpK).Write<float>(cos(vLookAngle));
 
-			observerGlobalsPtr(0x1A4).Write<float>(fov);
+			observerGlobalsPtr(GameGlobals::Observer::CameraFieldOfView).Write<float>(fov);
 		}
 		else if (!mode.compare("spectator"))
 		{
 			// TODO: disable player input and allow custom controls for cycling through players and adjusting camera orientation
 
 			// check spectator index against max player count
-			unsigned long playerIndex = dorito.Modules.Camera.VarSpectatorIndex->ValueInt;
-			if (playerIndex >= playersPtr(0x38).Read<unsigned long>())
+			int playerIndex = (int)dorito.Modules.Camera.VarSpectatorIndex->ValueInt;
+			if (playerIndex >= playersPtr->GetCount())
 				return;
 
 			// get player object datum
-			uint32_t playerStructAddress = playersPtr(0x44).Read<uint32_t>() + playerIndex * GameGlobals::Players::PlayerEntryLength;
-			uint32_t playerObjectDatum = *(uint32_t*)(playerStructAddress + 0x30);
+			auto playerStructAddress = playersPtr->GetEntry(playerIndex);
+			uint32_t playerObjectDatum = playerStructAddress(0x30).Read<uint32_t>();
 				
 			// get player object index
 			uint32_t objectIndex = playerObjectDatum & 0xFFFF;
@@ -552,8 +551,8 @@ namespace Modules
 			// TODO: double-check that it's a valid object index and of the bipd class
 
 			// get player object data address
-			uint32_t objectAddress = objectHeaderPtr(0x44).Read<uint32_t>() + 0xC + objectIndex * 0x10;
-			uint32_t objectDataAddress = *(uint32_t*)objectAddress;
+			auto objectAddress = objectHeaderPtr->GetEntry(objectIndex);
+			uint32_t objectDataAddress = objectAddress(0xC).Read<uint32_t>();
 			
 			// get player position and look direction
 			float x = *(float*)(objectDataAddress + 0x20);
@@ -574,17 +573,17 @@ namespace Modules
 			D3DXVec3Cross(&up, &left, &forward);
 
 			// update camera values
-			observerGlobalsPtr(0x180).Write<float>(position.x);
-			observerGlobalsPtr(0x184).Write<float>(position.y);
-			observerGlobalsPtr(0x188).Write<float>(position.z + 0.3f);
-			observerGlobalsPtr(0x194).Write<float>(0.1f);	// z shift
-			observerGlobalsPtr(0x1A0).Write<float>(0.5f);	// depth
-			observerGlobalsPtr(0x1A8).Write<float>(forward.x);
-			observerGlobalsPtr(0x1AC).Write<float>(forward.y);
-			observerGlobalsPtr(0x1B0).Write<float>(forward.z);
-			observerGlobalsPtr(0x1B4).Write<float>(up.x);
-			observerGlobalsPtr(0x1B8).Write<float>(up.y);
-			observerGlobalsPtr(0x1BC).Write<float>(up.z);
+			observerGlobalsPtr(GameGlobals::Observer::CameraPositionX).Write<float>(position.x);
+			observerGlobalsPtr(GameGlobals::Observer::CameraPositionY).Write<float>(position.y);
+			observerGlobalsPtr(GameGlobals::Observer::CameraPositionZ).Write<float>(position.z + 0.3f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraShiftZ).Write<float>(0.1f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraDepth).Write<float>(0.5f);
+			observerGlobalsPtr(GameGlobals::Observer::CameraForwardI).Write<float>(forward.x);
+			observerGlobalsPtr(GameGlobals::Observer::CameraForwardJ).Write<float>(forward.y);
+			observerGlobalsPtr(GameGlobals::Observer::CameraForwardK).Write<float>(forward.z);
+			observerGlobalsPtr(GameGlobals::Observer::CameraUpI).Write<float>(up.x);
+			observerGlobalsPtr(GameGlobals::Observer::CameraUpJ).Write<float>(up.y);
+			observerGlobalsPtr(GameGlobals::Observer::CameraUpK).Write<float>(up.z);
 		}
 	}
 }
