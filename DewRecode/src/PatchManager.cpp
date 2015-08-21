@@ -34,6 +34,59 @@ std::vector<unsigned char> GetHookBytes(Hook* hook)
 }
 
 /// <summary>
+/// Adds an already created <see cref="Patch"/> to the manager.
+/// </summary>
+/// <param name="patch">The <see cref="Patch"/> to add.</param>
+/// <returns>A pointer to the created <see cref="Patch"/>.</returns>
+Patch* PatchManager::Add(Patch patch)
+{
+	patch.Orig.resize(patch.Data.size());
+	Pointer(patch.Address).Read(patch.Orig.data(), patch.Orig.size());
+
+	patches.push_back(patch);
+	return &patches.back();
+}
+
+/// <summary>
+/// Adds an already created <see cref="Hook"/> to the manager.
+/// </summary>
+/// <param name="hook">The <see cref="Hook"/> to add.</param>
+/// <returns>A pointer to the created <see cref="Hook"/>.</returns>
+Hook* PatchManager::Add(Hook hook)
+{
+	auto patchData = GetHookBytes(&hook);
+	hook.Orig.resize(patchData.size());
+	Pointer(hook.Address).Read(hook.Orig.data(), hook.Orig.size());
+
+	hooks.push_back(hook);
+	return &hooks.back();
+}
+
+/// <summary>
+/// Adds an already created <see cref="PatchSet"/> to the manager.
+/// </summary>
+/// <param name="patchSet">The <see cref="PatchSet"/> to add.</param>
+/// <returns>A pointer to the created <see cref="PatchSet"/>.</returns>
+PatchSet* PatchManager::Add(PatchSet patchSet)
+{
+	for (auto& patch : patchSet.Patches)
+	{
+		patch.Orig.resize(patch.Data.size());
+		Pointer(patch.Address).Read(patch.Orig.data(), patch.Orig.size());
+	}
+
+	for (auto& hook : patchSet.Hooks)
+	{
+		auto patchData = GetHookBytes(&hook);
+		hook.Orig.resize(patchData.size());
+		Pointer(hook.Address).Read(hook.Orig.data(), hook.Orig.size());
+	}
+
+	patchSets.push_back(patchSet);
+	return &patchSets.back();
+}
+
+/// <summary>
 /// Adds a patch to the manager.
 /// </summary>
 /// <param name="name">The patches name.</param>
@@ -119,10 +172,10 @@ PatchSet* PatchManager::AddPatchSet(const std::string& name, const PatchSetIniti
 }
 
 /// <summary>
-/// Looks up a patch based on its name.
+/// Looks up a <see cref="Patch"/> based on its name.
 /// </summary>
-/// <param name="name">The name of the patch.</param>
-/// <returns>A pointer to the patch, if found.</returns>
+/// <param name="name">The name of the <see cref="Patch"/>.</param>
+/// <returns>A pointer to the <see cref="Patch"/>, if found.</returns>
 Patch* PatchManager::FindPatch(const std::string& name)
 {
 	for (auto it = patches.begin(); it != patches.end(); ++it)
@@ -134,10 +187,10 @@ Patch* PatchManager::FindPatch(const std::string& name)
 }
 
 /// <summary>
-/// Looks up a hook based on its name.
+/// Looks up a <see cref="Hook"/> based on its name.
 /// </summary>
-/// <param name="name">The name of the hook.</param>
-/// <returns>A pointer to the hook, if found.</returns>
+/// <param name="name">The name of the <see cref="Hook"/>.</param>
+/// <returns>A pointer to the <see cref="Hook"/>, if found.</returns>
 Hook* PatchManager::FindHook(const std::string& name)
 {
 	for (auto it = hooks.begin(); it != hooks.end(); ++it)
@@ -149,10 +202,10 @@ Hook* PatchManager::FindHook(const std::string& name)
 }
 
 /// <summary>
-/// Looks up a patch set based on its name.
+/// Looks up a <see cref="PatchSet"/> based on its name.
 /// </summary>
-/// <param name="name">The name of the patch set.</param>
-/// <returns>A pointer to the patch set, if found.</returns>
+/// <param name="name">The name of the <see cref="PatchSet"/>.</param>
+/// <returns>A pointer to the <see cref="PatchSet"/>, if found.</returns>
 PatchSet* PatchManager::FindPatchSet(const std::string& name)
 {
 	for (auto it = patchSets.begin(); it != patchSets.end(); ++it)
@@ -164,9 +217,9 @@ PatchSet* PatchManager::FindPatchSet(const std::string& name)
 }
 
 /// <summary>
-/// Toggles a patch based on its name.
+/// Toggles a <see cref="Patch"/> based on its name.
 /// </summary>
-/// <param name="name">The name of the patch.</param>
+/// <param name="name">The name of the <see cref="Patch"/>.</param>
 /// <returns>PatchStatus enum</returns>
 PatchStatus PatchManager::TogglePatch(const std::string& name)
 {
@@ -178,9 +231,9 @@ PatchStatus PatchManager::TogglePatch(const std::string& name)
 }
 
 /// <summary>
-/// Toggles a hook based on its name.
+/// Toggles a <see cref="Hook"/> based on its name.
 /// </summary>
-/// <param name="name">The name of the hook.</param>
+/// <param name="name">The name of the <see cref="Hook"/>.</param>
 /// <returns>PatchStatus enum</returns>
 PatchStatus PatchManager::ToggleHook(const std::string& name)
 {
@@ -192,9 +245,9 @@ PatchStatus PatchManager::ToggleHook(const std::string& name)
 }
 
 /// <summary>
-/// Toggles a patch set (and all children patches/hooks) based on its name.
+/// Toggles a <see cref="PatchSet"/> (and all children patches/hooks) based on its name.
 /// </summary>
-/// <param name="name">The name of the patch set.</param>
+/// <param name="name">The name of the <see cref="PatchSet"/>.</param>
 /// <returns>PatchStatus enum</returns>
 PatchStatus PatchManager::TogglePatchSet(const std::string& name)
 {
@@ -206,10 +259,10 @@ PatchStatus PatchManager::TogglePatchSet(const std::string& name)
 }
 
 /// <summary>
-/// Toggles a patch.
+/// Toggles a <see cref="Patch"/>.
 /// </summary>
-/// <param name="patch">The patch to toggle.</param>
-/// <returns>true if the patch is active, false if not.</returns>
+/// <param name="patch">The <see cref="Patch"/> to toggle.</param>
+/// <returns>true if the <see cref="Patch"/> is active, false if not.</returns>
 bool PatchManager::TogglePatch(Patch* patch)
 {
 	if (patch->Enabled)
@@ -222,10 +275,10 @@ bool PatchManager::TogglePatch(Patch* patch)
 }
 
 /// <summary>
-/// Toggles a hook.
+/// Toggles a <see cref="Hook"/>.
 /// </summary>
-/// <param name="hook">The hook to toggle.</param>
-/// <returns>true if the hook is active, false if not.</returns>
+/// <param name="hook">The <see cref="Hook"/> to toggle.</param>
+/// <returns>true if the <see cref="Hook"/> is active, false if not.</returns>
 bool PatchManager::ToggleHook(Hook* hook)
 {
 	if (hook->Enabled)
@@ -241,10 +294,10 @@ bool PatchManager::ToggleHook(Hook* hook)
 }
 
 /// <summary>
-/// Toggles a patch set (and all children patches/hooks).
+/// Toggles a <see cref="PatchSet"/> (and all children patches/hooks).
 /// </summary>
-/// <param name="patchSet">The patch set to toggle.</param>
-/// <returns>true if the hook is active, false if not.</returns>
+/// <param name="patchSet">The <see cref="PatchSet"/> to toggle.</param>
+/// <returns>true if the <see cref="PatchSet"/> is active, false if not.</returns>
 bool PatchManager::TogglePatchSet(PatchSet* patchSet)
 {
 	for (auto it = patchSet->Patches.begin(); it != patchSet->Patches.end(); ++it)
@@ -258,11 +311,11 @@ bool PatchManager::TogglePatchSet(PatchSet* patchSet)
 }
 
 /// <summary>
-/// Enables/disables a patch based on its name.
+/// Enables/disables a <see cref="Patch"/> based on its name.
 /// </summary>
-/// <param name="name">The name of the patch.</param>
+/// <param name="name">The name of the <see cref="Patch"/>.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
-/// <returns>The status of the patch.</returns>
+/// <returns>The status of the <see cref="Patch"/>.</returns>
 PatchStatus PatchManager::EnablePatch(const std::string& name, bool enable)
 {
 	Patch* patch = FindPatch(name);
@@ -273,11 +326,11 @@ PatchStatus PatchManager::EnablePatch(const std::string& name, bool enable)
 }
 
 /// <summary>
-/// Enables/disables a hook based on its name.
+/// Enables/disables a <see cref="Hook"/> based on its name.
 /// </summary>
-/// <param name="hook">The name of the hook.</param>
+/// <param name="hook">The name of the <see cref="Hook"/>.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
-/// <returns>The status of the hook.</returns>
+/// <returns>The status of the <see cref="Hook"/>.</returns>
 PatchStatus PatchManager::EnableHook(const std::string& name, bool enable)
 {
 	Hook* hook = FindHook(name);
@@ -288,11 +341,11 @@ PatchStatus PatchManager::EnableHook(const std::string& name, bool enable)
 }
 
 /// <summary>
-/// Enables/disables a patch set based on its name.
+/// Enables/disables a <see cref="PatchSet"/> based on its name.
 /// </summary>
-/// <param name="patchSet">The name of the patch set.</param>
+/// <param name="patchSet">The name of the <see cref="PatchSet"/>.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
-/// <returns>The status of the patch set.</returns>
+/// <returns>The status of the <see cref="PatchSet"/>.</returns>
 PatchStatus PatchManager::EnablePatchSet(const std::string& name, bool enable)
 {
 	PatchSet* patchSet = FindPatchSet(name);
@@ -303,11 +356,11 @@ PatchStatus PatchManager::EnablePatchSet(const std::string& name, bool enable)
 }
 
 /// <summary>
-/// Enables/disables a patch.
+/// Enables/disables a <see cref="Patch"/>.
 /// </summary>
-/// <param name="patch">The patch.</param>
+/// <param name="patch">A pointer to the <see cref="Patch"/>.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
-/// <returns>The status of the patch.</returns>
+/// <returns>The status of the <see cref="Patch"/>.</returns>
 bool PatchManager::EnablePatch(Patch* patch, bool enable)
 {
 	if (patch->Enabled == enable)
@@ -316,11 +369,11 @@ bool PatchManager::EnablePatch(Patch* patch, bool enable)
 }
 
 /// <summary>
-/// Enables/disables a hook.
+/// Enables/disables a <see cref="Hook"/>.
 /// </summary>
-/// <param name="hook">The hook.</param>
+/// <param name="hook">A pointer to the <see cref="Hook"/>.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
-/// <returns>The status of the hook.</returns>
+/// <returns>The status of the <see cref="Hook"/>.</returns>
 bool PatchManager::EnableHook(Hook* hook, bool enable)
 {
 	if (hook->Enabled == enable)
@@ -329,11 +382,11 @@ bool PatchManager::EnableHook(Hook* hook, bool enable)
 }
 
 /// <summary>
-/// Enables/disables a patch set.
+/// Enables/disables a <see cref="PatchSet"/>.
 /// </summary>
-/// <param name="patchSet">The patch set.</param>
+/// <param name="patchSet">A pointer to the <see cref="PatchSet"/>.</param>
 /// <param name="enable">Whether to enable it or not (default true)</param>
-/// <returns>The status of the patch set.</returns>
+/// <returns>The status of the <see cref="PatchSet"/>.</returns>
 bool PatchManager::EnablePatchSet(PatchSet* patchSet, bool enable)
 {
 	if (patchSet->Enabled == enable)

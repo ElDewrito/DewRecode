@@ -96,7 +96,7 @@ namespace
 
 	HRESULT __stdcall D3D9Device_EndSceneHook(IDirect3DDevice9* device)
 	{
-		ElDorito::Instance().Engine.Event("Core", "Direct3D.EndScene", device);
+		ElDorito::Instance().Engine.EndScene(device);
 		return device->EndScene();
 	}
 }
@@ -106,7 +106,7 @@ namespace
 /// </summary>
 Engine::Engine()
 {
-	auto& patches = ElDorito::Instance().Patches;
+	auto& patches = ElDorito::Instance().PatchManager;
 
 	// hook our engine events
 	enginePatchSet = patches.AddPatchSet("Engine",
@@ -128,7 +128,7 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-	ElDorito::Instance().Patches.EnablePatchSet(enginePatchSet, false);
+	ElDorito::Instance().PatchManager.EnablePatchSet(enginePatchSet, false);
 }
 
 /// <summary>
@@ -139,6 +139,17 @@ Engine::~Engine()
 bool Engine::OnTick(TickCallback callback)
 {
 	tickCallbacks.push_back(callback);
+	return true; // todo: check if this callback is already registered
+}
+
+/// <summary>
+/// Registers a callback which is called when the game calls D3DDevice::EndScene, these callbacks use a seperate path to normal events so we can process them in less cycles.
+/// </summary>
+/// <param name="callback">The callback.</param>
+/// <returns>True if the callback was added, false if the callback is already registered.</returns>
+bool Engine::OnEndScene(EventCallback callback)
+{
+	endSceneCallbacks.push_back(callback);
 	return true; // todo: check if this callback is already registered
 }
 
@@ -186,8 +197,9 @@ bool Engine::OnEvent(const std::string& eventNamespace, const std::string& event
 /// <returns>True if the callback was removed.</returns>
 bool Engine::RemoveOnTick(TickCallback callback)
 {
-	tickCallbacks.erase(std::remove(tickCallbacks.begin(), tickCallbacks.end(), callback), tickCallbacks.end());
-	return true;
+	//TODO2:
+	//tickCallbacks.erase(std::remove(tickCallbacks.begin(), tickCallbacks.end(), callback), tickCallbacks.end());
+	return false;// true;
 }
 
 /// <summary>
@@ -210,12 +222,13 @@ bool Engine::RemoveOnWndProc(WNDPROC callback)
 /// <returns>True if the callback was removed.</returns>
 bool Engine::RemoveOnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback)
 {
-	std::string eventId = eventNamespace + "." + eventName;
+	//TODO2:
+	/*std::string eventId = eventNamespace + "." + eventName;
 	auto it = eventCallbacks.find(eventId);
 	if (it != eventCallbacks.end())
 		(*it).second.erase(std::remove((*it).second.begin(), (*it).second.end(), callback), (*it).second.end());
-
-	return true;
+		*/
+	return false;// true;
 }
 
 /// <summary>
@@ -231,6 +244,16 @@ void Engine::Tick(const std::chrono::duration<double>& deltaTime)
 	}
 	for (auto callback : tickCallbacks)
 		callback(deltaTime);
+}
+
+/// <summary>
+/// Calls each of the registered EndScene callbacks.
+/// </summary>
+/// <param name="d3dDevice">The pointer to the d3d device.</param>
+void Engine::EndScene(void* d3dDevice)
+{
+	for (auto callback : endSceneCallbacks)
+		callback(d3dDevice);
 }
 
 /// <summary>
@@ -296,7 +319,7 @@ bool Engine::RegisterInterface(const std::string& interfaceName, void* ptrToInte
 {
 	auto& dorito = ElDorito::Instance();
 
-	if (!interfaceName.compare(COMMANDS_INTERFACE_VERSION001) ||
+	if (!interfaceName.compare(COMMANDMANAGER_INTERFACE_VERSION001) ||
 		!interfaceName.compare(ENGINE_INTERFACE_VERSION001) ||
 		!interfaceName.compare(DEBUGLOG_INTERFACE_VERSION001) ||
 		!interfaceName.compare(PATCHMANAGER_INTERFACE_VERSION001) ||
@@ -329,14 +352,14 @@ void* Engine::CreateInterface(const std::string& interfaceName, int* returnCode)
 	auto& dorito = ElDorito::Instance();
 
 	*returnCode = 0;
-	if (!interfaceName.compare(COMMANDS_INTERFACE_VERSION001))
-		return &dorito.Commands;
+	if (!interfaceName.compare(COMMANDMANAGER_INTERFACE_VERSION001))
+		return &dorito.CommandManager;
 	if (!interfaceName.compare(ENGINE_INTERFACE_VERSION001))
 		return &dorito.Engine;
 	if (!interfaceName.compare(DEBUGLOG_INTERFACE_VERSION001))
 		return &dorito.Logger;
 	if (!interfaceName.compare(PATCHMANAGER_INTERFACE_VERSION001))
-		return &dorito.Patches;
+		return &dorito.PatchManager;
 	if (!interfaceName.compare(UTILS_INTERFACE_VERSION001))
 		return &dorito.Utils;
 
@@ -354,7 +377,8 @@ void* Engine::CreateInterface(const std::string& interfaceName, int* returnCode)
 /// <param name="str">The string to print.</param>
 void Engine::PrintToConsole(const std::string& str)
 {
-	ElDorito::Instance().Modules.Console.PrintToConsole(str);
+	//TODO2:
+	//ElDorito::Instance().Modules.Console.PrintToConsole(str);
 }
 
 /// <summary>
@@ -364,7 +388,9 @@ void Engine::PrintToConsole(const std::string& str)
 /// <returns>A pointer to the added buffer.</returns>
 ConsoleBuffer* Engine::AddConsoleBuffer(ConsoleBuffer buffer)
 {
-	return ElDorito::Instance().Modules.Console.AddBuffer(buffer);
+	//TODO2:
+	//return ElDorito::Instance().Modules.Console.AddBuffer(buffer);
+	return nullptr;
 }
 
 /// <summary>
@@ -374,7 +400,9 @@ ConsoleBuffer* Engine::AddConsoleBuffer(ConsoleBuffer buffer)
 /// <returns>true if the buffer was set active.</returns>
 bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
 {
-	return ElDorito::Instance().Modules.Console.SetActiveBuffer(buffer);
+	//TODO2:
+	//return ElDorito::Instance().Modules.Console.SetActiveBuffer(buffer);
+	return true;
 }
 
 /// <summary>
@@ -385,7 +413,8 @@ bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
 /// <param name="callback">The function to call after the user has made a selection.</param>
 void Engine::ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback)
 {
-	ElDorito::Instance().Modules.Console.ShowMessageBox(title, text, tag, choices, callback);
+	//TODO2:
+	//ElDorito::Instance().Modules.Console.ShowMessageBox(title, text, tag, choices, callback);
 }
 
 /// <summary>
@@ -396,7 +425,8 @@ void Engine::ShowMessageBox(const std::string& title, const std::string& text, c
 /// <param name="callback">The function to call after the user has answered.</param>
 void Engine::ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback)
 {
-	ElDorito::Instance().Modules.Console.ShowInputBox(title, text, tag, defaultText, callback);
+	//TODO2:
+	//ElDorito::Instance().Modules.Console.ShowInputBox(title, text, tag, defaultText, callback);
 }
 
 /// <summary>
@@ -405,7 +435,8 @@ void Engine::ShowInputBox(const std::string& title, const std::string& text, con
 /// <returns>The IP in network endian.</returns>
 uint32_t Engine::GetServerIP()
 {
-	return *(uint32_t*)(ElDorito::Instance().Modules.Server.SyslinkData + 0x170);
+	// TODO1: Use BlamNetwork to get the IP
+	return *(uint32_t*)(ElDorito::Instance().ServerCommands->SyslinkData + 0x170);
 }
 
 /// <summary>
@@ -414,7 +445,7 @@ uint32_t Engine::GetServerIP()
 /// <returns>The name of the player.</returns>
 std::string Engine::GetPlayerName()
 {
-	return ElDorito::Instance().Modules.Player.VarPlayerName->ValueString;
+	return ElDorito::Instance().PlayerCommands->VarName->ValueString;
 }
 
 /// <summary>
@@ -507,4 +538,61 @@ Blam::ArrayGlobal* Engine::GetArrayGlobal(size_t offset)
 {
 	auto ptr = GetMainTls(offset)[0];
 	return reinterpret_cast<Blam::ArrayGlobal*>((void*)ptr);
+}
+
+/// <summary>
+/// Gets the number of ticks that a key has been held down for.
+/// Will always be nonzero if the key is down.
+/// </summary>
+/// <param name="key">The key.</param>
+/// <param name="type">The input type.</param>
+/// <returns>The number of ticks that a key has been held down for.</returns>
+uint8_t Engine::GetKeyTicks(Blam::Input::KeyCodes key, Blam::Input::InputType type)
+{
+	typedef uint8_t(*EngineGetKeyTicksPtr)(Blam::Input::KeyCodes, Blam::Input::InputType);
+	auto EngineGetKeyTicks = reinterpret_cast<EngineGetKeyTicksPtr>(0x511B60);
+	return EngineGetKeyTicks(key, type);
+}
+
+/// <summary>
+/// Gets the number of milliseconds that a key has been held down for.
+/// Will always be nonzero if the key is down.
+/// </summary>
+/// <param name="key">The key.</param>
+/// <param name="type">The input type.</param>
+/// <returns>The number of milliseconds that a key has been held down for.</returns>
+uint16_t Engine::GetKeyMs(Blam::Input::KeyCodes key, Blam::Input::InputType type)
+{
+	typedef uint8_t(*EngineGetKeyMsPtr)(Blam::Input::KeyCodes, Blam::Input::InputType);
+	auto EngineGetKeyMs = reinterpret_cast<EngineGetKeyMsPtr>(0x511CE0);
+	return EngineGetKeyMs(key, type);
+}
+
+/// <summary>
+/// Reads a raw keyboard input event. Returns false if nothing is
+/// available. You should call this in a loop to ensure that you process
+/// all available events. NOTE THAT THIS IS ONLY GUARANTEED TO WORK
+/// AFTER WINDOWS MESSAGES HAVE BEEN PUMPED IN THE UPDATE CYCLE. ALSO,
+/// THIS WILL NOT WORK IF UI INPUT IS DISABLED, REGARDLESS OF THE INPUT
+/// TYPE YOU SPECIFY.
+/// </summary>
+/// <param name="result">The resulting KeyEvent.</param>
+/// <param name="type">The input type.</param>
+/// <returns>false if nothing is available.</returns>
+bool Engine::ReadKeyEvent(Blam::Input::KeyEvent* result, Blam::Input::InputType type)
+{
+	typedef bool(*EngineReadKeyEventPtr)(Blam::Input::KeyEvent*, Blam::Input::InputType);
+	auto EngineReadKeyEvent = reinterpret_cast<EngineReadKeyEventPtr>(0x5118C0);
+	return EngineReadKeyEvent(result, type);
+}
+
+/// <summary>
+/// Blocks or unblocks an input type.
+/// </summary>
+/// <param name="type">The input type.</param>
+void Engine::BlockInput(Blam::Input::InputType type, bool block)
+{
+	typedef uint8_t(*EngineBlockInputPtr)(Blam::Input::InputType, bool);
+	auto EngineBlockInput = reinterpret_cast<EngineBlockInputPtr>(0x512530);
+	EngineBlockInput(type, block);
 }

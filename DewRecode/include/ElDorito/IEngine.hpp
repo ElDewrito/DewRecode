@@ -1,6 +1,8 @@
 #pragma once
 #include "Pointer.hpp"
 #include <chrono>
+#include <functional>
+
 namespace Blam
 {
 	class ArrayGlobal;
@@ -48,10 +50,17 @@ later:
 */
 
 struct ConsoleBuffer;
-typedef void(__cdecl *TickCallback)(const std::chrono::duration<double>& deltaTime);
-typedef void(__cdecl *EventCallback)(void* param);
-typedef void(__cdecl *ConsoleInputCallback)(const std::string& input, ConsoleBuffer* buffer);
-typedef void(__cdecl *UserInputBoxCallback)(const std::string& boxTag, const std::string& result);
+/*typedef void(__cdecl *TickCallback)(const std::chrono::duration<double>& deltaTime);
+typedef void(__cdecl *EventCallback)(void* param);*/
+
+typedef std::function<void(const std::string& input, ConsoleBuffer* buffer)> ConsoleInputCallback;
+typedef std::function<void(const std::string& boxTag, const std::string& result)> UserInputBoxCallback;
+#define BIND_CALLBACK2(classPtr, funcPtr) std::bind(funcPtr, classPtr, std::placeholders::_1, std::placeholders::_2)
+
+typedef std::function<void(const std::chrono::duration<double>& deltaTime)> TickCallback;
+typedef std::function<void(void* param)> EventCallback;
+#define BIND_CALLBACK(classPtr, funcPtr) std::bind(funcPtr, classPtr, std::placeholders::_1)
+
 typedef std::initializer_list<std::string> StringArrayInitializerType;
 
 struct PlayerInfo
@@ -105,6 +114,13 @@ public:
 	/// <param name="callback">The callback.</param>
 	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
 	virtual bool OnTick(TickCallback callback) = 0;
+
+	/// <summary>
+	/// Registers a callback which is called when the game calls D3DDevice::EndScene, these callbacks use a seperate path to normal events so we can process them in less cycles.
+	/// </summary>
+	/// <param name="callback">The callback.</param>
+	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
+	virtual bool OnEndScene(EventCallback callback) = 0;
 
 	/// <summary>
 	/// Registers a callback which is called when a WM message is received (registers another WNDPROC)
@@ -255,7 +271,7 @@ public:
 	/// <returns>The resolution.</returns>
 	virtual std::pair<int, int> GetGameResolution() = 0;
 	
-	// TODO2: change this into a struct which is filled with IP/Port/GamePort/VoIPPort from server info json
+	// TODO2: make another func which returns a struct filled with IP/Port/GamePort/VoIPPort from server info json
 	/// <summary>
 	/// Gets the IP of the server we're connected to (only works if connected through Server.Connect!)
 	/// </summary>
@@ -288,6 +304,43 @@ public:
 	/// </summary>
 	/// <param name="newTable">The new packet table.</param>
 	virtual void SetPacketTable(const Blam::Network::PacketTable* newTable) = 0;
+
+	/// <summary>
+	/// Gets the number of ticks that a key has been held down for.
+	/// Will always be nonzero if the key is down.
+	/// </summary>
+	/// <param name="key">The key.</param>
+	/// <param name="type">The input type.</param>
+	/// <returns>The number of ticks that a key has been held down for.</returns>
+	virtual uint8_t GetKeyTicks(Blam::Input::KeyCodes key, Blam::Input::InputType type) = 0;
+
+	/// <summary>
+	/// Gets the number of milliseconds that a key has been held down for.
+	/// Will always be nonzero if the key is down.
+	/// </summary>
+	/// <param name="key">The key.</param>
+	/// <param name="type">The input type.</param>
+	/// <returns>The number of milliseconds that a key has been held down for.</returns>
+	virtual uint16_t GetKeyMs(Blam::Input::KeyCodes key, Blam::Input::InputType type) = 0;
+
+	/// <summary>
+	/// Reads a raw keyboard input event. Returns false if nothing is
+	/// available. You should call this in a loop to ensure that you process
+	/// all available events. NOTE THAT THIS IS ONLY GUARANTEED TO WORK
+	/// AFTER WINDOWS MESSAGES HAVE BEEN PUMPED IN THE UPDATE CYCLE. ALSO,
+	/// THIS WILL NOT WORK IF UI INPUT IS DISABLED, REGARDLESS OF THE INPUT
+	/// TYPE YOU SPECIFY.
+	/// </summary>
+	/// <param name="result">The resulting KeyEvent.</param>
+	/// <param name="type">The input type.</param>
+	/// <returns>false if nothing is available.</returns>
+	virtual bool ReadKeyEvent(Blam::Input::KeyEvent* result, Blam::Input::InputType type) = 0;
+
+	/// <summary>
+	/// Blocks or unblocks an input type.
+	/// </summary>
+	/// <param name="type">The input type.</param>
+	virtual void BlockInput(Blam::Input::InputType type, bool block) = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

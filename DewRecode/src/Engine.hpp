@@ -9,6 +9,7 @@ class Engine : public IEngine
 {
 public:
 	bool OnTick(TickCallback callback);
+	bool OnEndScene(EventCallback callback);
 	bool OnWndProc(WNDPROC callback);
 	bool OnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback);
 
@@ -49,8 +50,14 @@ public:
 	Blam::Network::PacketTable* GetPacketTable();
 	void SetPacketTable(const Blam::Network::PacketTable* newTable);
 
+	uint8_t GetKeyTicks(Blam::Input::KeyCodes key, Blam::Input::InputType type);
+	uint16_t GetKeyMs(Blam::Input::KeyCodes key, Blam::Input::InputType type);
+	bool ReadKeyEvent(Blam::Input::KeyEvent* result, Blam::Input::InputType type);
+	void BlockInput(Blam::Input::InputType type, bool block);
+
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);
+	void EndScene(void* d3dDevice);
 	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	Engine();
@@ -59,6 +66,7 @@ private:
 	bool mainMenuHasShown = false;
 	bool hasFirstTickTocked = false;
 	std::vector<TickCallback> tickCallbacks;
+	std::vector<EventCallback> endSceneCallbacks;
 	std::vector<WNDPROC> wndProcCallbacks;
 	std::map<std::string, std::vector<EventCallback>> eventCallbacks;
 	std::map<std::string, void*> interfaces;

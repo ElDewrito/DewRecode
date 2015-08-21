@@ -7,6 +7,7 @@
 #include <cctype>
 #include <codecvt>
 #include <iomanip>
+#include <fstream>
 #include <winhttp.h>
 #include <Natupnp.h>
 
@@ -18,6 +19,10 @@
 #include <openssl/bn.h>
 #include <openssl/pem.h>
 #include <openssl/sha.h>
+
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
 #include "ElDorito.hpp"
 
@@ -695,6 +700,33 @@ UPnPResult PublicUtils::UPnPForwardPort(bool tcp, int externalport, int internal
 		type = UPnPErrorType::PortMapError;
 
 	return UPnPResult(type, ret);
+}
+
+void PublicUtils::GetEndpoints(std::vector<std::string>& destVect, const std::string& endpointType)
+{
+	std::ifstream in("dewrito.json", std::ios::in | std::ios::binary);
+	if (in && in.is_open())
+	{
+		std::string contents;
+		in.seekg(0, std::ios::end);
+		contents.resize((unsigned int)in.tellg());
+		in.seekg(0, std::ios::beg);
+		in.read(&contents[0], contents.size());
+		in.close();
+
+		rapidjson::Document json;
+		if (json.Parse<0>(contents.c_str()).HasParseError() || !json.IsObject())
+			return;
+
+		if (!json.HasMember("masterServers"))
+			return;
+
+		auto& mastersArray = json["masterServers"];
+		for (auto it = mastersArray.Begin(); it != mastersArray.End(); it++)
+		{
+			destVect.push_back((*it)[endpointType.c_str()].GetString());
+		}
+	}
 }
 
 PublicUtils::PublicUtils()

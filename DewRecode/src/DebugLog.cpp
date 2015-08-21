@@ -28,17 +28,24 @@ void DebugLog::Log(LogSeverity severity, const std::string& module, std::string 
 	vsprintf_s(buff, 4096, format.c_str(), ap);
 	va_end(ap);
 
-	auto& gameModule = ElDorito::Instance().Modules.Game;
-	for (auto filter : gameModule.FiltersExclude)
-		if (strstr(buff, filter.c_str()) != NULL)
-			return; // string contains an excluded string
+	auto debugCommands = ElDorito::Instance().DebugCommands;
+	std::string outFileName = "dorito.log";
 
-	for (auto filter : gameModule.FiltersInclude)
-		if (strstr(buff, filter.c_str()) == NULL)
-			return; // string doesn't contain an included string
+	if (debugCommands)
+	{
+		for (auto filter : debugCommands->FiltersExclude)
+			if (strstr(buff, filter.c_str()) != NULL)
+				return; // string contains an excluded string
+
+		for (auto filter : debugCommands->FiltersInclude)
+			if (strstr(buff, filter.c_str()) == NULL)
+				return; // string doesn't contain an included string
+
+		outFileName = debugCommands->VarLogName->ValueString;
+	}
 
 	std::ofstream outfile;
-	outfile.open(gameModule.VarLogName->ValueString, std::ios_base::app);
+	outfile.open(outFileName, std::ios_base::app);
 	if (outfile.fail())
 		return; // TODO: give output if the log stuff failed
 

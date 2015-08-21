@@ -4,6 +4,17 @@
 #include <codecvt>
 #include <cvt/wstring>
 
+#include "Armor/ArmorPatchProvider.hpp"
+#include "ContentItems/ContentItemsPatchProvider.hpp"
+#include "Core/CorePatchProvider.hpp"
+#include "Forge/ForgePatchProvider.hpp"
+#include "Input/InputPatchProvider.hpp"
+#include "Network/NetworkPatchProvider.hpp"
+#include "Player/PlayerPatchProvider.hpp"
+#include "Scoreboard/ScoreboardPatchProvider.hpp"
+#include "UI/UIPatchProvider.hpp"
+#include "VirtualKeyboard/VirtualKeyboardPatchProvider.hpp"
+
 ElDorito::ElDorito()
 {
 
@@ -11,6 +22,86 @@ ElDorito::ElDorito()
 
 ElDorito::~ElDorito()
 {
+
+}
+
+void ElDorito::initPatchProviders()
+{
+	for (auto patch : Patches)
+	{
+		auto patchSet = patch->GetPatches();
+		PatchManager.TogglePatchSet(PatchManager.Add(patchSet));
+		patch->RegisterCallbacks(&Engine);
+	}
+}
+
+void ElDorito::initCommandProvider(std::shared_ptr<ICommandProvider> command)
+{
+	auto cmds = command->GetCommands();
+	for (auto cmd : cmds)
+		CommandManager.Add(cmd);
+
+	command->RegisterVariables(&CommandManager);
+}
+
+void ElDorito::initClasses()
+{
+	// GameCommands has to be inited first since DebugLog uses it
+	auto debugPatchProvider = std::make_shared<Debug::DebugPatchProvider>();
+	Patches.push_back(debugPatchProvider);
+
+	DebugCommands = std::make_shared<Debug::DebugCommandProvider>(debugPatchProvider);
+	initCommandProvider(DebugCommands);
+
+	auto armorPatchProvider = std::make_shared<Armor::ArmorPatchProvider>();
+	auto cameraPatchProvider = std::make_shared<Camera::CameraPatchProvider>();
+	auto contentItemPatchProvider = std::make_shared<ContentItems::ContentItemsPatchProvider>();
+	auto corePatchProvider = std::make_shared<Core::CorePatchProvider>();
+	auto forgePatchProvider = std::make_shared<Forge::ForgePatchProvider>();
+	auto inputPatchProvider = std::make_shared<Input::InputPatchProvider>();
+	auto networkPatchProvider = std::make_shared<Network::NetworkPatchProvider>();
+	auto playerPatchProvider = std::make_shared<Player::PlayerPatchProvider>();
+	auto scoreboardPatchProvider = std::make_shared<Scoreboard::ScoreboardPatchProvider>();
+	auto uiPatchProvider = std::make_shared<UI::UIPatchProvider>();
+	auto vkPatchProvider = std::make_shared<VirtualKeyboard::VirtualKeyboardPatchProvider>();
+
+	Patches.push_back(armorPatchProvider);
+	Patches.push_back(cameraPatchProvider);
+	Patches.push_back(contentItemPatchProvider);
+	Patches.push_back(corePatchProvider);
+	Patches.push_back(forgePatchProvider);
+	Patches.push_back(inputPatchProvider);
+	Patches.push_back(networkPatchProvider);
+	Patches.push_back(playerPatchProvider);
+	Patches.push_back(scoreboardPatchProvider);
+	Patches.push_back(uiPatchProvider);
+	Patches.push_back(vkPatchProvider);
+
+	CameraCommands = std::make_shared<Camera::CameraCommandProvider>(cameraPatchProvider);
+	initCommandProvider(CameraCommands);
+
+	ForgeCommands = std::make_shared<Forge::ForgeCommandProvider>(forgePatchProvider);
+	initCommandProvider(ForgeCommands);
+
+	GameCommands = std::make_shared<Game::GameCommandProvider>();
+	initCommandProvider(GameCommands);
+
+	InputCommands = std::make_shared<Input::InputCommandProvider>(inputPatchProvider);
+	initCommandProvider(InputCommands);
+
+	PlayerCommands = std::make_shared<Player::PlayerCommandProvider>(armorPatchProvider, playerPatchProvider);
+	initCommandProvider(PlayerCommands);
+
+	ServerCommands = std::make_shared<Server::ServerCommandProvider>();
+	initCommandProvider(ServerCommands);
+
+	TimeCommands = std::make_shared<Time::TimeCommandProvider>();
+	initCommandProvider(TimeCommands);
+
+	UICommands = std::make_shared<UI::UICommandProvider>(uiPatchProvider);
+	initCommandProvider(UICommands);
+
+	initPatchProviders();
 
 }
 
@@ -22,30 +113,32 @@ void ElDorito::Initialize()
 	if (this->inited)
 		return;
 
+	initClasses();
+
 	Logger.Log(LogSeverity::Info, "ElDorito", "ElDewrito | Version: " + Utils::Version::GetVersionString() + " | Build Date: " __DATE__);
 	loadPlugins();
 
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Console.FinishAddCommands()...");
-	Commands.FinishAdd(); // call this so that the default values can be applied to the game
+	CommandManager.FinishAdd(); // call this so that the default values can be applied to the game
 	
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Execute dewrito_prefs.cfg...");
-	Commands.Execute("Execute dewrito_prefs.cfg");
+	CommandManager.Execute("Execute dewrito_prefs.cfg");
 
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Execute autoexec.cfg...");
-	Commands.Execute("Execute autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
+	CommandManager.Execute("Execute autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
 	// HACKY - As we need a draw call in between this message and the actual generation, check it ahead of it actually generating
-	if (Modules.Player.VarPlayerPubKey->ValueString.empty())
-		Modules.Console.PrintToConsole("Generating player keypair\nThis may take a moment...");
+	/*TODO11:if (PlayerCommands->VarPubKey->ValueString.empty())
+		Modules.Console.PrintToConsole("Generating player keypair\nThis may take a moment...");*/
 
 	// add and toggle(enable) the language patch, can't be done in a module since we have to patch this after cfg files are read
-	Patches.TogglePatch(Patches.AddPatch("GameLanguage", 0x6333FD, { (unsigned char)Modules.Game.VarLanguageID->ValueInt }));
+	PatchManager.TogglePatch(PatchManager.AddPatch("GameLanguage", 0x6333FD, { (unsigned char)GameCommands->VarLanguageID->ValueInt }));
 
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Parsing command line...");
-	// Parse command-line commands
+
 	int numArgs = 0;
 	LPWSTR* szArgList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-	bool usingLauncher = Modules.Game.VarSkipLauncher->ValueInt == 1;
+	bool usingLauncher = GameCommands->VarSkipLauncher->ValueInt == 1;
 	bool skipKill = false;
 	bool dedicated = false;
 
@@ -81,7 +174,7 @@ void ElDorito::Initialize()
 			std::string argname = converter.to_bytes(arg.substr(1, pos - 1));
 			std::string argvalue = converter.to_bytes(arg.substr(pos + 1));
 
-			Commands.Execute(argname + " \"" + argvalue + "\"", true);
+			CommandManager.Execute(argname + " \"" + argvalue + "\"", true);
 		}
 	}
 

@@ -34,6 +34,8 @@ public:
 	HttpRequest HttpSendRequest(const std::wstring& uri, const std::wstring& method, const std::wstring& userAgent, const std::wstring& username, const std::wstring& password, const std::wstring& headers, void* body, DWORD bodySize);
 	UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, const std::string& ruleName);
 
+	void GetEndpoints(std::vector<std::string>& destVect, const std::string& endpointType);
+
 	PublicUtils();
 	~PublicUtils();
 private:

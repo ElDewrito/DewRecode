@@ -102,6 +102,8 @@ public:
 
 	virtual HttpRequest HttpSendRequest(const std::wstring& uri, const std::wstring& method, const std::wstring& userAgent, const std::wstring& username, const std::wstring& password, const std::wstring& headers, void* body, DWORD bodySize) = 0;
 	virtual UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, const std::string& ruleName) = 0;
+
+	virtual void GetEndpoints(std::vector<std::string>& destVect, const std::string& endpointType) = 0;
 };
 
 #define UTILS_INTERFACE_VERSION001 "Utils001"

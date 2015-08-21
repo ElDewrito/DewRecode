@@ -3,6 +3,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <memory>
 #ifdef DORITO_EXPORTS
 #define DORITO_API extern "C" __declspec(dllexport)
 #define DORITO_CPP_API __declspec(dllexport)
@@ -31,10 +32,10 @@ DORITO_API int GetDoritoVersion();
 DORITO_API void* CreateInterface(const char* name, int* returnCode);
 
 #include "Blam/BlamTypes.hpp"
+#include "Blam/BlamInput.hpp"
 #include "Blam/Tags/GameEngineSettingsDefinition.hpp"
-#include "ICommands.hpp"
+#include "ICommandManager.hpp"
 #include "IDebugLog.hpp"
 #include "IEngine.hpp"
 #include "IPatchManager.hpp"
 #include "IUtils.hpp"
-#include "ModuleBase.hpp"

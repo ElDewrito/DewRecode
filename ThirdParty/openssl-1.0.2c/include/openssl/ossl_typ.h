@@ -169,7 +169,7 @@ typedef struct conf_st CONF;
 typedef struct store_st STORE;
 typedef struct store_method_st STORE_METHOD;
 
-typedef struct ui_st UI;
+//typedef struct ui_st UI;
 typedef struct ui_method_st UI_METHOD;
 
 typedef struct st_ERR_FNS ERR_FNS;
