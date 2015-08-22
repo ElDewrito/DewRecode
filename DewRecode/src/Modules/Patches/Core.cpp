@@ -152,7 +152,7 @@ namespace
 	}
 	
 	// hook @ 0xB553A0
-	__declspec(naked) void HostObjectHealthHook()
+	__declspec(naked) void HostObjectShieldHook()
 	{
 		__asm
 		{
@@ -193,7 +193,7 @@ namespace
 	}
 
 	// hook @ 0xB54B4E
-	__declspec(naked) void HostObjectShieldHook()
+	__declspec(naked) void HostObjectHealthHook()
 	{
 		__asm
 		{
@@ -233,7 +233,7 @@ namespace
 	}
 
 	// hook @ 0xB33F13
-	__declspec(naked) void ClientObjectHealthHook()
+	__declspec(naked) void ClientObjectShieldHook()
 	{
 		__asm
 		{
@@ -263,9 +263,9 @@ namespace
 			; only descope if shield is decreasing at a rate greater than epsilon
 			mov		esi, 03C23D70Ah						; use an epsilon of 0.01f
 			movd	xmm7, esi
-			movss	xmm6, dword ptr ds:[edi + 100h]		; get original health
-			subss	xmm6, xmm0							; get negative health delta (orig - new)
-			comiss	xmm6, xmm7							; compare health delta with epsilon
+			movss	xmm6, dword ptr ds:[edi + 100h]		; get original shield
+			subss	xmm6, xmm0							; get negative shield delta (orig - new)
+			comiss	xmm6, xmm7							; compare shield delta with epsilon
 			jb		orig								; skip descope if delta is less than epsilon
 
 			; descope local player
@@ -280,8 +280,31 @@ namespace
 		}
 	}
 
+	// hook @ 0xB56FB7 - used in the case of an instant shield depletion from a charged plasma pistol shot
+	__declspec(naked) void ClientObjectShieldHook2()
+	{
+		__asm
+		{
+			push	eax
+
+			; get tls info
+			mov		eax, dword ptr fs:[02Ch]	; tls array address
+			mov		eax, dword ptr ds:[eax]		; slot 0 tls address
+
+			; descope local player
+			mov		eax, dword ptr ds:[eax + 0C4h]		; player control globals
+			mov		word ptr ds:[eax + 032Ah], 0FFFFh	; descope
+
+			pop		eax
+
+			mov		dword ptr ds:[edi + 100h], 0
+			push	0B56FC1h
+			ret
+		}
+	}
+
 	// hook @ 0xB329CE
-	__declspec(naked) void ClientObjectShieldHook()
+	__declspec(naked) void ClientObjectHealthHook()
 	{
 		__asm
 		{
@@ -308,12 +331,12 @@ namespace
 			cmp		ecx, edx
 			jne		orig
 
-			; only descope if shield is decreasing at a rate greater than epsilon
+			; only descope if health is decreasing at a rate greater than epsilon
 			mov		esi, 03C23D70Ah						; use an epsilon of 0.01f
 			movd	xmm7, esi
-			movss	xmm6, dword ptr ds:[ecx + 0FCh]		; get original shield
-			subss	xmm6, xmm0							; get negative shield delta (orig - new)
-			comiss	xmm6, xmm7							; compare shield delta with epsilon
+			movss	xmm6, dword ptr ds:[ecx + 0FCh]		; get original health
+			subss	xmm6, xmm0							; get negative health delta (orig - new)
+			comiss	xmm6, xmm7							; compare health delta with epsilon
 			jb		orig								; skip descope if delta is less than epsilon
 
 			; descope local player
@@ -425,10 +448,11 @@ namespace Modules
 			Hook("SprintInputHook", 0x46DFBB, SprintInputHook, HookType::Jmp),
 			Hook("ScopeLevelHook", 0x5D50CB, ScopeLevelHook, HookType::Jmp),
 
-			Hook("HostObjectHealthHook", 0xB553A0, HostObjectHealthHook, HookType::Jmp),
-			Hook("HostObjectShieldHook", 0xB54B4E, HostObjectShieldHook, HookType::Jmp),
-			Hook("ClientObjectHealthHook", 0xB33F13, ClientObjectHealthHook, HookType::Jmp),
-			Hook("ClientObjectShieldHook", 0xB329CE, ClientObjectShieldHook, HookType::Jmp),
+			Hook("HostObjectShieldHook", 0xB553A0, HostObjectShieldHook, HookType::Jmp),
+			Hook("HostObjectHealthHook", 0xB54B4E, HostObjectHealthHook, HookType::Jmp),
+			Hook("ClientObjectShieldHook", 0xB33F13, ClientObjectShieldHook, HookType::Jmp),
+			Hook("ClientObjectShieldHook2", 0xB56FB7, ClientObjectShieldHook2, HookType::Jmp),
+			Hook("ClientObjectHealthHook", 0xB329CE, ClientObjectHealthHook, HookType::Jmp),
 
 			Hook("GrenadeLoadoutHook", 0x5A3267, GrenadeLoadoutHook, HookType::Jmp)
 		});
