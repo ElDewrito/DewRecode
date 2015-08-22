@@ -1,24 +1,36 @@
+#define _WINSOCK_DEPRECATED_NO_WARNINGS // TODO: investigate using WSAEventSelect() instead of using this define
+
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <Windows.h>
+#include <thread>
 
 #include "ServerCommandProvider.hpp"
 #include "../ElDorito.hpp"
-#include <thread>
+
+#include <ElDorito/Blam/BlamNetwork.hpp>
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
+namespace
+{
+	int GetNumPlayers();
+}
+
 namespace Server
 {
-
 	std::vector<Command> ServerCommandProvider::GetCommands()
 	{
 		std::vector<Command> commands =
 		{
+			Command::CreateCommand("Server", "Announce", "announce", "Announces this server to the master servers", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandAnnounce)),
+			Command::CreateCommand("Server", "Unannounce", "unannounce", "Notifies the master servers to remove this server", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandUnannounce)),
+			Command::CreateCommand("Server", "AnnounceStats", "announcestats", "Announces the players stats to the masters at the end of the game", eCommandFlagsNone, BIND_COMMAND(this, &ServerCommandProvider::CommandAnnounceStats)),
 			Command::CreateCommand("Server", "Connect", "connect", "Begins establishing a connection to a server", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &ServerCommandProvider::CommandConnect), { "host:port The server info to connect to", "password(string) The password for the server" }),
-			Command::CreateCommand("Server", "AnnounceStats", "announcestats", "Announces the players stats to the masters at the end of the game", eCommandFlagsNone, BIND_COMMAND(this, &ServerCommandProvider::CommandAnnounceStats))
+			Command::CreateCommand("Server", "KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandKickPlayer), { "playername/UID The name or UID of the player to kick" }),
+			Command::CreateCommand("Server", "ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandListPlayers))
 		};
 
 		return commands;
@@ -34,27 +46,297 @@ namespace Server
 		VarCountdown->ValueIntMin = 0;
 		VarCountdown->ValueIntMax = 20;
 
+		VarName = manager->Add(Command::CreateVariableString("Server", "Name", "server_name", "The name of the server", eCommandFlagsArchived, "HaloOnline Server"));
+
 		VarMaxPlayers = manager->Add(Command::CreateVariableInt("Server", "MaxPlayers", "maxplayers", "Maximum number of connected players", (CommandFlags)(eCommandFlagsArchived | eCommandFlagsRunOnMainMenu), 16, BIND_COMMAND(this, &ServerCommandProvider::VariableMaxPlayersUpdate)));
 		VarMaxPlayers->ValueIntMin = 1;
 		VarMaxPlayers->ValueIntMax = 16;
 
-		VarMode = manager->Add(Command::CreateVariableInt("Server", "Mode", "mode", "Changes the game mode for the server. 0 = Xbox Live (Open Party); 1 = Xbox Live (Friends Only); 2 = Xbox Live (Invite Only); 3 = Online; 4 = Offline;", eCommandFlagsNone, 4, BIND_COMMAND(this, &ServerCommandProvider::CommandMode)));
+		VarMode = manager->Add(Command::CreateVariableInt("Server", "Mode", "mode", "Changes the game mode for the server. 0 = Xbox Live (Open Party); 1 = Xbox Live (Friends Only); 2 = Xbox Live (Invite Only); 3 = Online; 4 = Offline;", eCommandFlagsNone, 4, BIND_COMMAND(this, &ServerCommandProvider::VariableModeUpdate)));
 		VarMode->ValueIntMin = 0;
 		VarMode->ValueIntMax = 4;
+
+		VarPassword = manager->Add(Command::CreateVariableString("Server", "Password", "password", "The server password", eCommandFlagsArchived, ""));
 
 		VarPort = manager->Add(Command::CreateVariableInt("Server", "Port", "server_port", "The port number for the HTTP info server, game itself uses a different one", eCommandFlagsArchived, 11784));
 		VarPort->ValueIntMin = 1;
 		VarPort->ValueIntMax = 0xFFFF;
+
+		VarShouldAnnounce = manager->Add(Command::CreateVariableInt("Server", "ShouldAnnounce", "should_announce", "Controls whether the server will be announced to the master servers", eCommandFlagsArchived, 1, BIND_COMMAND(this, &ServerCommandProvider::VariableShouldAnnounceUpdate)));
+		VarShouldAnnounce->ValueIntMin = 0;
+		VarShouldAnnounce->ValueIntMax = 1;
 	}
 
 	void ServerCommandProvider::RegisterCallbacks(IEngine* engine)
 	{
 		engine->OnEvent("Core", "Game.End", BIND_CALLBACK(this, &ServerCommandProvider::CallbackEndGame));
+		engine->OnEvent("Core", "Server.Start", BIND_CALLBACK(this, &ServerCommandProvider::CallbackInfoServerStart));
+		engine->OnEvent("Core", "Server.Stop", BIND_CALLBACK(this, &ServerCommandProvider::CallbackInfoServerStop));
+		engine->OnEvent("Core", "Engine.FirstTick", BIND_CALLBACK(this, &ServerCommandProvider::CallbackRemoteConsoleStart));
+		engine->OnWndProc(BIND_WNDPROC(this, &ServerCommandProvider::WndProc));
 	}
 
 	void ServerCommandProvider::CallbackEndGame(void* param)
 	{
 		AnnounceStats();
+	}
+
+	void ServerCommandProvider::CallbackInfoServerStart(void* param)
+	{
+		if (infoServerRunning)
+			return;
+
+		auto& dorito = ElDorito::Instance();
+
+		if (dorito.Engine.GetGameHWND() == 0)
+			return;
+
+		infoSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		SOCKADDR_IN bindAddr;
+		bindAddr.sin_family = AF_INET;
+		bindAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+		unsigned long serverPort = VarPort->ValueInt;
+
+		unsigned long port = serverPort;
+
+		if (port == Pointer(0x1860454).Read<uint32_t>()) // make sure port isn't the same as game port
+			port++;
+
+		bindAddr.sin_port = htons((u_short)port);
+
+		// open our listener socket
+		while (bind(infoSocket, (PSOCKADDR)&bindAddr, sizeof(bindAddr)) != 0)
+		{
+			port++;
+			if (port == Pointer(0x1860454).Read<uint32_t>()) // make sure port isn't the same as game port
+				port++;
+
+			bindAddr.sin_port = htons((u_short)port);
+			if (port > (serverPort + 10))
+			{
+				dorito.Logger.Log(LogSeverity::Error, "ServerCommandProvider::CallbackInfoServerStart", "Failed to create socket for info server, no ports available?");
+				return;
+			}
+		}
+		VarPort->ValueInt = port;
+
+		auto err1 = dorito.Utils.UPnPForwardPort(true, port, port, "DewritoInfoServer");
+		uint32_t gamePort = Pointer(0x1860454).Read<uint32_t>();
+		auto err2 = dorito.Utils.UPnPForwardPort(false, gamePort, gamePort, "DewritoGameServer");
+
+		if (err1.ErrorType != UPnPErrorType::None)
+			dorito.Engine.PrintToConsole("Failed to open info server port via UPnP!"); // TODO: print in log instead
+
+		if (err2.ErrorType != UPnPErrorType::None)
+			dorito.Engine.PrintToConsole("Failed to open game server port via UPnP!"); // TODO: print in log instead
+
+		WSAAsyncSelect(infoSocket, dorito.Engine.GetGameHWND(), WM_INFOSERVER, FD_ACCEPT | FD_CLOSE);
+		listen(infoSocket, 5);
+		infoServerRunning = true;
+	}
+
+	void ServerCommandProvider::CallbackInfoServerStop(void* param)
+	{
+		if (!infoServerRunning)
+			return;
+
+		closesocket(infoSocket);
+		int istrue = 1;
+		setsockopt(infoSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&istrue, sizeof(int));
+
+		if (VarShouldAnnounce->ValueInt == 1)
+			UnannounceServer();
+
+		infoServerRunning = false;
+		lastAnnounce = 0;
+	}
+
+	void ServerCommandProvider::CallbackRemoteConsoleStart(void* param)
+	{
+		if (rconServerRunning)
+			return;
+
+		auto& dorito = ElDorito::Instance();
+
+		if (dorito.Engine.GetGameHWND() == 0)
+			return;
+
+		rconSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		SOCKADDR_IN bindAddr;
+		bindAddr.sin_family = AF_INET;
+		bindAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+		bindAddr.sin_port = htons(2448);
+
+		// open our listener socket
+		bind(rconSocket, (PSOCKADDR)&bindAddr, sizeof(bindAddr));
+		WSAAsyncSelect(rconSocket, dorito.Engine.GetGameHWND(), WM_RCON, FD_ACCEPT | FD_CLOSE);
+		listen(rconSocket, 5);
+		rconServerRunning = true;
+	}
+
+	void ServerCommandProvider::announceServerThread()
+	{
+		std::stringstream ss;
+		std::vector<std::string> announceEndpoints;
+		auto& dorito = ElDorito::Instance();
+
+		dorito.Utils.GetEndpoints(announceEndpoints, "announce");
+
+		for (auto server : announceEndpoints)
+		{
+			HttpRequest req;
+			try
+			{
+				req = dorito.Utils.HttpSendRequest(dorito.Utils.WidenString(server + "?port=" + VarPort->ValueString), L"GET", L"ElDewrito/" + dorito.Utils.WidenString(dorito.Engine.GetDoritoVersionString()), L"", L"", L"", NULL, 0);
+				if (req.Error != HttpRequestError::None)
+				{
+					ss << "Unable to connect to master server " << server << " (error: " << (int)req.Error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
+					continue;
+				}
+			}
+			catch (...) // TODO: find out what exception is being caused
+			{
+				ss << "Exception during master server announce request to " << server << std::endl << std::endl;
+				continue;
+			}
+
+			// make sure the server replied with 200 OK
+			std::wstring expected = L"HTTP/1.1 200 OK";
+			if (req.ResponseHeader.length() < expected.length())
+			{
+				ss << "Invalid master server announce response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			auto respHdr = req.ResponseHeader.substr(0, expected.length());
+			if (respHdr.compare(expected))
+			{
+				ss << "Invalid master server announce response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			// parse the json response
+			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
+			rapidjson::Document json;
+			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
+			{
+				ss << "Invalid master server JSON response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			if (!json.HasMember("result"))
+			{
+				ss << "Master server JSON response from " << server << " is missing data." << std::endl << std::endl;
+				continue;
+			}
+
+			auto& result = json["result"];
+			if (result["code"].GetInt() != 0)
+			{
+				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
+				continue;
+			}
+		}
+
+		std::string errors = ss.str();
+		if (!errors.empty())
+			dorito.Logger.Log(LogSeverity::Error, "ServerCommandProvider::announceServerThread", errors);
+	}
+
+	bool ServerCommandProvider::CommandAnnounce(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		AnnounceServer();
+		return true;
+	}
+
+	void ServerCommandProvider::AnnounceServer()
+	{
+		// TODO1: check if they're in an online game and hosting
+		std::thread thread(&ServerCommandProvider::announceServerThread, this);
+		thread.detach();
+	}
+
+	void ServerCommandProvider::unannounceServerThread()
+	{
+		std::stringstream ss;
+		std::vector<std::string> announceEndpoints;
+		auto& dorito = ElDorito::Instance();
+
+		dorito.Utils.GetEndpoints(announceEndpoints, "announce");
+
+		for (auto server : announceEndpoints)
+		{
+			HttpRequest req;
+			try
+			{
+				req = dorito.Utils.HttpSendRequest(dorito.Utils.WidenString(server + "?port=" + VarPort->ValueString + "&shutdown=true"), L"GET", L"ElDewrito/" + dorito.Utils.WidenString(dorito.Engine.GetDoritoVersionString()), L"", L"", L"", NULL, 0);
+				if (req.Error != HttpRequestError::None)
+				{
+					ss << "Unable to connect to master server " << server << " (error: " << (int)req.Error << "/" << req.LastError << "/" << std::to_string(GetLastError()) << ")" << std::endl << std::endl;
+					continue;
+				}
+			}
+			catch (...)
+			{
+				ss << "Exception during master server unannounce request to " << server << std::endl << std::endl;
+				continue;
+			}
+
+			// make sure the server replied with 200 OK
+			std::wstring expected = L"HTTP/1.1 200 OK";
+			if (req.ResponseHeader.length() < expected.length())
+			{
+				ss << "Invalid master server unannounce response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			auto respHdr = req.ResponseHeader.substr(0, expected.length());
+			if (respHdr.compare(expected))
+			{
+				ss << "Invalid master server unannounce response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			// parse the json response
+			std::string resp = std::string(req.ResponseBody.begin(), req.ResponseBody.end());
+			rapidjson::Document json;
+			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
+			{
+				ss << "Invalid master server JSON response from " << server << std::endl << std::endl;
+				continue;
+			}
+
+			if (!json.HasMember("result"))
+			{
+				ss << "Master server JSON response from " << server << " is missing data." << std::endl << std::endl;
+				continue;
+			}
+
+			auto& result = json["result"];
+			if (result["code"].GetInt() != 0)
+			{
+				ss << "Master server " << server << " returned error code " << result["code"].GetInt() << " (" << result["msg"].GetString() << ")" << std::endl << std::endl;
+				continue;
+			}
+		}
+
+		std::string errors = ss.str();
+		if (!errors.empty())
+			dorito.Logger.Log(LogSeverity::Error, "ServerCommandProvider::unannounceServerThread", errors);
+	}
+
+	bool ServerCommandProvider::CommandUnannounce(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		AnnounceServer();
+		return true;
+	}
+
+	void ServerCommandProvider::UnannounceServer()
+	{
+		// TODO1: check if they're in an online game and hosting
+		std::thread thread(&ServerCommandProvider::unannounceServerThread, this);
+		thread.detach();
 	}
 
 	void ServerCommandProvider::announceStatsThread()
@@ -122,7 +404,7 @@ namespace Server
 		if (!dorito.Utils.RSACreateSignature(dorito.PlayerCommands->GetFormattedPrivKey(), (void*)statsObject.c_str(), statsObject.length(), statsSignature))
 		{
 			ss << "Failed to create stats RSA signature!";
-			dorito.Logger.Log(LogSeverity::Error, "AnnounceStats", ss.str());
+			dorito.Logger.Log(LogSeverity::Error, "ServerCommandProvider::announceStatsThread", ss.str());
 			return;
 		}
 
@@ -199,7 +481,7 @@ namespace Server
 
 		std::string errors = ss.str();
 		if (!errors.empty())
-			dorito.Logger.Log(LogSeverity::Error, "AnnounceStats", ss.str());
+			dorito.Logger.Log(LogSeverity::Error, "ServerCommandProvider::announceStatsThread", errors);
 	}
 
 	bool ServerCommandProvider::CommandAnnounceStats(const std::vector<std::string>& Arguments, std::string& returnInfo)
@@ -212,6 +494,7 @@ namespace Server
 	void ServerCommandProvider::AnnounceStats()
 	{
 		std::thread thread(&ServerCommandProvider::announceStatsThread, this);
+		thread.detach();
 	}
 
 	bool ServerCommandProvider::CommandConnect(const std::vector<std::string>& Arguments, std::string& returnInfo)
@@ -400,7 +683,132 @@ namespace Server
 		// TODO: move stuff from CommandConnect into here
 	}
 
-	bool ServerCommandProvider::CommandMode(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool ServerCommandProvider::CommandKickPlayer(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		if (Arguments.size() <= 0)
+		{
+			returnInfo = "Invalid arguments.";
+			return false;
+		}
+
+		auto kickPlayerName = Arguments[0];
+
+		auto retVal = KickPlayer(kickPlayerName);
+		switch (retVal)
+		{
+		case KickPlayerReturnCode::NoSession:
+			returnInfo = "No session found, are you hosting a game?";
+			break;
+		case KickPlayerReturnCode::NotHost:
+			returnInfo = "You must be hosting a game to use this command.";
+			break;
+		case KickPlayerReturnCode::KickFailed:
+			returnInfo = "Failed to kick player " + kickPlayerName;
+			break;
+		case KickPlayerReturnCode::NotFound:
+			returnInfo = "Player " + kickPlayerName + " not found in game?";
+			break;
+		case KickPlayerReturnCode::Success:
+			returnInfo = "Issued kick request for player " + kickPlayerName + ".";
+			break;
+		}
+
+		return retVal == KickPlayerReturnCode::Success;
+	}
+
+	KickPlayerReturnCode ServerCommandProvider::KickPlayer(const std::string& playerName)
+	{
+		auto& dorito = ElDorito::Instance();
+
+		auto* session = dorito.Engine.GetActiveNetworkSession();
+		if (!session || !session->IsEstablished())
+			return KickPlayerReturnCode::NoSession;
+
+		if (!session->IsHost())
+			return KickPlayerReturnCode::NotHost;
+
+		int peerIdx = session->MembershipInfo.FindFirstPeer();
+		while (peerIdx != -1)
+		{
+			int playerIdx = session->MembershipInfo.GetPeerPlayer(peerIdx);
+			if (playerIdx != -1)
+			{
+				auto* player = &session->MembershipInfo.PlayerSessions[playerIdx];
+
+				std::stringstream uidStream;
+				uidStream << std::hex << player->Uid;
+				auto uidString = uidStream.str();
+
+				if (!dorito.Utils.Trim(dorito.Utils.ThinString(player->DisplayName)).compare(playerName) || !uidString.compare(playerName))
+				{
+					auto retVal = KickPlayer(peerIdx);
+					if (retVal)
+						return KickPlayerReturnCode::Success;
+					else
+						return KickPlayerReturnCode::KickFailed;
+				}
+			}
+
+			peerIdx = session->MembershipInfo.FindNextPeer(peerIdx);
+		}
+
+		return KickPlayerReturnCode::NotFound;
+	}
+
+	bool ServerCommandProvider::KickPlayer(int peerIdx)
+	{
+		typedef bool(__cdecl *Network_squad_session_boot_playerPtr)(int playerIdx, int reason);
+		auto Network_squad_session_boot_player = reinterpret_cast<Network_squad_session_boot_playerPtr>(0x437D60);
+
+		return Network_squad_session_boot_player(peerIdx, 4);
+	}
+
+	bool ServerCommandProvider::CommandListPlayers(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		auto& dorito = ElDorito::Instance();
+
+		std::stringstream ss;
+		auto* session = dorito.Engine.GetActiveNetworkSession();
+		if (!session || !session->IsEstablished())
+		{
+			returnInfo = "No session found, are you in a game?";
+			return false;
+		}
+
+		returnInfo = ListPlayers();
+		return true;
+	}
+
+	std::string ServerCommandProvider::ListPlayers()
+	{
+		auto& dorito = ElDorito::Instance();
+
+		std::stringstream ss;
+		auto* session = dorito.Engine.GetActiveNetworkSession();
+		if (!session || !session->IsEstablished())
+		{
+			return "No session found, are you in a game?";
+		}
+
+		int peerIdx = session->MembershipInfo.FindFirstPeer();
+		while (peerIdx != -1)
+		{
+			int playerIdx = session->MembershipInfo.GetPeerPlayer(peerIdx);
+			if (playerIdx != -1)
+			{
+				auto* player = &session->MembershipInfo.PlayerSessions[playerIdx];
+
+				std::string name = dorito.Utils.ThinString(player->DisplayName);
+				ss << std::dec << "(" << peerIdx << "/" << playerIdx << "): " << name << " (uid: 0x" << std::hex << player->Uid << ")" << std::endl;
+			}
+
+			peerIdx = session->MembershipInfo.FindNextPeer(peerIdx);
+		}
+
+		return ss.str();
+	}
+
+	bool ServerCommandProvider::VariableModeUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
 		auto retVal = SetLobbyMode((Blam::ServerLobbyMode)VarMode->ValueInt);
 		if (retVal)
@@ -418,6 +826,31 @@ namespace Server
 		typedef bool(__cdecl *Lobby_SetNetworkModePtr)(int mode);
 		auto Lobby_SetNetworkMode = reinterpret_cast<Lobby_SetNetworkModePtr>(0xA7F950);
 		return Lobby_SetNetworkMode((int)mode);
+	}
+
+	bool ServerCommandProvider::VariableCountdownUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	{
+		SetCountdown(VarCountdown->ValueInt); // shouldn't return false since range is checked by CommandManager
+
+		return true;
+	}
+
+	bool ServerCommandProvider::SetCountdown(int seconds)
+	{
+		if (seconds < 0 || seconds > 20)
+			return false;
+
+		Pointer(0x553708).Write<uint8_t>((uint8_t)seconds + 0); // player control
+		Pointer(0x553738).Write<uint8_t>((uint8_t)seconds + 4); // camera position
+		Pointer(0x5521D1).Write<uint8_t>((uint8_t)seconds + 4); // ui timer
+
+		// Fix team notification
+		if (seconds == 4)
+			Pointer(0x5536F0).Write<uint8_t>(2);
+		else
+			Pointer(0x5536F0).Write<uint8_t>(3);
+
+		return true;
 	}
 
 	bool ServerCommandProvider::VariableMaxPlayersUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
@@ -446,28 +879,273 @@ namespace Server
 		return true;
 	}
 
-	bool ServerCommandProvider::VariableCountdownUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool ServerCommandProvider::VariableShouldAnnounceUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
 	{
-		SetCountdown(VarCountdown->ValueInt); // shouldn't return false since range is checked by CommandManager
+		SetShouldAnnounce(VarShouldAnnounce->ValueInt == 1); // shouldn't return false since range is checked by CommandManager
 
+		//if (!VarShouldAnnounce->ValueInt)
+			//TODO1: UnannounceServer();
 		return true;
 	}
 
-	bool ServerCommandProvider::SetCountdown(int seconds)
+	void ServerCommandProvider::SetShouldAnnounce(bool shouldAnnounce)
 	{
-		if (seconds < 0 || seconds > 20)
-			return false;
+		VarShouldAnnounce->ValueInt = shouldAnnounce ? 1 : 0;
+	}
 
-		Pointer(0x553708).Write<uint8_t>((uint8_t)seconds + 0); // player control
-		Pointer(0x553738).Write<uint8_t>((uint8_t)seconds + 4); // camera position
-		Pointer(0x5521D1).Write<uint8_t>((uint8_t)seconds + 4); // ui timer
+	LRESULT ServerCommandProvider::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		if (!infoServerRunning && !rconServerRunning)
+			return 0;
 
-		// Fix team notification
-		if (seconds == 4)
-			Pointer(0x5536F0).Write<uint8_t>(2);
-		else
-			Pointer(0x5536F0).Write<uint8_t>(3);
+		auto& dorito = ElDorito::Instance();
 
-		return true;
+		if (VarShouldAnnounce->ValueInt == 1 && infoServerRunning)
+		{
+			time_t curTime;
+			time(&curTime);
+			if (curTime - lastAnnounce > serverContactTimeLimit) // re-announce every "serverContactTimeLimit" seconds
+			{
+				lastAnnounce = curTime;
+				AnnounceServer();
+			}
+		}
+
+		if (msg != WM_RCON && msg != WM_INFOSERVER)
+			return 0;
+
+		if (WSAGETSELECTERROR(lParam))
+		{
+			closesocket((SOCKET)wParam);
+			return 1;
+		}
+
+		SOCKET clientSocket;
+		int inDataLength;
+		char inDataBuffer[1024];
+		bool isValidAscii = true;
+
+		switch (WSAGETSELECTEVENT(lParam))
+		{
+		case FD_ACCEPT:
+			// accept the connection and send our motd
+			clientSocket = accept((SOCKET)wParam, NULL, NULL);
+			WSAAsyncSelect(clientSocket, hwnd, msg, FD_READ | FD_WRITE | FD_CLOSE);
+			if (msg == WM_RCON)
+			{
+				std::string motd = "ElDewrito " + dorito.Engine.GetDoritoVersionString() + " Remote Console\r\n";
+				send(clientSocket, motd.c_str(), motd.length(), 0);
+			}
+			break;
+		case FD_READ:
+			ZeroMemory(inDataBuffer, sizeof(inDataBuffer));
+			inDataLength = recv((SOCKET)wParam, (char*)inDataBuffer, sizeof(inDataBuffer) / sizeof(inDataBuffer[0]), 0);
+
+			// check if text is proper ascii, because sometimes it's not
+			for (int i = 0; i < inDataLength; i++)
+			{
+				char buf = inDataBuffer[i];
+				if ((buf < 0x20 || buf > 0x7F) && buf != 0xD && buf != 0xA)
+				{
+					isValidAscii = false;
+					break;
+				}
+			}
+
+			if (isValidAscii)
+			{
+				if (msg == WM_RCON)
+				{
+					auto ret = dorito.CommandManager.Execute(inDataBuffer, true);
+					if (ret.length() > 0)
+					{
+						dorito.Utils.ReplaceString(ret, "\n", "\r\n");
+						ret = ret + "\r\n";
+						send((SOCKET)wParam, ret.c_str(), ret.length(), 0);
+					}
+				}
+				else if (msg == WM_INFOSERVER)
+				{
+					std::string mapName((char*)Pointer(0x22AB018)(0x1A4));
+					std::wstring mapVariantName((wchar_t*)Pointer(0x1863ACA));
+					std::wstring variantName((wchar_t*)Pointer(0x23DAF4C));
+					std::string xnkid;
+					std::string xnaddr;
+					std::string gameVersion((char*)Pointer(0x199C0F0));
+					std::string status = "InGame";
+					std::string playerName = dorito.PlayerCommands->VarName->ValueString;
+					unsigned long maxPlayers = VarMaxPlayers->ValueInt;
+
+					dorito.Utils.BytesToHexString((char*)Pointer(0x2247b80), 0x10, xnkid);
+					dorito.Utils.BytesToHexString((char*)Pointer(0x2247b90), 0x10, xnaddr);
+
+					Pointer &gameModePtr = dorito.Engine.GetMainTls(GameGlobals::GameInfo::TLSOffset)[0](GameGlobals::GameInfo::GameMode);
+					uint32_t gameMode = gameModePtr.Read<uint32_t>();
+					int32_t variantType = Pointer(0x023DAF18).Read<int32_t>();
+					if (gameMode == 3)
+					{
+						if (mapName == "mainmenu")
+						{
+							status = "InLobby";
+							// on mainmenu so we'll have to read other data
+							mapName = std::string((char*)Pointer(0x19A5E49));
+							variantName = std::wstring((wchar_t*)Pointer(0x179254));
+							variantType = Pointer(0x179250).Read<uint32_t>();
+						}
+						else // TODO: find how to get the variant name/type while it's on the loading screen
+							status = "Loading";
+					}
+
+					rapidjson::StringBuffer s;
+					rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+					writer.StartObject();
+					writer.Key("name");
+					writer.String(VarName->ValueString.c_str());
+					writer.Key("port");
+					writer.Int(Pointer(0x1860454).Read<uint32_t>());
+					writer.Key("hostPlayer");
+					writer.String(playerName.c_str());
+					writer.Key("map");
+					writer.String(dorito.Utils.ThinString(mapVariantName).c_str());
+					writer.Key("mapFile");
+					writer.String(mapName.c_str());
+					writer.Key("variant");
+					writer.String(dorito.Utils.ThinString(variantName).c_str());
+					if (variantType >= 0 && variantType < (uint32_t)Blam::GameType::Count)
+					{
+						writer.Key("variantType");
+						writer.String(Blam::GameTypeNames[variantType].c_str());
+					}
+					writer.Key("status");
+					writer.String(status.c_str());
+					writer.Key("numPlayers");
+					writer.Int(GetNumPlayers());
+
+					// TODO: find how to get actual max players from the game, since our variable might be wrong
+					writer.Key("maxPlayers");
+					writer.Int(maxPlayers);
+
+					bool authenticated = true;
+					if (!VarPassword->ValueString.empty())
+					{
+						std::string authString = "dorito:" + VarPassword->ValueString;
+						authString = "Authorization: Basic " + dorito.Utils.Base64Encode((const unsigned char*)authString.c_str(), authString.length()) + "\r\n";
+						authenticated = std::string(inDataBuffer).find(authString) != std::string::npos;
+					}
+
+					if (authenticated)
+					{
+						writer.Key("xnkid");
+						writer.String(xnkid.c_str());
+
+						writer.Key("xnaddr");
+						writer.String(xnaddr.c_str());
+
+						writer.Key("variables");
+						writer.StartArray();
+						auto cmds = dorito.CommandManager.GetList();
+						for (auto cmd : cmds)
+						{
+							if (!(cmd.Flags & eCommandFlagsReplicated))
+								continue;
+							writer.StartObject();
+							writer.Key("name");
+							writer.String(cmd.Name.c_str());
+							writer.Key("value");
+							writer.String(cmd.ValueString.c_str());
+							writer.EndObject();
+						}
+						writer.EndArray();
+
+						writer.Key("players");
+						writer.StartArray();
+						uint32_t playerScoresBase = 0x23F1724;
+						//uint32_t playerInfoBase = 0x2162DD0;
+						uint32_t playerInfoBase = 0x2162E08;
+						uint32_t menuPlayerInfoBase = 0x1863B58;
+						uint32_t playerStatusBase = 0x2161808;
+						for (int i = 0; i < 16; i++)
+						{
+							uint16_t score = Pointer(playerScoresBase + (1080 * i)).Read<uint16_t>();
+							uint16_t kills = Pointer(playerScoresBase + (1080 * i) + 4).Read<uint16_t>();
+							uint16_t assists = Pointer(playerScoresBase + (1080 * i) + 6).Read<uint16_t>();
+							uint16_t deaths = Pointer(playerScoresBase + (1080 * i) + 8).Read<uint16_t>();
+
+							wchar_t* name = Pointer(playerInfoBase + (5696 * i));
+							std::string nameStr = dorito.Utils.ThinString(name);
+
+							wchar_t* menuName = Pointer(menuPlayerInfoBase + (0x1628 * i));
+							std::string menuNameStr = dorito.Utils.ThinString(menuName);
+
+							uint32_t ipAddr = Pointer(playerInfoBase + (5696 * i) - 88).Read<uint32_t>();
+							uint16_t team = Pointer(playerInfoBase + (5696 * i) + 32).Read<uint16_t>();
+							uint16_t num7 = Pointer(playerInfoBase + (5696 * i) + 36).Read<uint16_t>();
+
+							uint8_t alive = Pointer(playerStatusBase + (176 * i)).Read<uint8_t>();
+
+							if (menuNameStr.empty() && nameStr.empty() && ipAddr == 0)
+								continue;
+
+							writer.StartObject();
+							writer.Key("name");
+							writer.String(menuNameStr.c_str());
+							writer.Key("score");
+							writer.Int(score);
+							writer.Key("kills");
+							writer.Int(kills);
+							writer.Key("assists");
+							writer.Int(assists);
+							writer.Key("deaths");
+							writer.Int(deaths);
+							writer.Key("team");
+							writer.Int(team);
+							writer.Key("isAlive");
+							writer.Bool(alive == 1);
+							writer.EndObject();
+						}
+						writer.EndArray();
+					}
+					else
+					{
+						writer.Key("passworded");
+						writer.Bool(true);
+					}
+
+					writer.Key("gameVersion");
+					writer.String(gameVersion.c_str());
+					writer.Key("eldewritoVersion");
+					writer.String(dorito.Engine.GetDoritoVersionString().c_str());
+					writer.EndObject();
+
+					std::string replyData = s.GetString();
+					std::string reply = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nServer: ElDewrito/" + dorito.Engine.GetDoritoVersionString() + "\r\nContent-Length: " + std::to_string(replyData.length()) + "\r\nConnection: close\r\n\r\n" + replyData;
+					send((SOCKET)wParam, reply.c_str(), reply.length(), 0);
+				}
+			}
+
+			break;
+		case FD_CLOSE:
+			closesocket((SOCKET)wParam);
+			break;
+		}
+		return 1;
+	}
+}
+
+namespace
+{
+	int GetNumPlayers()
+	{
+		void* v2;
+
+		typedef char(__cdecl *sub_454F20Ptr)(void** a1);
+		auto sub_454F20 = reinterpret_cast<sub_454F20Ptr>(0x454F20);
+		if (!sub_454F20(&v2))
+			return 0;
+
+		typedef char*(__thiscall *sub_45C250Ptr)(void* thisPtr);
+		auto sub_45C250 = reinterpret_cast<sub_45C250Ptr>(0x45C250);
+
+		return *(DWORD*)(sub_45C250(v2) + 0x10A0);
 	}
 }

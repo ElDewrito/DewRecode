@@ -94,6 +94,7 @@
     <ClCompile Include="src\Camera\CameraPatchProvider.cpp" />
     <ClCompile Include="src\Debug\DebugCommandProvider.cpp" />
     <ClCompile Include="src\Debug\DebugPatchProvider.cpp" />
+    <ClCompile Include="src\ElDewrito\ElDewritoCommandProvider.cpp" />
     <ClCompile Include="src\Forge\ForgeCommandProvider.cpp" />
     <ClCompile Include="src\Forge\ForgePatchProvider.cpp" />
     <ClCompile Include="src\Game\GameCommandProvider.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="src\Camera\CameraPatchProvider.hpp" />
     <ClInclude Include="src\Debug\DebugCommandProvider.hpp" />
     <ClInclude Include="src\Debug\DebugPatchProvider.hpp" />
+    <ClInclude Include="src\ElDewrito\ElDewritoCommandProvider.hpp" />
     <ClInclude Include="src\Forge\ForgeCommandProvider.hpp" />
     <ClInclude Include="src\Forge\ForgePatchProvider.hpp" />
     <ClInclude Include="src\Game\GameCommandProvider.hpp" />

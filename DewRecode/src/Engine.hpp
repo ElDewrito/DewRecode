@@ -10,11 +10,11 @@ class Engine : public IEngine
 public:
 	bool OnTick(TickCallback callback);
 	bool OnEndScene(EventCallback callback);
-	bool OnWndProc(WNDPROC callback);
+	bool OnWndProc(WndProcCallback callback);
 	bool OnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback);
 
 	bool RemoveOnTick(TickCallback callback);
-	bool RemoveOnWndProc(WNDPROC callback);
+	bool RemoveOnWndProc(WndProcCallback callback);
 	bool RemoveOnEvent(const std::string& eventNamespace, const std::string& eventName, EventCallback callback);
 
 	void Event(const std::string& eventNamespace, const std::string& eventName, void* param = 0);
@@ -67,7 +67,7 @@ private:
 	bool hasFirstTickTocked = false;
 	std::vector<TickCallback> tickCallbacks;
 	std::vector<EventCallback> endSceneCallbacks;
-	std::vector<WNDPROC> wndProcCallbacks;
+	std::vector<WndProcCallback> wndProcCallbacks;
 	std::map<std::string, std::vector<EventCallback>> eventCallbacks;
 	std::map<std::string, void*> interfaces;
 

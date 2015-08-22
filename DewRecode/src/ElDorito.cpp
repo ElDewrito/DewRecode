@@ -42,6 +42,7 @@ void ElDorito::initCommandProvider(std::shared_ptr<ICommandProvider> command)
 		CommandManager.Add(cmd);
 
 	command->RegisterVariables(&CommandManager);
+	command->RegisterCallbacks(&Engine);
 }
 
 void ElDorito::initClasses()
@@ -79,6 +80,9 @@ void ElDorito::initClasses()
 
 	CameraCommands = std::make_shared<Camera::CameraCommandProvider>(cameraPatchProvider);
 	initCommandProvider(CameraCommands);
+
+	ElDewritoCommands = std::make_shared<ElDewrito::ElDewritoCommandProvider>();
+	initCommandProvider(ElDewritoCommands);
 
 	ForgeCommands = std::make_shared<Forge::ForgeCommandProvider>(forgePatchProvider);
 	initCommandProvider(ForgeCommands);

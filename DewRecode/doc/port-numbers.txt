@@ -2,6 +2,5 @@ Game runs on any port in the range 11774 - 11783 (whichever is open first)
 Info server runs from 11784 - 11793 (whichever is open first)
 VoIP server runs from 11794 - 11803 (whichever is open first)
 RCON server runs on 2448 (local only right now)
-RCON/WebSockets runs on ?
 
 UPnP handles port forwarding, in case it doesn't work the user should forward the range [11774..11803] (TCP/UDP)

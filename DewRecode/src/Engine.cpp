@@ -159,7 +159,7 @@ bool Engine::OnEndScene(EventCallback callback)
 /// </summary>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was added, false if the callback is already registered.</returns>
-bool Engine::OnWndProc(WNDPROC callback)
+bool Engine::OnWndProc(WndProcCallback callback)
 {
 	wndProcCallbacks.push_back(callback);
 	return true;
@@ -207,9 +207,10 @@ bool Engine::RemoveOnTick(TickCallback callback)
 /// </summary>
 /// <param name="callback">The callback.</param>
 /// <returns>True if the callback was removed.</returns>
-bool Engine::RemoveOnWndProc(WNDPROC callback)
+bool Engine::RemoveOnWndProc(WndProcCallback callback)
 {
-	wndProcCallbacks.erase(std::remove(wndProcCallbacks.begin(), wndProcCallbacks.end(), callback), wndProcCallbacks.end());
+	//TODO2:
+	//wndProcCallbacks.erase(std::remove(wndProcCallbacks.begin(), wndProcCallbacks.end(), callback), wndProcCallbacks.end());
 	return true;
 }
 

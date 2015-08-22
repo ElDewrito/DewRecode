@@ -61,6 +61,9 @@ typedef std::function<void(const std::chrono::duration<double>& deltaTime)> Tick
 typedef std::function<void(void* param)> EventCallback;
 #define BIND_CALLBACK(classPtr, funcPtr) std::bind(funcPtr, classPtr, std::placeholders::_1)
 
+typedef std::function<LRESULT(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)> WndProcCallback;
+#define BIND_WNDPROC(classPtr, funcPtr) std::bind(funcPtr, classPtr, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+
 typedef std::initializer_list<std::string> StringArrayInitializerType;
 
 struct PlayerInfo
@@ -128,7 +131,7 @@ public:
 	/// </summary>
 	/// <param name="callback">The callback.</param>
 	/// <returns>True if the callback was added, false if the callback is already registered.</returns>
-	virtual bool OnWndProc(WNDPROC callback) = 0;
+	virtual bool OnWndProc(WndProcCallback callback) = 0;
 
 	/// <summary>
 	/// Adds a callback to be called when the specified event occurs. If the eventNamespace/eventName combination doesn't exist a new event will be created.
@@ -152,7 +155,7 @@ public:
 	/// </summary>
 	/// <param name="callback">The callback.</param>
 	/// <returns>True if the callback was removed.</returns>
-	virtual bool RemoveOnWndProc(WNDPROC callback) = 0;
+	virtual bool RemoveOnWndProc(WndProcCallback callback) = 0;
 
 	/// <summary>
 	/// Unregisters an EventCallback.

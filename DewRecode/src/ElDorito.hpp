@@ -19,6 +19,7 @@ class IPatchProvider;
 
 #include "Camera/CameraCommandProvider.hpp"
 #include "Debug/DebugCommandProvider.hpp"
+#include "ElDewrito/ElDewritoCommandProvider.hpp"
 #include "Forge/ForgeCommandProvider.hpp"
 #include "Game/GameCommandProvider.hpp"
 #include "Input/InputCommandProvider.hpp"
@@ -51,6 +52,7 @@ public:
 
 	std::shared_ptr<Camera::CameraCommandProvider> CameraCommands;
 	std::shared_ptr<Debug::DebugCommandProvider> DebugCommands;
+	std::shared_ptr<ElDewrito::ElDewritoCommandProvider> ElDewritoCommands;
 	std::shared_ptr<Forge::ForgeCommandProvider> ForgeCommands;
 	std::shared_ptr<Game::GameCommandProvider> GameCommands;
 	std::shared_ptr<Input::InputCommandProvider> InputCommands;
