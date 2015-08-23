@@ -248,6 +248,9 @@
     <ClInclude Include="include\ElDorito\Blam\ArrayGlobal.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ElDorito\Blam\BlamInput.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\Resources.rc">

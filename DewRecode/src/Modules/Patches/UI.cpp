@@ -168,9 +168,9 @@ namespace
 		bool usingController = Pointer(0x244DE98).Read<uint32_t>() == 1;
 		if (!usingController)
 		{
-			uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
+			auto btnCode = *(Blam::ButtonCode*)(controllerStruct + 0x1C);
 
-			if (btnCode >= Blam::ButtonCodes::eButtonCodesDpadUp && btnCode <= Blam::ButtonCodes::eButtonCodesDpadRight)
+			if (btnCode >= Blam::ButtonCode::DpadUp && btnCode <= Blam::ButtonCode::DpadRight)
 				return 1; // ignore the dpad button presses
 		}
 
@@ -181,8 +181,8 @@ namespace
 
 	int __fastcall c_main_menu_screen_widget__ButtonPressHook(void* thisPtr, int unused, uint8_t* controllerStruct)
 	{
-		uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
-		if (btnCode == Blam::ButtonCodes::eButtonCodesStart)
+		auto btnCode = *(Blam::ButtonCode*)(controllerStruct + 0x1C);
+		if (btnCode == Blam::ButtonCode::Start)
 			return UI_ShowHalo3PauseMenu(0, 0, 0, 0, 0);
 
 		typedef int(__thiscall *c_main_menu_screen_widget__ButtonPressPtr)(void* thisPtr, uint8_t* controllerStruct);
@@ -193,8 +193,8 @@ namespace
 	// hooks the lobbys button handler and opens game settings window if X or Start is pressed
 	int __fastcall c_gui_screen_pregame_lobby__ButtonPressHook(void* thisPtr, int unused, uint8_t* controllerStruct)
 	{
-		uint32_t btnCode = *(uint32_t*)(controllerStruct + 0x1C);
-		if (btnCode == Blam::ButtonCodes::eButtonCodesStart || btnCode == Blam::ButtonCodes::eButtonCodesX)
+		auto btnCode = *(Blam::ButtonCode*)(controllerStruct + 0x1C);
+		if (btnCode == Blam::ButtonCode::Start || btnCode == Blam::ButtonCode::X)
 		{
 			typedef int(__thiscall *c_gui_screen_pregame_lobby__OpenGameSettingsPtr)(void* thisPtr, uint32_t a2);
 			auto c_gui_screen_pregame_lobby__OpenGameSettings = reinterpret_cast<c_gui_screen_pregame_lobby__OpenGameSettingsPtr>(0xB225B0);

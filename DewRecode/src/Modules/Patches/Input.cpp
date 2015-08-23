@@ -3,7 +3,7 @@
 
 namespace
 {
-	bool swallowedKeys[Blam::eKeyCodes_Count];
+	bool swallowedKeys[Blam::NumKeyCodes];
 	void KeyboardUpdateHandler()
 	{
 		auto& dorito = ElDorito::Instance();
@@ -187,16 +187,16 @@ namespace Modules
 		});
 	}
 
-	uint8_t PatchModuleInput::GetKeyTicks(Blam::KeyCodes key, Blam::InputType type)
+	uint8_t PatchModuleInput::GetKeyTicks(Blam::KeyCode key, Blam::InputType type)
 	{
-		typedef uint8_t(*EngineGetKeyTicksPtr)(Blam::KeyCodes, Blam::InputType);
+		typedef uint8_t(*EngineGetKeyTicksPtr)(Blam::KeyCode, Blam::InputType);
 		auto EngineGetKeyTicks = reinterpret_cast<EngineGetKeyTicksPtr>(0x511B60);
 		return EngineGetKeyTicks(key, type);
 	}
 
-	uint16_t PatchModuleInput::GetKeyMs(Blam::KeyCodes key, Blam::InputType type)
+	uint16_t PatchModuleInput::GetKeyMs(Blam::KeyCode key, Blam::InputType type)
 	{
-		typedef uint8_t(*EngineGetKeyMsPtr)(Blam::KeyCodes, Blam::InputType);
+		typedef uint8_t(*EngineGetKeyMsPtr)(Blam::KeyCode, Blam::InputType);
 		auto EngineGetKeyMs = reinterpret_cast<EngineGetKeyMsPtr>(0x511CE0);
 		return EngineGetKeyMs(key, type);
 	}
@@ -208,9 +208,10 @@ namespace Modules
 		EngineBlockInput(type, block);
 	}
 
-	void PatchModuleInput::Swallow(Blam::KeyCodes key)
+	void PatchModuleInput::Swallow(Blam::KeyCode key)
 	{
-		if (key >= 0 && key < Blam::eKeyCodes_Count)
-			swallowedKeys[key] = true;
+		auto iKey = static_cast<int>(key);
+		if (iKey < Blam::NumKeyCodes)
+			swallowedKeys[iKey] = true;
 	}
 }

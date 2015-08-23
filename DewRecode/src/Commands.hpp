@@ -1,5 +1,6 @@
 #pragma once
 #include <ElDorito/ElDorito.hpp>
+#include <ElDorito/Blam/BlamInput.hpp>
 
 namespace
 {
@@ -44,5 +45,5 @@ private:
 	std::vector<std::string> queuedCommands;
 
 	// Bindings for each key
-	KeyBinding bindings[Blam::eKeyCodes_Count];
+	KeyBinding bindings[Blam::NumKeyCodes];
 };

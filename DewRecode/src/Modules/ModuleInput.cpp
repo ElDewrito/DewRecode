@@ -114,15 +114,15 @@ namespace
 	void KeyboardUpdated(void* param)
 	{
 		auto& dorito = ElDorito::Instance();
-		for (auto i = 0; i < Blam::eKeyCodes_Count; i++)
+		for (auto i = 0; i < Blam::NumKeyCodes; i++)
 		{
 			const auto binding = dorito.Commands.GetBinding(i);
 			if (binding->command.empty())
 				continue; // Key is not bound
 
 			// Read the key and swallow it
-			auto keyCode = static_cast<Blam::KeyCodes>(i);
-			auto keyTicks = dorito.Modules.InputPatches.GetKeyTicks(keyCode, Blam::eInputTypeSpecial);
+			auto keyCode = static_cast<Blam::KeyCode>(i);
+			auto keyTicks = dorito.Modules.InputPatches.GetKeyTicks(keyCode, Blam::InputType::Special);
 			dorito.Modules.InputPatches.Swallow(keyCode);
 
 			auto command = binding->command;

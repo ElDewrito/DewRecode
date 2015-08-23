@@ -8,7 +8,7 @@
 namespace
 {
 	// Maps key names to key code values
-	extern std::map<std::string, Blam::KeyCodes> keyCodes;
+	extern std::map<std::string, Blam::KeyCode> keyCodes;
 }
 
 /// <summary>
@@ -504,7 +504,7 @@ std::string Commands::SaveVariables()
 	}
 	ss << std::endl;
 
-	for (int i = 0; i < Blam::eKeyCodes_Count; i++)
+	for (int i = 0; i < Blam::NumKeyCodes; i++)
 	{
 		auto& bind = bindings[i];
 		if (bind.command.empty() || bind.key.empty())
@@ -531,7 +531,7 @@ BindingReturnValue Commands::AddBinding(const std::string& key, const std::strin
 		return BindingReturnValue::UnknownKey;
 
 	auto keyCode = it->second;
-	auto binding = &bindings[keyCode];
+	auto binding = &bindings[static_cast<int>(keyCode)];
 
 	// If no command was specified, unset the binding
 	if (command.empty())
@@ -559,7 +559,7 @@ KeyBinding* Commands::GetBinding(const std::string& key)
 		return nullptr;
 
 	auto keyCode = it->second;
-	return &bindings[keyCode];
+	return &bindings[static_cast<int>(keyCode)];
 }
 
 /// <summary>
@@ -569,7 +569,7 @@ KeyBinding* Commands::GetBinding(const std::string& key)
 /// <returns>A pointer to the KeyBinding struct for this key code.</returns>
 KeyBinding* Commands::GetBinding(int keyCode)
 {
-	if (keyCode < 0 || keyCode >= Blam::eKeyCodes_Count)
+	if (keyCode < 0 || keyCode >= Blam::NumKeyCodes)
 		return nullptr;
 
 	return &bindings[keyCode];
@@ -578,113 +578,113 @@ KeyBinding* Commands::GetBinding(int keyCode)
 namespace
 {
 	// Key codes table
-	std::map<std::string, Blam::KeyCodes> keyCodes =
+	std::map<std::string, Blam::KeyCode> keyCodes =
 	{
-		{ "escape", Blam::eKeyCodesEscape },
-		{ "f1", Blam::eKeyCodesF1 },
-		{ "f2", Blam::eKeyCodesF2 },
-		{ "f3", Blam::eKeyCodesF3 },
-		{ "f4", Blam::eKeyCodesF4 },
-		{ "f5", Blam::eKeyCodesF5 },
-		{ "f6", Blam::eKeyCodesF6 },
-		{ "f7", Blam::eKeyCodesF7 },
-		{ "f8", Blam::eKeyCodesF8 },
-		{ "f9", Blam::eKeyCodesF9 },
-		{ "f10", Blam::eKeyCodesF10 },
-		{ "f11", Blam::eKeyCodesF11 },
-		{ "f12", Blam::eKeyCodesF12 },
-		{ "printscreen", Blam::eKeyCodesPrintScreen },
-		{ "f14", Blam::eKeyCodesF14 },
-		{ "f15", Blam::eKeyCodesF15 },
-		{ "tilde", Blam::eKeyCodesTilde },
-		{ "1", Blam::eKeyCodes1 },
-		{ "2", Blam::eKeyCodes2 },
-		{ "3", Blam::eKeyCodes3 },
-		{ "4", Blam::eKeyCodes4 },
-		{ "5", Blam::eKeyCodes5 },
-		{ "6", Blam::eKeyCodes6 },
-		{ "7", Blam::eKeyCodes7 },
-		{ "8", Blam::eKeyCodes8 },
-		{ "9", Blam::eKeyCodes9 },
-		{ "0", Blam::eKeyCodes0 },
-		{ "minus", Blam::eKeyCodesMinus },
-		{ "plus", Blam::eKeyCodesPlus },
-		{ "back", Blam::eKeyCodesBack },
-		{ "tab", Blam::eKeyCodesTab },
-		{ "q", Blam::eKeyCodesQ },
-		{ "w", Blam::eKeyCodesW },
-		{ "e", Blam::eKeyCodesE },
-		{ "r", Blam::eKeyCodesR },
-		{ "t", Blam::eKeyCodesT },
-		{ "y", Blam::eKeyCodesY },
-		{ "u", Blam::eKeyCodesU },
-		{ "i", Blam::eKeyCodesI },
-		{ "o", Blam::eKeyCodesO },
-		{ "p", Blam::eKeyCodesP },
-		{ "lbracket", Blam::eKeyCodesLBracket },
-		{ "rbracket", Blam::eKeyCodesRBracket },
-		{ "pipe", Blam::eKeyCodesPipe },
-		{ "capital", Blam::eKeyCodesCapital },
-		{ "a", Blam::eKeyCodesA },
-		{ "s", Blam::eKeyCodesS },
-		{ "d", Blam::eKeyCodesD },
-		{ "f", Blam::eKeyCodesF },
-		{ "g", Blam::eKeyCodesG },
-		{ "h", Blam::eKeyCodesH },
-		{ "j", Blam::eKeyCodesJ },
-		{ "k", Blam::eKeyCodesK },
-		{ "l", Blam::eKeyCodesL },
-		{ "colon", Blam::eKeyCodesColon },
-		{ "quote", Blam::eKeyCodesQuote },
-		{ "enter", Blam::eKeyCodesEnter },
-		{ "lshift", Blam::eKeyCodesLShift },
-		{ "z", Blam::eKeyCodesZ },
-		{ "x", Blam::eKeyCodesX },
-		{ "c", Blam::eKeyCodesC },
-		{ "v", Blam::eKeyCodesV },
-		{ "b", Blam::eKeyCodesB },
-		{ "n", Blam::eKeyCodesN },
-		{ "m", Blam::eKeyCodesM },
-		{ "comma", Blam::eKeyCodesComma },
-		{ "period", Blam::eKeyCodesPeriod },
-		{ "question", Blam::eKeyCodesQuestion },
-		{ "rshift", Blam::eKeyCodesRShift },
-		{ "lcontrol", Blam::eKeyCodesLControl },
-		{ "lmenu", Blam::eKeyCodesLmenu },
-		{ "space", Blam::eKeyCodesSpace },
-		{ "rmenu", Blam::eKeyCodesRmenu },
-		{ "apps", Blam::eKeyCodesApps },
-		{ "rcontrol", Blam::eKeyCodesRcontrol },
-		{ "up", Blam::eKeyCodesUp },
-		{ "down", Blam::eKeyCodesDown },
-		{ "left", Blam::eKeyCodesLeft },
-		{ "right", Blam::eKeyCodesRight },
-		{ "insert", Blam::eKeyCodesInsert },
-		{ "home", Blam::eKeyCodesHome },
-		{ "pageup", Blam::eKeyCodesPageUp },
-		{ "delete", Blam::eKeyCodesDelete },
-		{ "end", Blam::eKeyCodesEnd },
-		{ "pagedown", Blam::eKeyCodesPageDown },
-		{ "numlock", Blam::eKeyCodesNumLock },
-		{ "divide", Blam::eKeyCodesDivide },
-		{ "multiply", Blam::eKeyCodesMultiply },
-		{ "numpad0", Blam::eKeyCodesNumpad0 },
-		{ "numpad1", Blam::eKeyCodesNumpad1 },
-		{ "numpad2", Blam::eKeyCodesNumpad2 },
-		{ "numpad3", Blam::eKeyCodesNumpad3 },
-		{ "numpad4", Blam::eKeyCodesNumpad4 },
-		{ "numpad5", Blam::eKeyCodesNumpad5 },
-		{ "numpad6", Blam::eKeyCodesNumpad6 },
-		{ "numpad7", Blam::eKeyCodesNumpad7 },
-		{ "numpad8", Blam::eKeyCodesNumpad8 },
-		{ "numpad9", Blam::eKeyCodesNumpad9 },
-		{ "subtract", Blam::eKeyCodesSubtract },
-		{ "add", Blam::eKeyCodesAdd },
-		{ "numpadenter", Blam::eKeyCodesNumpadEnter },
-		{ "decimal", Blam::eKeyCodesDecimal },
-		{ "shift", Blam::eKeyCodesShift },
-		{ "ctrl", Blam::eKeyCodesCtrl },
-		{ "menu", Blam::eKeyCodesMenu },
+		{ "escape", Blam::KeyCode::Escape },
+		{ "f1", Blam::KeyCode::F1 },
+		{ "f2", Blam::KeyCode::F2 },
+		{ "f3", Blam::KeyCode::F3 },
+		{ "f4", Blam::KeyCode::F4 },
+		{ "f5", Blam::KeyCode::F5 },
+		{ "f6", Blam::KeyCode::F6 },
+		{ "f7", Blam::KeyCode::F7 },
+		{ "f8", Blam::KeyCode::F8 },
+		{ "f9", Blam::KeyCode::F9 },
+		{ "f10", Blam::KeyCode::F10 },
+		{ "f11", Blam::KeyCode::F11 },
+		{ "f12", Blam::KeyCode::F12 },
+		{ "printscreen", Blam::KeyCode::PrintScreen },
+		{ "f14", Blam::KeyCode::F14 },
+		{ "f15", Blam::KeyCode::F15 },
+		{ "tilde", Blam::KeyCode::Tilde },
+		{ "1", Blam::KeyCode::Num1 },
+		{ "2", Blam::KeyCode::Num2 },
+		{ "3", Blam::KeyCode::Num3 },
+		{ "4", Blam::KeyCode::Num4 },
+		{ "5", Blam::KeyCode::Num5 },
+		{ "6", Blam::KeyCode::Num6 },
+		{ "7", Blam::KeyCode::Num7 },
+		{ "8", Blam::KeyCode::Num8 },
+		{ "9", Blam::KeyCode::Num9 },
+		{ "0", Blam::KeyCode::Num0 },
+		{ "minus", Blam::KeyCode::Minus },
+		{ "plus", Blam::KeyCode::Plus },
+		{ "back", Blam::KeyCode::Back },
+		{ "tab", Blam::KeyCode::Tab },
+		{ "q", Blam::KeyCode::Q },
+		{ "w", Blam::KeyCode::W },
+		{ "e", Blam::KeyCode::E },
+		{ "r", Blam::KeyCode::R },
+		{ "t", Blam::KeyCode::T },
+		{ "y", Blam::KeyCode::Y },
+		{ "u", Blam::KeyCode::U },
+		{ "i", Blam::KeyCode::I },
+		{ "o", Blam::KeyCode::O },
+		{ "p", Blam::KeyCode::P },
+		{ "lbracket", Blam::KeyCode::LBracket },
+		{ "rbracket", Blam::KeyCode::RBracket },
+		{ "pipe", Blam::KeyCode::Pipe },
+		{ "capital", Blam::KeyCode::Capital },
+		{ "a", Blam::KeyCode::A },
+		{ "s", Blam::KeyCode::S },
+		{ "d", Blam::KeyCode::D },
+		{ "f", Blam::KeyCode::F },
+		{ "g", Blam::KeyCode::G },
+		{ "h", Blam::KeyCode::H },
+		{ "j", Blam::KeyCode::J },
+		{ "k", Blam::KeyCode::K },
+		{ "l", Blam::KeyCode::L },
+		{ "colon", Blam::KeyCode::Colon },
+		{ "quote", Blam::KeyCode::Quote },
+		{ "enter", Blam::KeyCode::Enter },
+		{ "lshift", Blam::KeyCode::LShift },
+		{ "z", Blam::KeyCode::Z },
+		{ "x", Blam::KeyCode::X },
+		{ "c", Blam::KeyCode::C },
+		{ "v", Blam::KeyCode::V },
+		{ "b", Blam::KeyCode::B },
+		{ "n", Blam::KeyCode::N },
+		{ "m", Blam::KeyCode::M },
+		{ "comma", Blam::KeyCode::Comma },
+		{ "period", Blam::KeyCode::Period },
+		{ "question", Blam::KeyCode::Question },
+		{ "rshift", Blam::KeyCode::RShift },
+		{ "lcontrol", Blam::KeyCode::LControl },
+		{ "lalt", Blam::KeyCode::LAlt },
+		{ "space", Blam::KeyCode::Space },
+		{ "ralt", Blam::KeyCode::RAlt },
+		{ "apps", Blam::KeyCode::Apps },
+		{ "rcontrol", Blam::KeyCode::RControl },
+		{ "up", Blam::KeyCode::Up },
+		{ "down", Blam::KeyCode::Down },
+		{ "left", Blam::KeyCode::Left },
+		{ "right", Blam::KeyCode::Right },
+		{ "insert", Blam::KeyCode::Insert },
+		{ "home", Blam::KeyCode::Home },
+		{ "pageup", Blam::KeyCode::PageUp },
+		{ "delete", Blam::KeyCode::Delete },
+		{ "end", Blam::KeyCode::End },
+		{ "pagedown", Blam::KeyCode::PageDown },
+		{ "numlock", Blam::KeyCode::NumLock },
+		{ "divide", Blam::KeyCode::Divide },
+		{ "multiply", Blam::KeyCode::Multiply },
+		{ "numpad0", Blam::KeyCode::Numpad0 },
+		{ "numpad1", Blam::KeyCode::Numpad1 },
+		{ "numpad2", Blam::KeyCode::Numpad2 },
+		{ "numpad3", Blam::KeyCode::Numpad3 },
+		{ "numpad4", Blam::KeyCode::Numpad4 },
+		{ "numpad5", Blam::KeyCode::Numpad5 },
+		{ "numpad6", Blam::KeyCode::Numpad6 },
+		{ "numpad7", Blam::KeyCode::Numpad7 },
+		{ "numpad8", Blam::KeyCode::Numpad8 },
+		{ "numpad9", Blam::KeyCode::Numpad9 },
+		{ "subtract", Blam::KeyCode::Subtract },
+		{ "add", Blam::KeyCode::Add },
+		{ "numpadenter", Blam::KeyCode::NumpadEnter },
+		{ "decimal", Blam::KeyCode::Decimal },
+		{ "shift", Blam::KeyCode::Shift },
+		{ "ctrl", Blam::KeyCode::Ctrl },
+		{ "alt", Blam::KeyCode::Alt },
 	};
 
 	char** CommandLineToArgvA(char* CmdLine, int* _argc)
