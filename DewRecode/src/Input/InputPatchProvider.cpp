@@ -99,7 +99,7 @@ namespace Input
 			}
 
 			// Execute the command and print its result
-			//TODO10: dorito.Modules.Console.PrintToConsole(dorito.Commands.Execute(command, true));
+			dorito.Engine.PrintToConsole(dorito.CommandManager.Execute(command, true));
 		}
 	}
 

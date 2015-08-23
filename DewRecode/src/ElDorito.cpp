@@ -125,15 +125,15 @@ void ElDorito::Initialize()
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Console.FinishAddCommands()...");
 	CommandManager.FinishAdd(); // call this so that the default values can be applied to the game
 	
-	Logger.Log(LogSeverity::Debug, "ElDorito", "Execute dewrito_prefs.cfg...");
-	CommandManager.Execute("Execute dewrito_prefs.cfg");
+	Logger.Log(LogSeverity::Debug, "ElDorito", "exec dewrito_prefs.cfg...");
+	CommandManager.Execute("exec dewrito_prefs.cfg");
 
-	Logger.Log(LogSeverity::Debug, "ElDorito", "Execute autoexec.cfg...");
-	CommandManager.Execute("Execute autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
+	Logger.Log(LogSeverity::Debug, "ElDorito", "exec autoexec.cfg...");
+	CommandManager.Execute("exec autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
 	// HACKY - As we need a draw call in between this message and the actual generation, check it ahead of it actually generating
-	/*TODO11:if (PlayerCommands->VarPubKey->ValueString.empty())
-		Modules.Console.PrintToConsole("Generating player keypair\nThis may take a moment...");*/
+	if (PlayerCommands->VarPubKey->ValueString.empty())
+		Engine.PrintToConsole("Generating player keypair\nThis may take a moment...");
 
 	// add and toggle(enable) the language patch, can't be done in a module since we have to patch this after cfg files are read
 	PatchManager.TogglePatch(PatchManager.AddPatch("GameLanguage", 0x6333FD, { (unsigned char)GameCommands->VarLanguageID->ValueInt }));
