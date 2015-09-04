@@ -43,14 +43,9 @@
         "stats": "http://kyrluckechuck-dewrito-master-server-kyrluckechuck.c9.io/stats"
     },
     {
-        "list": "http://eldewrito-masterserver-thetwist84.c9.io/list",
-        "announce": "http://eldewrito-masterserver-thetwist84.c9.io/announce",
-        "stats": "http://eldewrito-masterserver-thetwist84.c9.io/stats"
-    },
-    {
-        "list": "http://eldewrito-masterserver-1-thetwist84.c9.io/list",
-        "announce": "http://eldewrito-masterserver-1-thetwist84.c9.io/announce",
-        "stats": "http://eldewrito-masterserver-1-thetwist84.c9.io/stats"
+        "list": "http://edms-thetwist84-3.c9.io/list",
+        "announce": "http://edms-thetwist84-3.c9.io/announce",
+        "stats": "http://edms-thetwist84-3.c9.io/stats"
     },
     {
         "list": "http://nothing-michaeljohn21312.c9.io/list",
