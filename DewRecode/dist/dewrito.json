@@ -43,9 +43,9 @@
         "stats": "http://kyrluckechuck-dewrito-master-server-kyrluckechuck.c9.io/stats"
     },
     {
-        "list": "http://edms-thetwist84-3.c9.io/list",
-        "announce": "http://edms-thetwist84-3.c9.io/announce",
-        "stats": "http://edms-thetwist84-3.c9.io/stats"
+        "list": "http://212.227.255.14:8080/list",
+        "announce": "http://212.227.255.14:8080/announce",
+        "stats": "http://212.227.255.14:8080/stats"
     },
     {
         "list": "http://nothing-michaeljohn21312.c9.io/list",
