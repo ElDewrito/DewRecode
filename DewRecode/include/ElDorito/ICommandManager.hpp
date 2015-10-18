@@ -3,6 +3,7 @@
 #include <vector>
 #include <deque>
 #include <functional>
+#include <bitset>
 
 // Holds information about a command bound to a key
 struct KeyBinding
@@ -36,7 +37,8 @@ enum class CommandType
 	VariableInt,
 	VariableInt64,
 	VariableFloat,
-	VariableString
+	VariableString,
+	Count
 };
 
 enum CommandFlags
@@ -53,152 +55,27 @@ enum CommandFlags
 	eCommandFlagsInternal = 1 << 8,				// disallow the user from using this command, only internal ExecuteCommand calls can use it
 };
 
-//typedef bool(*CommandUpdateFunc)(const std::vector<std::string>& Arguments, std::string& returnInfo);
+typedef uint32_t SyncID;
+const size_t MaxStringLength = 512;
+
+struct SyncUpdatePacketVar
+{
+	SyncID ID;
+	CommandType Type;
+	union
+	{
+		uint64_t Int;
+		float Float;
+		char String[MaxStringLength + 1];
+	} Value;
+};
+
+//typedef bool(*CommandUpdateFunc)(const std::vector<std::string>& Arguments, ICommandContext& context);
 class ICommandProvider;
-typedef std::function<bool(const std::vector<std::string>& Arguments, std::string& returnInfo)> CommandUpdateFunc;
+typedef std::function<bool(const std::vector<std::string>& Arguments, ICommandContext& context)> CommandUpdateFunc;
 #define BIND_COMMAND(classPtr, funcPtr) std::bind(funcPtr, classPtr, std::placeholders::_1, std::placeholders::_2)
 
-struct Command
-{
-	std::string Name; // modulename is added to this too, makes looking it up easier
-	std::string ModuleName;
-	std::string ShortName; // because some people can't be bothered to type in module names
-	std::string Description;
-
-	CommandFlags Flags;
-	CommandType Type;
-
-	CommandUpdateFunc UpdateEvent;
-
-	unsigned long ValueInt = 0;
-	unsigned long long ValueInt64 = 0;
-	float ValueFloat = 0;
-	std::string ValueString;
-
-	unsigned long DefaultValueInt = 0;
-	unsigned long long DefaultValueInt64 = 0;
-	float DefaultValueFloat = 0;
-	std::string DefaultValueString;
-
-	unsigned long ValueIntMin = 0;
-	unsigned long ValueIntMax = 0;
-	unsigned long long ValueInt64Min = 0;
-	unsigned long long ValueInt64Max = 0;
-	float ValueFloatMin = 0;
-	float ValueFloatMax = 0;
-
-	// CommandArgs is only used for help text, commands will have to parse the args themselves
-
-	std::vector<std::string> CommandArgs; // arg names can't contain a space, since space/EOL is used to find where the command name ends and the command description begins
-	// this is for the help function, so you can specify an arg here like "parameter_1 This parameter controls the first parameter"
-	// in the help text this will be printed like "Usage: Game.Command <parameter_1>\r\nparameter_1: This parameter controls the first parameter."
-	// also don't end descriptions with a period since it'll be added in later
-	// modifiers might be added to the name later, so you can do things like "parameter_1:o" to signify the parameter is optional
-
-	static Command CreateCommand(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, CommandUpdateFunc updateEvent, std::initializer_list<const std::string> arguments = {})
-	{
-		Command command;
-		command.Name = nameSpace + "." + name;
-		command.ModuleName = nameSpace;
-		command.ShortName = shortName;
-		command.Description = description;
-
-		for (auto arg : arguments)
-			command.CommandArgs.push_back(arg);
-
-		if (nameSpace.empty())
-			command.Name = name;
-
-		command.Flags = flags;
-		command.Type = CommandType::Command;
-		command.UpdateEvent = updateEvent;
-
-		return command;
-	}
-
-	static Command CreateVariableInt(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, unsigned long defaultValue = 0, CommandUpdateFunc updateEvent = nullptr)
-	{
-		Command command;
-		command.Name = nameSpace + "." + name;
-		command.ModuleName = nameSpace;
-		command.ShortName = shortName;
-		command.Description = description;
-
-		if (nameSpace.empty())
-			command.Name = name;
-
-		command.Flags = flags;
-		command.Type = CommandType::VariableInt;
-		command.DefaultValueInt = defaultValue;
-		command.ValueInt = defaultValue;
-		command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
-		command.UpdateEvent = updateEvent;
-
-		return command;
-	}
-
-	static Command CreateVariableInt64(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, unsigned long long defaultValue = 0, CommandUpdateFunc updateEvent = nullptr)
-	{
-		Command command;
-		command.Name = nameSpace + "." + name;
-		command.ModuleName = nameSpace;
-		command.ShortName = shortName;
-		command.Description = description;
-
-		if (nameSpace.empty())
-			command.Name = name;
-
-		command.Flags = flags;
-		command.Type = CommandType::VariableInt64;
-		command.DefaultValueInt64 = defaultValue;
-		command.ValueInt64 = defaultValue;
-		command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
-		command.UpdateEvent = updateEvent;
-
-		return command;
-	}
-
-	static Command CreateVariableFloat(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, float defaultValue = 0, CommandUpdateFunc updateEvent = nullptr)
-	{
-		Command command;
-		command.Name = nameSpace + "." + name;
-		command.ModuleName = nameSpace;
-		command.ShortName = shortName;
-		command.Description = description;
-
-		if (nameSpace.empty())
-			command.Name = name;
-
-		command.Flags = flags;
-		command.Type = CommandType::VariableFloat;
-		command.DefaultValueFloat = defaultValue;
-		command.ValueFloat = defaultValue;
-		command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
-		command.UpdateEvent = updateEvent;
-
-		return command;
-	}
-
-	static Command CreateVariableString(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, const std::string& defaultValue = "", CommandUpdateFunc updateEvent = nullptr)
-	{
-		Command command;
-		command.Name = nameSpace + "." + name;
-		command.ModuleName = nameSpace;
-		command.ShortName = shortName;
-		command.Description = description;
-
-		if (nameSpace.empty())
-			command.Name = name;
-
-		command.Flags = flags;
-		command.Type = CommandType::VariableString;
-		command.DefaultValueString = defaultValue;
-		command.ValueString = defaultValue;
-		command.UpdateEvent = updateEvent;
-
-		return command;
-	}
-};
+struct Command;
 
 /*
 if you want to make changes to this interface create a new ICommandManager002 class and make them there, then edit CommandManager class to inherit from the new class + this older one
@@ -234,38 +111,30 @@ public:
 	/// </summary>
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
-	/// <returns>The output of the executed command.</returns>
-	virtual std::string Execute(const std::vector<std::string>& command, bool isUserInput = false) = 0;
+	/// <returns>Whether the command executed successfully.</returns>
+	virtual bool Execute(const std::vector<std::string>& command, ICommandContext& context) = 0;
 
 	/// <summary>
 	/// Executes a command string
 	/// </summary>
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
-	/// <returns>The output of the executed command.</returns>
-	virtual std::string Execute(const std::string& command, bool isUserInput = false) = 0;
+	/// <returns>Whether the command executed successfully.</returns>
+	virtual bool Execute(const std::string& command, ICommandContext& context) = 0;
 
 	/// <summary>
 	/// Executes a list of commands, seperated by new lines
 	/// </summary>
 	/// <param name="commands">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
-	/// <returns>Whether the command executed successfully.</returns>
-	virtual std::string ExecuteList(const std::string& commands, bool isUserInput = false) = 0;
-
-	/// <summary>
-	/// Executes a command string, returning a bool indicating success.
-	/// </summary>
-	/// <param name="command">The command string.</param>
-	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
-	/// <returns>Whether the command executed successfully.</returns>
-	virtual bool ExecuteWithStatus(const std::string& command, bool isUserInput = false) = 0;
+	/// <returns>Whether the commands executed successfully.</returns>
+	virtual bool ExecuteList(const std::string& commands, ICommandContext& context) = 0;
 
 	/// <summary>
 	/// Executes the command queue.
 	/// </summary>
-	/// <returns>Results of the executed commands.</returns>
-	virtual std::string ExecuteQueue() = 0;
+	/// <returns>Whether the commands executed successfully.</returns>
+	virtual bool ExecuteQueue(ICommandContext& context) = 0;
 
 	/// <summary>
 	/// Gets the value of an int variable.
@@ -343,21 +212,23 @@ public:
 	/// <param name="key">The key to bind.</param>
 	/// <param name="command">The command to run (empty if clearing).</param>
 	/// <returns>BindingReturnValue</returns>
-	BindingReturnValue AddBinding(const std::string& key, const std::string& command);
+	virtual BindingReturnValue AddBinding(const std::string& key, const std::string& command) = 0;
 
 	/// <summary>
 	/// Gets the binding for a key.
 	/// </summary>
 	/// <param name="key">The key.</param>
 	/// <returns>A pointer to the KeyBinding struct for this key.</returns>
-	KeyBinding* GetBinding(const std::string& key);
+	virtual KeyBinding* GetBinding(const std::string& key) = 0;
 
 	/// <summary>
 	/// Gets the binding for a keycode.
 	/// </summary>
 	/// <param name="keyCode">The key code.</param>
 	/// <returns>A pointer to the KeyBinding struct for this key code.</returns>
-	KeyBinding* GetBinding(int keyCode);
+	virtual KeyBinding* GetBinding(int keyCode) = 0;
+
+	virtual ICommandContext& GetLogFileContext() = 0;
 };
 
 #define COMMANDMANAGER_INTERFACE_VERSION001 "CommandManager001"
@@ -375,3 +246,283 @@ and edit Engine::CreateInterface to include this interface */
 
 typedef ICommandManager001 ICommandManager;
 #define COMMANDMANAGER_INTERFACE_LATEST COMMANDMANAGER_INTERFACE_VERSION001
+
+struct Command
+{
+	std::string Name; // modulename is added to this too, makes looking it up easier
+	std::string ModuleName;
+	std::string ShortName; // because some people can't be bothered to type in module names
+	std::string Description;
+
+	CommandFlags Flags;
+	CommandType Type;
+
+	CommandUpdateFunc UpdateEvent;
+
+	unsigned long ValueInt = 0;
+	unsigned long long ValueInt64 = 0;
+	float ValueFloat = 0;
+	std::string ValueString;
+
+	unsigned long DefaultValueInt = 0;
+	unsigned long long DefaultValueInt64 = 0;
+	float DefaultValueFloat = 0;
+	std::string DefaultValueString;
+
+	unsigned long ValueIntMin = 0;
+	unsigned long ValueIntMax = 0;
+	unsigned long long ValueInt64Min = 0;
+	unsigned long long ValueInt64Max = 0;
+	float ValueFloatMin = 0;
+	float ValueFloatMax = 0;
+
+	// CommandArgs is only used for help text, commands will have to parse the args themselves
+
+	std::vector<std::string> CommandArgs; // arg names can't contain a space, since space/EOL is used to find where the command name ends and the command description begins
+	// this is for the help function, so you can specify an arg here like "parameter_1 This parameter controls the first parameter"
+	// in the help text this will be printed like "Usage: Game.Command <parameter_1>\r\nparameter_1: This parameter controls the first parameter."
+	// also don't end descriptions with a period since it'll be added in later
+	// modifiers might be added to the name later, so you can do things like "parameter_1:o" to signify the parameter is optional
+
+	static Command CreateCommand(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, CommandUpdateFunc updateEvent, std::initializer_list<const std::string> arguments = {})
+	{
+		Command command;
+		command.Name = nameSpace + "." + name;
+		command.ModuleName = nameSpace;
+		command.ShortName = shortName;
+		command.Description = description;
+
+		for (auto arg : arguments)
+			command.CommandArgs.push_back(arg);
+
+		if (nameSpace.empty())
+			command.Name = name;
+
+		command.Flags = flags;
+		command.Type = CommandType::Command;
+		command.UpdateEvent = updateEvent;
+
+		return command;
+	}
+
+	static Command CreateVariableInt(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, unsigned long defaultValue = 0, CommandUpdateFunc updateEvent = nullptr)
+	{
+		Command command;
+		command.Name = nameSpace + "." + name;
+		command.ModuleName = nameSpace;
+		command.ShortName = shortName;
+		command.Description = description;
+
+		if (nameSpace.empty())
+			command.Name = name;
+
+		command.Flags = flags;
+		command.Type = CommandType::VariableInt;
+		command.DefaultValueInt = defaultValue;
+		command.ValueInt = defaultValue;
+		command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
+		command.DefaultValueString = command.ValueString;
+		command.UpdateEvent = updateEvent;
+
+		return command;
+	}
+
+	static Command CreateVariableInt64(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, unsigned long long defaultValue = 0, CommandUpdateFunc updateEvent = nullptr)
+	{
+		Command command;
+		command.Name = nameSpace + "." + name;
+		command.ModuleName = nameSpace;
+		command.ShortName = shortName;
+		command.Description = description;
+
+		if (nameSpace.empty())
+			command.Name = name;
+
+		command.Flags = flags;
+		command.Type = CommandType::VariableInt64;
+		command.DefaultValueInt64 = defaultValue;
+		command.ValueInt64 = defaultValue;
+		command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
+		command.DefaultValueString = command.ValueString;
+		command.UpdateEvent = updateEvent;
+
+		return command;
+	}
+
+	static Command CreateVariableFloat(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, float defaultValue = 0, CommandUpdateFunc updateEvent = nullptr)
+	{
+		Command command;
+		command.Name = nameSpace + "." + name;
+		command.ModuleName = nameSpace;
+		command.ShortName = shortName;
+		command.Description = description;
+
+		if (nameSpace.empty())
+			command.Name = name;
+
+		command.Flags = flags;
+		command.Type = CommandType::VariableFloat;
+		command.DefaultValueFloat = defaultValue;
+		command.ValueFloat = defaultValue;
+		command.ValueString = std::to_string(defaultValue); // set the ValueString too so we can print the value out easier
+		command.DefaultValueString = command.ValueString;
+		command.UpdateEvent = updateEvent;
+
+		return command;
+	}
+
+	static Command CreateVariableString(const std::string& nameSpace, const std::string& name, const std::string& shortName, const std::string& description, CommandFlags flags, const std::string& defaultValue = "", CommandUpdateFunc updateEvent = nullptr)
+	{
+		Command command;
+		command.Name = nameSpace + "." + name;
+		command.ModuleName = nameSpace;
+		command.ShortName = shortName;
+		command.Description = description;
+
+		if (nameSpace.empty())
+			command.Name = name;
+
+		command.Flags = flags;
+		command.Type = CommandType::VariableString;
+		command.DefaultValueString = defaultValue;
+		command.ValueString = defaultValue;
+		command.DefaultValueString = command.ValueString;
+		command.UpdateEvent = updateEvent;
+
+		return command;
+	}
+
+	bool Compare(Command* command)
+	{
+		if (Type != command->Type)
+			throw std::runtime_error("Cannot compare variables of different types");
+		switch (Type)
+		{
+		case CommandType::VariableInt:
+			return ValueInt == command->ValueInt;
+		case CommandType::VariableInt64:
+			return ValueInt64 == command->ValueInt64;
+		case CommandType::VariableFloat:
+			return ValueFloat == command->ValueFloat;
+		case CommandType::VariableString:
+			return ValueString == command->ValueString;
+		default:
+			throw std::runtime_error("Unsupported variable type");
+		}
+	}
+
+	void Reset()
+	{
+		ValueString = DefaultValueString;
+		switch (Type)
+		{
+		case CommandType::VariableInt:
+			ValueInt = DefaultValueInt;
+			break;
+		case CommandType::VariableInt64:
+			ValueInt64 = DefaultValueInt64;
+			break;
+		case CommandType::VariableFloat:
+			ValueFloat = DefaultValueFloat;
+			break;
+		case CommandType::VariableString:
+			break;
+		default:
+			throw std::runtime_error("Unsupported variable type");
+		}
+
+		if (UpdateEvent)
+		{
+			int retCode = 0;
+			ICommandManager* engine = reinterpret_cast<ICommandManager*>(CreateInterface(COMMANDMANAGER_INTERFACE_LATEST, &retCode));
+			if (retCode != 0)
+				throw std::runtime_error("Failed to create command interface");
+
+			UpdateEvent({ ValueString }, engine->GetLogFileContext());
+		}
+	}
+	void CopyFrom(Command* command)
+	{
+		if (Type != command->Type)
+			throw std::runtime_error("Cannot compare variables of different types");
+
+		ValueString = command->ValueString;
+		switch (Type)
+		{
+		case CommandType::VariableInt:
+			ValueInt = command->ValueInt;
+			break;
+		case CommandType::VariableInt64:
+			ValueInt64 = command->ValueInt64;
+			break;
+		case CommandType::VariableFloat:
+			ValueFloat = command->ValueFloat;
+			break;
+		case CommandType::VariableString:
+			break;
+		default:
+			throw std::runtime_error("Unsupported variable type");
+		}
+
+		if (UpdateEvent)
+		{
+			int retCode = 0;
+			ICommandManager* engine = reinterpret_cast<ICommandManager*>(CreateInterface(COMMANDMANAGER_INTERFACE_LATEST, &retCode));
+			if (retCode != 0)
+				throw std::runtime_error("Failed to create command interface");
+
+			UpdateEvent({ ValueString }, engine->GetLogFileContext());
+		}
+	}
+
+	void CopyFrom(const SyncUpdatePacketVar* var)
+	{
+		// Note: unlike the other overload, this can't throw or else it could
+		// be abused to crash someone's game. Validation is done during
+		// deserialization.
+		if (Type != var->Type)
+			return;
+
+		switch (Type)
+		{
+		case CommandType::VariableInt:
+			ValueInt = static_cast<uint32_t>(var->Value.Int);
+			ValueString = std::to_string(ValueInt);
+			break;
+		case CommandType::VariableInt64:
+			ValueInt64 = var->Value.Int;
+			ValueString = std::to_string(ValueInt64);
+			break;
+		case CommandType::VariableFloat:
+			ValueFloat = var->Value.Float;
+			ValueString = std::to_string(ValueFloat);
+			break;
+		case CommandType::VariableString:
+			ValueString = var->Value.String;
+			break;
+		default:
+			return;
+		}
+		if (UpdateEvent)
+		{
+			int retCode = 0;
+			ICommandManager* engine = reinterpret_cast<ICommandManager*>(CreateInterface(COMMANDMANAGER_INTERFACE_LATEST, &retCode));
+			if (retCode != 0)
+				throw std::runtime_error("Failed to create command interface");
+
+			UpdateEvent({ ValueString }, engine->GetLogFileContext());
+		}
+	}
+};
+
+// Binds a server variable to a client variable.
+struct SynchronizationBinding
+{
+	SyncID ID;
+	Command *ServerVariable;
+	Command *ClientVariable;
+
+	// This is used to determine which peers have updated their binding.
+	// If a peer's bit is set to 1, then it's up-to-date.
+	std::bitset<Blam::Network::MaxPeers> SynchronizedPeers;
+};

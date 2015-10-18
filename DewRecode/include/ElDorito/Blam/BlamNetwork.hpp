@@ -16,16 +16,36 @@ namespace Blam
 		// The maximum number of players in a network session.
 		const int MaxPlayers = 16;
 
+		enum PeerConnectionState
+		{
+			ePeerConnectionStateNone,
+			ePeerConnectionStateRejoining,
+			ePeerConnectionStateReserved,
+			ePeerConnectionStateDisconnected,
+			ePeerConnectionStateConnected,
+			ePeerConnectionStateJoining,
+			ePeerConnectionStateJoined,
+			ePeerConnectionStateWaiting,
+			ePeerConnectionStateEstablished
+		};
+
 		struct PeerInfo
 		{
-			uint8_t Unknown0[0xF0];
+			uint8_t Unknown0[0x10];
+			PeerConnectionState ConnectionState;
+			int Unknown14;
+			uint32_t StartTime;
+			uint8_t Unknown1C[0xD4];
 			uint32_t PlayerMasks[2];
+
+			bool IsConnected() const { return ConnectionState >= ePeerConnectionStateConnected; }
+			bool IsEstablished() const { return ConnectionState >= ePeerConnectionStateEstablished; }
 		};
 		static_assert(sizeof(PeerInfo) == 0xF8, "Invalid PeerInfo size");
 
 		struct PeerChannel
 		{
-			int Unknown0;
+			bool Unavailable;
 			int ChannelIndex; // Can be -1 for none
 			int Unknown8;
 		};
@@ -144,6 +164,33 @@ namespace Blam
 		};
 		static_assert(sizeof(SessionParameters) == 0xB7924, "Invalid c_network_session_parameters size");
 
+		// Represents a network address.
+		struct NetworkAddress
+		{
+			union
+			{
+				uint32_t IPv4;
+				uint8_t Data[16];
+			} Address;
+			uint16_t Port;
+			uint16_t AddressSize; // 4 for IPv4, 16 for IPv6
+
+			static NetworkAddress FromInAddr(unsigned long address, uint16_t port)
+			{
+				NetworkAddress result;
+				result.Address.IPv4 = _byteswap_ulong(address);
+				result.Port = port;
+				result.AddressSize = 4;
+				return result;
+			}
+
+			unsigned long ToInAddr() const
+			{
+				return _byteswap_ulong(Address.IPv4);
+			}
+		};
+		static_assert(sizeof(NetworkAddress) == 0x14, "Invalid NetworkAddress size");
+
 		struct ObserverChannel
 		{
 			uint8_t Unknown0[0x10D8];
@@ -185,6 +232,40 @@ namespace Blam
 			}
 		};
 
+		// "ping" packets
+		struct PingPacket
+		{
+			uint16_t ID;
+			uint32_t Timestamp; // timeGetTime()
+			bool Unknown8;
+
+			static PingPacket CreatePingPacket(uint16_t id)
+			{
+				PingPacket packet;
+				packet.ID = id;
+				packet.Unknown8 = false; // unused?
+				packet.Timestamp = timeGetTime();
+				return packet;
+			}
+		};
+		static_assert(sizeof(PingPacket) == 0xC, "Invalid PingPacket size");
+
+		// "pong" packets
+		struct PongPacket
+		{
+			uint16_t ID;        // Copied from ping packet
+			uint32_t Timestamp; // Copied from ping packet
+			int Unknown8;       // Always 2
+		};
+		static_assert(sizeof(PongPacket) == 0xC, "Invalid PongPacket size");
+
+		enum PacketID
+		{
+			ePacketIDPing,
+			ePacketIDPong,
+			// TODO: Finish
+		};
+
 		// c_network_observer
 		struct Observer
 		{
@@ -197,6 +278,14 @@ namespace Blam
 				auto ObserverChannelSendMessage = reinterpret_cast<ObserverChannelSendMessagePtr>(0x4474F0);
 				ObserverChannelSendMessage(this, ownerIndex, channelIndex, secure, id, packetSize, packet);
 			}
+
+			// Sends a ping across a channel.
+			// See MessageGateway::Ping().
+			void Ping(int ownerIndex, int channelIndex, uint16_t id)
+			{
+				auto packet = PingPacket::CreatePingPacket(id);
+				ObserverChannelSendMessage(ownerIndex, channelIndex, true, ePacketIDPing, sizeof(packet), &packet);
+			}
 		};
 		static_assert(sizeof(Observer) == 0x23F20, "Invalid c_network_observer size");
 
@@ -204,6 +293,23 @@ namespace Blam
 		struct MessageGateway
 		{
 			uint8_t Unknown0[0x688];
+
+			// Sends a message directly to a network address.
+			bool SendDirectedMessage(const NetworkAddress &address, int id, int packetSize, const void *packet)
+			{
+				typedef bool(__thiscall *SendDirectedMessagePtr)(MessageGateway *thisPtr, const NetworkAddress &address, int id, int packetSize, const void *packet);
+				auto SendDirectedMessage = reinterpret_cast<SendDirectedMessagePtr>(0x4840C0);
+				return SendDirectedMessage(this, address, id, packetSize, packet);
+			}
+
+			// Sends a ping to a network address. ID can be anything.
+			// Once a pong is received back, callbacks registered with
+			// Patches::Network::OnPong() will be invoked.
+			bool Ping(NetworkAddress &address, uint16_t id)
+			{
+				auto packet = PingPacket::CreatePingPacket(id);
+				return SendDirectedMessage(address, ePacketIDPing, sizeof(packet), &packet);
+			}
 		};
 		static_assert(sizeof(MessageGateway) == 0x688, "Invalid c_network_message_gateway size");
 
@@ -264,6 +370,29 @@ namespace Blam
 			}
 		};
 		static_assert(sizeof(Session) == 0x25BC40, "Invalid c_network_session size");
+
+		// Lifecycle states.
+		enum class LifeCycleState : uint32_t
+		{
+			None,
+			PreGame,
+			StartGame,
+			InGame,
+			EndGameWriteStats,
+			Leaving,
+			Joining,
+			MatchmakingStart,
+			MatchmakingFindMatchClient,
+			MatchmakingFindMatch,
+			MatchmakingFindAndAssembleMatch,
+			MatchmakingAssembleMatch,
+			MatchmakingArbitration,
+			MatchmakingSelectHost,
+			MatchmakingPrepareMap,
+			InMatch,
+			EndMatchWriteStats,
+			PostMatch,
+		};
 
 		// Header for a packet buffer.
 		struct PacketHeader

@@ -63,7 +63,7 @@ namespace
 		IRCModule.ChangeNick(((Command*)param)->ValueString);
 	}
 
-	bool CommandIRCConnect(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool CommandIRCConnect(const std::vector<std::string>& Arguments, ICommandContext& context)
 	{
 		CallbackIRCConnect(0);
 		return true;

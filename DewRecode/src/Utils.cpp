@@ -299,6 +299,21 @@ int PublicUtils::Base64DecodeBinary(char* b64message, unsigned char* buffer, siz
 	return 0;
 }
 
+bool PublicUtils::Hash32(const std::string& str, uint32_t* out)
+{
+	// Generate a SHA-1 digest and take the first 4 bytes
+	unsigned char digest[SHA_DIGEST_LENGTH];
+	SHA_CTX context;
+	if (!SHA1_Init(&context))
+		return false;
+	if (!SHA1_Update(&context, str.c_str(), str.length()))
+		return false;
+	if (!SHA1_Final(digest, &context))
+		return false;
+	*out = digest[0] << 24 | digest[1] << 16 | digest[2] << 8 | digest[3];
+	return true;
+}
+
 void PublicUtils::RemoveCharsFromString(std::string& str, char* charsToRemove)
 {
 	for (unsigned int i = 0; i < strlen(charsToRemove); ++i)
@@ -727,6 +742,57 @@ void PublicUtils::GetEndpoints(std::vector<std::string>& destVect, const std::st
 			destVect.push_back((*it)[endpointType.c_str()].GetString());
 		}
 	}
+}
+
+size_t PublicUtils::ExecuteProcess(const std::wstring& fullPathToExe, std::wstring& parameters, size_t secondsToWait)
+{
+	// taken from https://stackoverflow.com/questions/9970241/how-do-you-run-external-programs-with-parameters-without-the-cmd-window-showing
+	size_t iMyCounter = 0, iReturnVal = 0, iPos = 0;
+	DWORD dwExitCode = 0;
+	std::wstring sTempStr = L"";
+
+	/* - NOTE - You should check here to see if the exe even exists */
+
+	/* Add a space to the beginning of the Parameters */
+	if (parameters.size() != 0)
+		if (parameters[0] != L' ')
+			parameters.insert(0, L" ");
+
+	/* The first parameter needs to be the exe itself */
+	sTempStr = fullPathToExe;
+	iPos = sTempStr.find_last_of(L"\\");
+	sTempStr.erase(0, iPos + 1);
+	parameters = sTempStr.append(parameters);
+
+	/* CreateProcessW can modify Parameters thus we allocate needed memory */
+	wchar_t * pwszParam = new wchar_t[parameters.size() + 1];
+	if (pwszParam == 0)
+		return 1;
+
+	const wchar_t* pchrTemp = parameters.c_str();
+	wcscpy_s(pwszParam, parameters.size() + 1, pchrTemp);
+
+	/* CreateProcess API initialization */
+	STARTUPINFOW siStartupInfo;
+	PROCESS_INFORMATION piProcessInfo;
+	memset(&siStartupInfo, 0, sizeof(siStartupInfo));
+	memset(&piProcessInfo, 0, sizeof(piProcessInfo));
+	siStartupInfo.cb = sizeof(siStartupInfo);
+
+	if (CreateProcessW(const_cast<LPCWSTR>(fullPathToExe.c_str()), pwszParam, 0, 0, false, CREATE_DEFAULT_ERROR_MODE, 0, 0, &siStartupInfo, &piProcessInfo) != false)
+		dwExitCode = WaitForSingleObject(piProcessInfo.hProcess, (secondsToWait * 1000)); // Watch the process.
+	else
+		iReturnVal = GetLastError(); // CreateProcess failed
+
+	/* Free memory */
+	delete[]pwszParam;
+	pwszParam = 0;
+
+	/* Release handles */
+	CloseHandle(piProcessInfo.hProcess);
+	CloseHandle(piProcessInfo.hThread);
+
+	return iReturnVal;
 }
 
 PublicUtils::PublicUtils()

@@ -8,7 +8,21 @@ namespace
 {
 	// Maps key names to key code values
 	extern std::map<std::string, Blam::Input::KeyCodes> keyCodes;
+
+	std::shared_ptr<SyncUpdatePacketSender> updateSender;
 }
+
+
+SyncID GenerateID(const SynchronizationBinding &binding)
+{
+	// Hash a concatenation of the server var name and the client var name
+	auto str = binding.ServerVariable->Name + binding.ClientVariable->Name;
+	SyncID result;
+	if (!ElDorito::Instance().Utils.Hash32(str, &result))
+		throw std::runtime_error("Failed to generate sync ID");
+	return result;
+}
+
 
 /// <summary>
 /// Adds a command to the console commands list.
@@ -21,8 +35,51 @@ Command* CommandManager::Add(Command command)
 		return nullptr;
 
 	this->List.push_back(command);
+	if (!(command.Flags & CommandFlags::eCommandFlagsReplicated))
+		return &this->List.back();
 
-	return &this->List.back();
+	// create a client var for this variable and setup sync for it
+
+	auto* retval = &this->List.back();
+
+	auto clientCmd = Command::CreateVariableInt(command.ModuleName, command.Name + "Client", "client_" + command.ShortName, "", CommandFlags::eCommandFlagsInternal, command.DefaultValueInt, command.UpdateEvent);
+	command.UpdateEvent = nullptr;
+	clientCmd.Type = command.Type;
+
+	clientCmd.ValueString = command.ValueString;
+	switch (clientCmd.Type)
+	{
+	case CommandType::VariableInt:
+		clientCmd.ValueInt = command.ValueInt;
+		clientCmd.DefaultValueInt = command.DefaultValueInt;
+		break;
+	case CommandType::VariableInt64:
+		clientCmd.ValueInt64 = command.ValueInt64;
+		clientCmd.DefaultValueInt64 = command.DefaultValueInt64;
+		break;
+	case CommandType::VariableFloat:
+		clientCmd.ValueFloat = command.ValueFloat;
+		clientCmd.DefaultValueFloat = command.DefaultValueFloat;
+		break;
+	case CommandType::VariableString:
+		clientCmd.DefaultValueString = command.DefaultValueString;
+		break;
+	}
+
+	auto* clientVar = Add(clientCmd);
+
+	SynchronizationBinding binding;
+	binding.ServerVariable = retval;
+	binding.ClientVariable = clientVar;
+	binding.ID = GenerateID(binding);
+	binding.SynchronizedPeers.reset();
+
+	if (SyncBindings.find(binding.ID) != SyncBindings.end())
+		throw std::runtime_error("Duplicate sync ID");
+
+	SyncBindings[binding.ID] = binding;
+
+	return retval;
 }
 
 /// <summary>
@@ -34,8 +91,15 @@ void CommandManager::FinishAdd()
 	{
 		if (command.Type != CommandType::Command && (command.Flags & eCommandFlagsDontUpdateInitial) != eCommandFlagsDontUpdateInitial)
 			if (command.UpdateEvent)
-				command.UpdateEvent(std::vector<std::string>(), std::string());
+				command.UpdateEvent(std::vector<std::string>(), LogFileContext);
 	}
+
+	auto updateHandler = std::make_shared<SyncUpdateHandler>();
+	updateSender = Packets::RegisterVariadicPacket<SyncUpdatePacketData, SyncUpdatePacketVar>("eldewrito-sync-var", updateHandler);
+
+	auto& engine = ElDorito::Instance().Engine;
+	engine.OnTick(BIND_CALLBACK(this, &CommandManager::TickSyncBindings));
+	engine.OnEvent("Core", "Game.Leave", BIND_CALLBACK(this, &CommandManager::OnGameLeave));
 }
 
 /// <summary>
@@ -58,13 +122,13 @@ Command* CommandManager::Find(const std::string& name)
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-std::string CommandManager::Execute(const std::vector<std::string>& command, bool isUserInput)
+bool CommandManager::Execute(const std::vector<std::string>& command, ICommandContext& context)
 {
 	std::string commandStr = "";
 	for (auto cmd : command)
 		commandStr += "\"" + cmd + "\" ";
 
-	return Execute(commandStr, isUserInput);
+	return Execute(commandStr, context);
 }
 
 /// <summary>
@@ -73,33 +137,76 @@ std::string CommandManager::Execute(const std::vector<std::string>& command, boo
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-std::string CommandManager::Execute(const std::string& command, bool isUserInput)
+bool CommandManager::Execute(const std::string& command, ICommandContext& context)
 {
 	int numArgs = 0;
 	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
 
 	if (numArgs <= 0)
-		return "Invalid input";
+	{
+		context.WriteOutput("Invalid input");
+		return false;
+	}
 
 	auto cmd = Find(args[0]);
-	if (!cmd || (isUserInput && cmd->Flags & eCommandFlagsInternal))
-		return "Command/Variable not found";
+	if (!cmd || (!context.IsInternal() && cmd->Flags & eCommandFlagsInternal))
+	{
+#ifdef _DEBUG
+		if (!cmd || numArgs > 1 || cmd->Type == CommandType::Command)
+		{
+#endif
+			context.WriteOutput("Command/variable not found");
+			return false;
+#ifdef _DEBUG
+		}
+#endif
+	}
 
-	if ((cmd->Flags & eCommandFlagsRunOnMainMenu) && !ElDorito::Instance().Engine.HasMainMenuShown())
+	auto& dorito = ElDorito::Instance();
+
+	if ((cmd->Flags & eCommandFlagsRunOnMainMenu) && !dorito.Engine.HasMainMenuShown())
 	{
 		queuedCommands.push_back(command);
-		return "Command queued until mainmenu shows";
+		context.WriteOutput("Command/variable queued until mainmenu shows");
+		return false;
+	}
+
+	if ((cmd->Flags & eCommandFlagsCheat))
+	{
+		if (!dorito.ServerCommands || !dorito.ServerCommands->VarCheats)
+		{
+			queuedCommands.push_back(command);
+			context.WriteOutput("Command/variable queued until mainmenu shows");
+			return false;
+		}
+		if (!dorito.ServerCommands->VarCheats->ValueInt && (numArgs > 1 || cmd->Type == CommandType::Command))
+		{
+			context.WriteOutput("Command/variable cannot be used unless Server.Cheats is set to 1");
+			return false;
+		}
 	}
 
 	auto* session = ElDorito::Instance().Engine.GetActiveNetworkSession();
 
-	if ((cmd->Flags & eCommandFlagsMustBeHosting))
+	if (cmd->Flags & eCommandFlagsMustBeHosting)
 		if (!session || !session->IsEstablished() || !session->IsHost())
-			return "You must be hosting a game to use this command";
+		{
+			if (numArgs > 1 || cmd->Type == CommandType::Command)
+			{
+				context.WriteOutput("You must be hosting a game to use this command/variable");
+				return false;
+			}
+		}
 
-	if ((cmd->Flags & eCommandFlagsReplicated))
+	if (cmd->Flags & eCommandFlagsReplicated)
 		if (session && session->IsEstablished() && !session->IsHost())
-			return "You must be at the main menu or hosting a game to use this command";
+		{
+			if (numArgs > 1 || cmd->Type == CommandType::Command)
+			{
+				context.WriteOutput("You must be at the main menu or hosting a game to use this command/variable");
+				return false;
+			}
+		}
 
 	std::vector<std::string> argsVect;
 	if (numArgs > 1)
@@ -107,11 +214,7 @@ std::string CommandManager::Execute(const std::string& command, bool isUserInput
 			argsVect.push_back(args[i]);
 
 	if (cmd->Type == CommandType::Command)
-	{
-		std::string retInfo;
-		cmd->UpdateEvent(argsVect, retInfo); // if it's a command call it and return
-		return retInfo;
-	}
+		return cmd->UpdateEvent(argsVect, context);
 
 	std::string previousValue;
 	auto updateRet = SetVariable(cmd, (numArgs > 1 ? argsVect[0] : ""), previousValue);
@@ -119,18 +222,26 @@ std::string CommandManager::Execute(const std::string& command, bool isUserInput
 	switch (updateRet)
 	{
 	case VariableSetReturnValue::Error:
-		return "Command/Variable not found";
+	{
+		context.WriteOutput("Command/variable not found");
+		return false;
+	}
 	case VariableSetReturnValue::InvalidArgument:
-		return "Invalid value";
+	{
+		context.WriteOutput("Invalid value");
+		return false;
+	}
 	case VariableSetReturnValue::OutOfRange:
 		if (cmd->Type == CommandType::VariableInt)
-			return "Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueIntMin) + ".." + std::to_string(cmd->ValueIntMax) + "]";
-		if (cmd->Type == CommandType::VariableInt64)
-			return "Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueInt64Min) + ".." + std::to_string(cmd->ValueInt64Max) + "]";
-		if (cmd->Type == CommandType::VariableFloat)
-			return "Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueFloatMin) + ".." + std::to_string(cmd->ValueFloatMax) + "]";
+			context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueIntMin) + ".." + std::to_string(cmd->ValueIntMax) + "]");
+		else if (cmd->Type == CommandType::VariableInt64)
+			context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueInt64Min) + ".." + std::to_string(cmd->ValueInt64Max) + "]");
+		else if (cmd->Type == CommandType::VariableFloat)
+			context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueFloatMin) + ".." + std::to_string(cmd->ValueFloatMax) + "]");
+		else
+			context.WriteOutput("Value " + argsVect[0] + " out of range [this shouldn't be happening!]");
 
-		return "Value " + argsVect[0] + " out of range [this shouldn't be happening!]";
+		return false;
 	}
 
 	// special case for blanking strings
@@ -138,21 +249,25 @@ std::string CommandManager::Execute(const std::string& command, bool isUserInput
 		cmd->ValueString = "";
 
 	if (numArgs <= 1)
-		return previousValue;
+	{
+		context.WriteOutput(previousValue);
+		return true;
+	}
 
 	if (!cmd->UpdateEvent)
-		return previousValue + " -> " + cmd->ValueString; // no update event, so we'll just return with what we set the value to
+	{
+		context.WriteOutput(previousValue + " -> " + cmd->ValueString); // no update event, so we'll just return with what we set the value to
+		return true;
+	}
 
-	std::string retVal;
-	auto ret = cmd->UpdateEvent(argsVect, retVal);
+	auto ret = cmd->UpdateEvent(argsVect, context);
 
 	if (!ret) // error, revert the variable
 		this->SetVariable(cmd, previousValue, std::string());
 
-	if (retVal.empty())
-		return previousValue + " -> " + cmd->ValueString;
+	context.WriteOutput(previousValue + " -> " + cmd->ValueString); // TODO: don't write this if the updateevent has written something
 
-	return retVal;
+	return true;
 }
 
 /// <summary>
@@ -161,7 +276,7 @@ std::string CommandManager::Execute(const std::string& command, bool isUserInput
 /// <param name="commands">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>Whether the command executed successfully.</returns>
-std::string CommandManager::ExecuteList(const std::string& commands, bool isUserInput)
+bool CommandManager::ExecuteList(const std::string& commands, ICommandContext& context)
 {
 	std::istringstream stream(commands);
 	std::stringstream ss;
@@ -169,79 +284,26 @@ std::string CommandManager::ExecuteList(const std::string& commands, bool isUser
 	int lineIdx = 0;
 	while (std::getline(stream, line))
 	{
-		if (!this->ExecuteWithStatus(line, isUserInput))
+		if (!this->Execute(line, context))
 		{
-			ss << "Error at line " << lineIdx << std::endl;
+			context.WriteOutput("Error at line " + std::to_string(lineIdx));
 		}
 		lineIdx++;
 	}
-	return ss.str();
-}
-
-/// <summary>
-/// Executes a command string, returning a bool indicating success.
-/// </summary>
-/// <param name="command">The command string.</param>
-/// <param name="isUserInput">Whether the command came from the user or internally.</param>
-/// <returns>Whether the command executed successfully.</returns>
-bool CommandManager::ExecuteWithStatus(const std::string& command, bool isUserInput)
-{
-	int numArgs = 0;
-	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
-
-	if (numArgs <= 0)
-		return false;
-
-	auto cmd = Find(args[0]);
-	if (!cmd || (isUserInput && cmd->Flags & eCommandFlagsInternal))
-		return false;
-
-	std::vector<std::string> argsVect;
-	if (numArgs > 1)
-		for (int i = 1; i < numArgs; i++)
-			argsVect.push_back(args[i]);
-
-	if (cmd->Type == CommandType::Command)
-	{
-		cmd->UpdateEvent(argsVect, std::string()); // if it's a command call it and return
-		return true;
-	}
-
-	std::string previousValue;
-	auto updateRet = SetVariable(cmd, (numArgs > 1 ? argsVect[0] : ""), previousValue);
-
-	if (updateRet != VariableSetReturnValue::Success)
-		return false;
-
-	if (numArgs <= 1)
-		return true;
-
-	if (!cmd->UpdateEvent)
-		return true; // no update event, so we'll just return with what we set the value to
-
-	auto ret = cmd->UpdateEvent(argsVect, std::string());
-
-	if (ret) // error, revert the variable
-		return true;
-
-	// error, revert the variable
-	this->SetVariable(cmd, previousValue, std::string());
-	return false;
+	return true;
 }
 
 /// <summary>
 /// Executes the command queue.
 /// </summary>
 /// <returns>Results of the executed commands.</returns>
-std::string CommandManager::ExecuteQueue()
+bool CommandManager::ExecuteQueue(ICommandContext& context)
 {
-	std::stringstream ss;
 	for (auto cmd : queuedCommands)
-	{
-		ss << Execute(cmd, true) << std::endl;
-	}
+		Execute(cmd, context);
+
 	queuedCommands.clear();
-	return ss.str();
+	return true;
 }
 
 /// <summary>
@@ -572,6 +634,222 @@ KeyBinding* CommandManager::GetBinding(int keyCode)
 		return nullptr;
 
 	return &bindings[keyCode];
+}
+
+ICommandContext& CommandManager::GetLogFileContext()
+{
+	return this->LogFileContext;
+}
+
+bool IsPeerReady(Blam::Network::Session *session, int peerIndex)
+{
+	auto membership = &session->MembershipInfo;
+	if (peerIndex == membership->LocalPeerIndex || !membership->Peers[peerIndex].IsEstablished())
+		return false;
+	auto channelInfo = &membership->PeerChannels[peerIndex];
+	return !channelInfo->Unavailable && channelInfo->ChannelIndex >= 0;
+}
+
+std::vector<SynchronizationBinding*> CommandManager::FindOutOfDateBindings(int peerIndex)
+{
+	// Find bindings which don't have the peer in their set
+	std::vector<SynchronizationBinding*> result;
+	for (auto &&binding : SyncBindings)
+	{
+		if (!binding.second.SynchronizedPeers[peerIndex])
+			result.push_back(&binding.second);
+	}
+	return result;
+}
+
+void BuildVariableUpdate(const SynchronizationBinding *binding, SyncUpdatePacketVar *result)
+{
+	auto var = binding->ServerVariable;
+	result->ID = binding->ID;
+	result->Type = var->Type;
+	switch (var->Type)
+	{
+	case CommandType::VariableInt:
+		result->Value.Int = var->ValueInt;
+		break;
+	case CommandType::VariableInt64:
+		result->Value.Int = var->ValueInt64;
+		break;
+	case CommandType::VariableFloat:
+		result->Value.Float = var->ValueFloat;
+		break;
+	case CommandType::VariableString:
+		strncpy_s(result->Value.String, var->ValueString.c_str(), MaxStringLength);
+		result->Value.String[MaxStringLength] = 0;
+		break;
+	default:
+		throw std::runtime_error("Unsupported variable type");
+	}
+}
+
+std::shared_ptr<SyncUpdatePacket> BuildUpdatePacket(const std::vector<SynchronizationBinding*> &bindings)
+{
+	auto result = updateSender->New(bindings.size());
+	for (size_t i = 0; i < bindings.size(); i++)
+	{
+		auto binding = bindings[i];
+		auto update = &result->ExtraData[i];
+		BuildVariableUpdate(binding, update);
+	}
+	return result;
+}
+
+void CommandManager::SynchronizePeer(int peerIndex)
+{
+	// Get the bindings which need to be sent to the peer
+	auto outOfDateBindings = FindOutOfDateBindings(peerIndex);
+	if (!outOfDateBindings.size())
+		return;
+
+	// Build and send an update packet
+	auto packet = BuildUpdatePacket(outOfDateBindings);
+	updateSender->Send(peerIndex, packet);
+
+	// Mark the peer as synchronized
+	for (auto binding : outOfDateBindings)
+		binding->SynchronizedPeers[peerIndex] = true;
+}
+
+void CommandManager::TickSyncBindings(const std::chrono::duration<double>& deltaTime)
+{
+	auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
+	if (!session || !session->IsHost())
+		return;
+
+	for (auto &&binding : SyncBindings)
+		TickBinding(&binding.second);
+
+	std::bitset<Blam::Network::MaxPeers> visitedPeers;
+
+	auto membership = &session->MembershipInfo;
+	for (auto peer = membership->FindFirstPeer(); peer != -1; peer = membership->FindNextPeer(peer))
+	{
+		// Only synchronize remote peers which are completely established
+		if (peer != membership->LocalPeerIndex && IsPeerReady(session, peer))
+		{
+			SynchronizePeer(peer);
+			visitedPeers[peer] = true;
+		}
+	}
+
+	// Clear the synchronization statuses for peers which weren't visited
+	// (this takes care of disconnecting peers)
+	for (auto &&binding : SyncBindings)
+		binding.second.SynchronizedPeers &= visitedPeers;
+}
+
+void CommandManager::TickBinding(SynchronizationBinding* binding)
+{
+	// Only update if the server variable changed
+	if (binding->ServerVariable->Compare(binding->ClientVariable))
+		return;
+
+	// Synchronize the client variable locally
+	binding->ClientVariable->CopyFrom(binding->ServerVariable);
+
+	// Clear the binding's peer synchronization status so that it will be
+	// batched in with the next update
+	binding->SynchronizedPeers.reset();
+}
+
+void CommandManager::OnGameLeave(void* param)
+{
+	auto* session = ElDorito::Instance().Engine.GetActiveNetworkSession();
+	if (session && session->IsEstablished() && session->IsHost())
+		return; // don't reset vars if we're host
+
+	// when leaving a game reset replicated vars back to their defaults
+	for (auto &&binding : SyncBindings)
+	{
+		binding.second.ServerVariable->Reset();
+		binding.second.ClientVariable->Reset();
+	}
+}
+
+CommandManager::CommandManager()
+{
+}
+
+void SyncUpdateHandler::Serialize(Blam::BitStream* stream, const SyncUpdatePacketData* data, int extraDataCount, const SyncUpdatePacketVar* extraData)
+{
+	for (auto i = 0; i < extraDataCount; i++)
+	{
+		// Send ID and type followed by value
+		auto var = &extraData[i];
+		stream->WriteUnsigned(var->ID, 32);
+		stream->WriteUnsigned<uint32_t>((uint32_t)var->Type, 0, (uint32_t)CommandType::Count - 1);
+
+		switch (var->Type)
+		{
+		case CommandType::VariableInt:
+			stream->WriteUnsigned(var->Value.Int, 32);
+			break;
+		case CommandType::VariableInt64:
+			stream->WriteUnsigned(var->Value.Int, 64);
+			break;
+		case CommandType::VariableFloat:
+			stream->WriteBlock(32, reinterpret_cast<const uint8_t*>(&var->Value.Float));
+			break;
+		case CommandType::VariableString:
+			stream->WriteString(var->Value.String);
+			break;
+		default:
+			throw std::runtime_error("Unsupported variable type");
+		}
+	}
+}
+
+bool SyncUpdateHandler::Deserialize(Blam::BitStream* stream, SyncUpdatePacketData* data, int extraDataCount, SyncUpdatePacketVar* extraData)
+{
+	for (auto i = 0; i < extraDataCount; i++)
+	{
+		// Read ID and type followed by value
+		auto var = &extraData[i];
+		var->ID = stream->ReadUnsigned<uint32_t>(32);
+		var->Type = static_cast<CommandType>(stream->ReadUnsigned<uint32_t>(0, (int)CommandType::Count - 1));
+		switch (var->Type)
+		{
+		case CommandType::VariableInt:
+			var->Value.Int = stream->ReadUnsigned<uint64_t>(32);
+			break;
+		case CommandType::VariableInt64:
+			var->Value.Int = stream->ReadUnsigned<uint64_t>(64);
+			break;
+		case CommandType::VariableFloat:
+			stream->ReadBlock(32, reinterpret_cast<uint8_t*>(&var->Value.Float));
+			break;
+		case CommandType::VariableString:
+			stream->ReadString(var->Value.String);
+			break;
+		default:
+			return false;
+		}
+	}
+	return true;
+}
+
+void SyncUpdateHandler::HandlePacket(Blam::Network::ObserverChannel* sender, const Packets::VariadicPacket<SyncUpdatePacketData, SyncUpdatePacketVar>* packet)
+{
+	auto& dorito = ElDorito::Instance();
+	auto session = dorito.Engine.GetActiveNetworkSession();
+	if (session->GetChannelPeer(sender) != session->MembershipInfo.HostPeerIndex)
+		return; // Packets must come from the host
+
+	// Update each variable based on the binding ID
+	for (auto i = 0; i < packet->GetExtraDataCount(); i++)
+	{
+		auto value = &packet->ExtraData[i];
+		auto it = dorito.CommandManager.SyncBindings.find(value->ID);
+		if (it == dorito.CommandManager.SyncBindings.end())
+			continue;
+		it->second.ClientVariable->CopyFrom(value);
+		it->second.ServerVariable->CopyFrom(value);
+	}
 }
 
 namespace

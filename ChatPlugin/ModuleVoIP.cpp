@@ -10,7 +10,7 @@ Modules::ModuleVoIP VoipModule;
 
 namespace
 {
-	bool VariablePushToTalkUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool VariablePushToTalkUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
 	{
 		unsigned int error;
 		uint64 scHandlerID = VoIPGetscHandlerID();
@@ -68,7 +68,7 @@ namespace
 		return true;
 	}
 
-	bool VariableVolumeModifierUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool VariableVolumeModifierUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
 	{
 		unsigned int error;
 		uint64 scHandlerID = VoIPGetscHandlerID();
@@ -83,7 +83,7 @@ namespace
 		return true;
 	}
 
-	bool VariableAGCUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool VariableAGCUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
 	{
 		unsigned int error;
 		uint64 scHandlerID = VoIPGetscHandlerID();
@@ -98,7 +98,7 @@ namespace
 		return true;
 	}
 
-	bool VariableEchoCancellationUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool VariableEchoCancellationUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
 	{
 		unsigned int error;
 		uint64 scHandlerID = VoIPGetscHandlerID();
@@ -113,7 +113,7 @@ namespace
 		return true;
 	}
 
-	bool VariableVADLevelUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool VariableVADLevelUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
 	{
 		unsigned int error;
 		uint64 scHandlerID = VoIPGetscHandlerID();
@@ -128,7 +128,7 @@ namespace
 		return true;
 	}
 
-	bool VariableServerEnabledUpdate(const std::vector<std::string>& Arguments, std::string& returnInfo)
+	bool VariableServerEnabledUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
 	{
 		//TODO: Check if host, kill client too. StopTeamspeakClient();
 		//TODO: Figure out why this doesn't stop the teamspeak server when setting to 0....

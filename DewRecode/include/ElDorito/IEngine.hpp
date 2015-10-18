@@ -2,6 +2,7 @@
 #include "Pointer.hpp"
 #include <chrono>
 #include <functional>
+#include <vector>
 
 namespace Blam
 {
@@ -14,6 +15,18 @@ namespace Blam
 	}
 }
 
+namespace Packets
+{
+	class RawPacketHandler;
+	typedef uint32_t PacketGuid;
+}
+
+struct CustomPacket
+{
+	std::string Name;
+	std::shared_ptr<Packets::RawPacketHandler> Handler;
+};
+
 /* 
 List of events registered by ED (eventNamespace/eventName seperated by a period, parameter in parens):
 	Core.Engine.FirstTick - signalled when the game engine loop starts ticking, only signals once
@@ -24,10 +37,12 @@ List of events registered by ED (eventNamespace/eventName seperated by a period,
 	Core.Server.Start - when the user has started a server
 	Core.Server.Stop - when the user has stopped the server
 	Core.Server.PlayerKick(PlayerInfo) - when a user has been kicked (host only)
+	Core.Server.LifeCycleStateChanged - when the servers lifecycle state has changed (param = new lifecycle state)
+	Core.Server.PongReceived - when a response to a ping is received from the server (param = std::tuple<const Blam::Network::NetworkAddress& from, uint32_t timestamp, uint16_t ID, uint32_t latency>* )
 
 	Core.Game.Joining - when the user is joining a game (direct connect cmd issued)
 	Core.Game.Leave - when the user leaves a game
-	Core.Game.End - when a game has finished (ez)
+	Core.Game.End - when a game has finished
 
 	Core.Direct3D.EndScene - when the game is about to call D3DDevice::EndScene
 
@@ -100,7 +115,7 @@ struct ConsoleBuffer
 	void PushLine(const std::string& line)
 	{
 		Messages.push_back(line);
-		TimeLastShown = GetTickCount();
+		TimeLastShown = timeGetTime();
 	}
 };
 /*
@@ -344,6 +359,13 @@ public:
 	/// </summary>
 	/// <param name="type">The input type.</param>
 	virtual void BlockInput(Blam::Input::InputType type, bool block) = 0;
+
+	virtual void SendPacket(int targetPeer, const void* packet, int packetSize) = 0;
+
+	// Registers a packet handler under a particular name and returns the
+	// GUID of the new packet type.
+	virtual Packets::PacketGuid RegisterPacketImpl(const std::string &name, std::shared_ptr<Packets::RawPacketHandler> handler) = 0;
+	virtual CustomPacket* LookUpPacketType(Packets::PacketGuid guid) = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

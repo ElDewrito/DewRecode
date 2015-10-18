@@ -34,6 +34,8 @@ DORITO_API void* CreateInterface(const char* name, int* returnCode);
 #include "Blam/BlamTypes.hpp"
 #include "Blam/BlamInput.hpp"
 #include "Blam/Tags/GameEngineSettingsDefinition.hpp"
+#include "CustomPackets.hpp"
+#include "ICommandContext.hpp"
 #include "ICommandManager.hpp"
 #include "IDebugLog.hpp"
 #include "IEngine.hpp"

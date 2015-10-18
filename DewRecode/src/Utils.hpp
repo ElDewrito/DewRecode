@@ -14,6 +14,8 @@ public:
 	std::string Base64Decode(const std::string& encoded_string);
 	int Base64DecodeBinary(char* b64message, unsigned char* buffer, size_t* length);
 
+	bool Hash32(const std::string& str, uint32_t* out);
+
 	void RemoveCharsFromString(std::string& str, char* charsToRemove);
 
 	void HexStringToBytes(const std::string& in, void* const data, size_t length);
@@ -35,6 +37,8 @@ public:
 	UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, const std::string& ruleName);
 
 	void GetEndpoints(std::vector<std::string>& destVect, const std::string& endpointType);
+	
+	size_t ExecuteProcess(const std::wstring& fullPathToExe, std::wstring& parameters, size_t secondsToWait);
 
 	PublicUtils();
 	~PublicUtils();

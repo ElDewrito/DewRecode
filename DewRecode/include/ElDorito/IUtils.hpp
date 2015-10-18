@@ -83,6 +83,8 @@ public:
 	virtual std::string Base64Decode(const std::string& encoded_string) = 0;
 	virtual int Base64DecodeBinary(char* b64message, unsigned char* buffer, size_t* length) = 0;
 
+	virtual bool Hash32(const std::string& str, uint32_t* out) = 0;
+
 	virtual void RemoveCharsFromString(std::string& str, char* charsToRemove) = 0;
 
 	virtual void HexStringToBytes(const std::string& in, void* const data, size_t length) = 0;
@@ -104,6 +106,15 @@ public:
 	virtual UPnPResult UPnPForwardPort(bool tcp, int externalport, int internalport, const std::string& ruleName) = 0;
 
 	virtual void GetEndpoints(std::vector<std::string>& destVect, const std::string& endpointType) = 0;
+
+	/// <summary>
+	/// Executes the specified exe with the specified parameters.
+	/// </summary>
+	/// <param name="fullPathToExe">The full path to the exe.</param>
+	/// <param name="parameters">The parameters/arguments to pass to the exe.</param>
+	/// <param name="secondsToWait">How many seconds to wait for the process to exit.</param>
+	/// <returns>The return value of the process.</returns>
+	virtual size_t ExecuteProcess(const std::wstring& fullPathToExe, std::wstring& parameters, size_t secondsToWait) = 0;
 };
 
 #define UTILS_INTERFACE_VERSION001 "Utils001"

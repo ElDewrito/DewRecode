@@ -4,16 +4,16 @@
 #include <codecvt>
 #include <cvt/wstring>
 
-#include "Armor/ArmorPatchProvider.hpp"
-#include "ContentItems/ContentItemsPatchProvider.hpp"
-#include "Core/CorePatchProvider.hpp"
-#include "Forge/ForgePatchProvider.hpp"
-#include "Input/InputPatchProvider.hpp"
-#include "Network/NetworkPatchProvider.hpp"
-#include "Player/PlayerPatchProvider.hpp"
-#include "Scoreboard/ScoreboardPatchProvider.hpp"
-#include "UI/UIPatchProvider.hpp"
-#include "VirtualKeyboard/VirtualKeyboardPatchProvider.hpp"
+#include "Patches/ArmorPatchProvider.hpp"
+#include "Patches/ContentItemsPatchProvider.hpp"
+#include "Patches/CorePatchProvider.hpp"
+#include "Patches/ForgePatchProvider.hpp"
+#include "Patches/InputPatchProvider.hpp"
+#include "Patches/NetworkPatchProvider.hpp"
+#include "Patches/PlayerPatchProvider.hpp"
+#include "Patches/ScoreboardPatchProvider.hpp"
+#include "Patches/UIPatchProvider.hpp"
+#include "Patches/VirtualKeyboardPatchProvider.hpp"
 
 ElDorito::ElDorito()
 {
@@ -30,7 +30,9 @@ void ElDorito::initPatchProviders()
 	for (auto patch : Patches)
 	{
 		auto patchSet = patch->GetPatches();
-		PatchManager.TogglePatchSet(PatchManager.Add(patchSet));
+		if (patchSet.Name != "null")
+			PatchManager.TogglePatchSet(PatchManager.Add(patchSet));
+
 		patch->RegisterCallbacks(&Engine);
 	}
 }
@@ -59,6 +61,7 @@ void ElDorito::initClasses()
 	auto contentItemPatchProvider = std::make_shared<ContentItems::ContentItemsPatchProvider>();
 	auto corePatchProvider = std::make_shared<Core::CorePatchProvider>();
 	auto forgePatchProvider = std::make_shared<Forge::ForgePatchProvider>();
+	auto gameRulesPatchProvider = std::make_shared<GameRules::GameRulesPatchProvider>();
 	auto inputPatchProvider = std::make_shared<Input::InputPatchProvider>();
 	auto networkPatchProvider = std::make_shared<Network::NetworkPatchProvider>();
 	auto playerPatchProvider = std::make_shared<Player::PlayerPatchProvider>();
@@ -71,6 +74,7 @@ void ElDorito::initClasses()
 	Patches.push_back(contentItemPatchProvider);
 	Patches.push_back(corePatchProvider);
 	Patches.push_back(forgePatchProvider);
+	Patches.push_back(gameRulesPatchProvider);
 	Patches.push_back(inputPatchProvider);
 	Patches.push_back(networkPatchProvider);
 	Patches.push_back(playerPatchProvider);
@@ -90,6 +94,9 @@ void ElDorito::initClasses()
 	GameCommands = std::make_shared<Game::GameCommandProvider>();
 	initCommandProvider(GameCommands);
 
+	GameRulesCommands = std::make_shared<GameRules::GameRulesCommandProvider>(gameRulesPatchProvider);
+	initCommandProvider(GameRulesCommands);
+
 	InputCommands = std::make_shared<Input::InputCommandProvider>(inputPatchProvider);
 	initCommandProvider(InputCommands);
 
@@ -99,11 +106,11 @@ void ElDorito::initClasses()
 	ServerCommands = std::make_shared<Server::ServerCommandProvider>();
 	initCommandProvider(ServerCommands);
 
-	TimeCommands = std::make_shared<Time::TimeCommandProvider>();
-	initCommandProvider(TimeCommands);
-
 	UICommands = std::make_shared<UI::UICommandProvider>(uiPatchProvider);
 	initCommandProvider(UICommands);
+
+	UpdaterCommands = std::make_shared<Updater::UpdaterCommandProvider>();
+	initCommandProvider(UpdaterCommands);
 
 	initPatchProviders();
 
@@ -126,10 +133,10 @@ void ElDorito::Initialize()
 	CommandManager.FinishAdd(); // call this so that the default values can be applied to the game
 	
 	Logger.Log(LogSeverity::Debug, "ElDorito", "exec dewrito_prefs.cfg...");
-	CommandManager.Execute("exec dewrito_prefs.cfg");
+	CommandManager.Execute("exec dewrito_prefs.cfg", CommandManager.LogFileContext);
 
 	Logger.Log(LogSeverity::Debug, "ElDorito", "exec autoexec.cfg...");
-	CommandManager.Execute("exec autoexec.cfg"); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
+	CommandManager.Execute("exec autoexec.cfg", CommandManager.LogFileContext); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
 	// HACKY - As we need a draw call in between this message and the actual generation, check it ahead of it actually generating
 	if (PlayerCommands->VarPubKey->ValueString.empty())
@@ -142,7 +149,6 @@ void ElDorito::Initialize()
 
 	int numArgs = 0;
 	LPWSTR* szArgList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-	bool usingLauncher = GameCommands->VarSkipLauncher->ValueInt == 1;
 	bool skipKill = false;
 	bool dedicated = false;
 
@@ -155,11 +161,6 @@ void ElDorito::Initialize()
 			std::wstring arg = std::wstring(szArgList[i]);
 			if (arg.compare(0, 1, L"-") != 0) // if it doesn't start with -
 				continue;
-
-#ifndef _DEBUG
-			if (arg.compare(L"-launcher") == 0)
-				usingLauncher = true;
-#endif
 
 			if (arg.compare(L"-dedicated") == 0)
 			{
@@ -178,7 +179,7 @@ void ElDorito::Initialize()
 			std::string argname = converter.to_bytes(arg.substr(1, pos - 1));
 			std::string argvalue = converter.to_bytes(arg.substr(pos + 1));
 
-			CommandManager.Execute(argname + " \"" + argvalue + "\"", true);
+			CommandManager.Execute(argname + " \"" + argvalue + "\"", CommandManager.ConsoleContext);
 		}
 	}
 

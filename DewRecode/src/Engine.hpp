@@ -2,6 +2,8 @@
 #include <ElDorito/ElDorito.hpp>
 #include <map>
 #include "Utils/Utils.hpp"
+#include <ElDorito/CustomPackets.hpp>
+#include <unordered_map>
 
 // handles game events and callbacks for different modules/plugins
 // if you make any changes to this class make sure to update the exported interface (create a new interface + inherit from it if the interface already shipped)
@@ -55,6 +57,11 @@ public:
 	bool ReadKeyEvent(Blam::Input::KeyEvent* result, Blam::Input::InputType type);
 	void BlockInput(Blam::Input::InputType type, bool block);
 
+	void SendPacket(int targetPeer, const void* packet, int packetSize);
+
+	Packets::PacketGuid RegisterPacketImpl(const std::string &name, std::shared_ptr<Packets::RawPacketHandler> handler);
+	CustomPacket* LookUpPacketType(Packets::PacketGuid guid);
+
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);
 	void EndScene(void* d3dDevice);
@@ -70,6 +77,7 @@ private:
 	std::vector<WndProcCallback> wndProcCallbacks;
 	std::map<std::string, std::vector<EventCallback>> eventCallbacks;
 	std::map<std::string, void*> interfaces;
+	std::unordered_map<Packets::PacketGuid, CustomPacket> customPackets;
 
 	PatchSet* enginePatchSet;
 };

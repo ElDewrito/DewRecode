@@ -10,23 +10,24 @@
 #include "Utils.hpp"
 #include "Utils/Utils.hpp"
 
-#include "Network/PlayerPropertiesExtension.hpp"
+#include "Patches/PlayerPropertiesExtension.hpp"
 
 #include <ElDorito/Pointer.hpp>
 #include <ElDorito/Blam/ArrayGlobal.hpp>
 
 class IPatchProvider;
 
-#include "Camera/CameraCommandProvider.hpp"
-#include "Debug/DebugCommandProvider.hpp"
-#include "ElDewrito/ElDewritoCommandProvider.hpp"
-#include "Forge/ForgeCommandProvider.hpp"
-#include "Game/GameCommandProvider.hpp"
-#include "Input/InputCommandProvider.hpp"
-#include "Player/PlayerCommandProvider.hpp"
-#include "Server/ServerCommandProvider.hpp"
-#include "Time/TimeCommandProvider.hpp"
-#include "UI/UICommandProvider.hpp"
+#include "Commands/CameraCommandProvider.hpp"
+#include "Commands/DebugCommandProvider.hpp"
+#include "Commands/ElDewritoCommandProvider.hpp"
+#include "Commands/ForgeCommandProvider.hpp"
+#include "Commands/GameCommandProvider.hpp"
+#include "Commands/GameRulesCommandProvider.hpp"
+#include "Commands/InputCommandProvider.hpp"
+#include "Commands/PlayerCommandProvider.hpp"
+#include "Commands/ServerCommandProvider.hpp"
+#include "Commands/UICommandProvider.hpp"
+#include "Commands/UpdaterCommandProvider.hpp"
 
 class ElDorito
 {
@@ -55,11 +56,12 @@ public:
 	std::shared_ptr<ElDewrito::ElDewritoCommandProvider> ElDewritoCommands;
 	std::shared_ptr<Forge::ForgeCommandProvider> ForgeCommands;
 	std::shared_ptr<Game::GameCommandProvider> GameCommands;
+	std::shared_ptr<GameRules::GameRulesCommandProvider> GameRulesCommands;
 	std::shared_ptr<Input::InputCommandProvider> InputCommands;
 	std::shared_ptr<Player::PlayerCommandProvider> PlayerCommands;
 	std::shared_ptr<Server::ServerCommandProvider> ServerCommands;
-	std::shared_ptr<Time::TimeCommandProvider> TimeCommands;
 	std::shared_ptr<UI::UICommandProvider> UICommands;
+	std::shared_ptr<Updater::UpdaterCommandProvider> UpdaterCommands;
 
 	void Initialize();
 

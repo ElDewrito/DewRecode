@@ -99,6 +99,49 @@ namespace
 		ElDorito::Instance().Engine.EndScene(device);
 		return device->EndScene();
 	}
+
+	void PongReceivedHookImpl(const Blam::Network::NetworkAddress &from, const Blam::Network::PongPacket &pong, uint32_t latency)
+	{
+		auto* data = new std::tuple<const Blam::Network::NetworkAddress&, uint32_t, uint16_t, uint32_t>(from, pong.Timestamp, pong.ID, latency);
+		ElDorito::Instance().Engine.Event("Core", "Server.PongReceived", data);
+		delete data;
+	}
+
+	__declspec(naked) void PongReceivedHook()
+	{
+		__asm
+		{
+			push esi // Latency
+			push edi // Pong packet
+			push dword ptr[ebp + 8] // Sender
+			call PongReceivedHookImpl
+			add esp, 12
+			push 0x49D9FA
+			ret
+		}
+	}
+
+	void LifeCycleStateChangedHookImpl(Blam::Network::LifeCycleState newState)
+	{
+		ElDorito::Instance().Engine.Event("Core", "Server.LifeCycleStateChanged", (void*)&newState);
+	}
+
+	__declspec(naked) void LifeCycleStateChangedHook()
+	{
+		__asm
+		{
+			pop esi // HACK: esi = return address
+
+			// Execute replaced code
+			mov ecx, edi // ecx = New lifecycle state object
+			call dword ptr[eax + 8] // lifecycle->enter()
+
+			push dword ptr[ebx] // Lifecycle state type
+			call LifeCycleStateChangedHookImpl
+			add esp, 4
+			jmp esi
+		}
+	}
 }
 
 /// <summary>
@@ -121,7 +164,11 @@ Engine::Engine()
 		Hook("TagsLoaded", 0x5030EA, TagsLoadedHook, HookType::Jmp),
 		Hook("ServerSessionInfo", 0x482AAC, Network_managed_session_create_session_internalHook, HookType::Call),
 		Hook("PlayerKick", 0x437E17, Network_leader_request_boot_machineHook, HookType::Call),
-		Hook("D3DEndScene2", 0xA21796, D3D9Device_EndSceneHook, HookType::Call)
+		Hook("D3DEndScene2", 0xA21796, D3D9Device_EndSceneHook, HookType::Call),
+		Hook("OnPong", 0x49D9DB, PongReceivedHook, HookType::Jmp),
+		Hook("LifeCycleStateChanged1", 0x48E527, LifeCycleStateChangedHook, HookType::Call),
+		Hook("LifeCycleStateChanged2", 0x48E10F, LifeCycleStateChangedHook, HookType::Call),
+
 	});
 	patches.TogglePatchSet(enginePatchSet);
 }
@@ -596,4 +643,40 @@ void Engine::BlockInput(Blam::Input::InputType type, bool block)
 	typedef uint8_t(*EngineBlockInputPtr)(Blam::Input::InputType, bool);
 	auto EngineBlockInput = reinterpret_cast<EngineBlockInputPtr>(0x512530);
 	EngineBlockInput(type, block);
+}
+
+void Engine::SendPacket(int targetPeer, const void* packet, int packetSize)
+{
+	auto session = GetActiveNetworkSession();
+	if (!session)
+		return;
+	auto channelIndex = session->MembershipInfo.PeerChannels[targetPeer].ChannelIndex;
+	if (channelIndex == -1)
+		return;
+
+	const int CustomPacketId = 0x27; // Last packet ID used by the game is 0x26
+	session->Observer->ObserverChannelSendMessage(0, channelIndex, false, CustomPacketId, packetSize, packet);
+}
+
+Packets::PacketGuid Engine::RegisterPacketImpl(const std::string &name, std::shared_ptr<Packets::RawPacketHandler> handler)
+{
+	Packets::PacketGuid guid;
+	auto& dorito = ElDorito::Instance();
+	if (!dorito.Utils.Hash32(name, &guid))
+		throw std::runtime_error("Failed to generate packet GUID");
+	if (LookUpPacketType(guid))
+		throw std::runtime_error("Duplicate packet GUID"); // TODO: Throwing an exception here might not be the best idea...
+	CustomPacket packet;
+	packet.Name = name;
+	packet.Handler = handler;
+	customPackets[guid] = packet;
+	return guid;
+}
+
+CustomPacket* Engine::LookUpPacketType(Packets::PacketGuid guid)
+{
+	auto it = customPackets.find(guid);
+	if (it == customPackets.end())
+		return nullptr;
+	return &it->second;
 }

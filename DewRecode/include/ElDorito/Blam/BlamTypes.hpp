@@ -99,6 +99,25 @@ namespace Blam
 		"Offline"
 	};
 
+	enum class ServerLobbyType : uint32_t
+	{
+		Campaign = 0,
+		Matchmaking,
+		Multiplayer,
+		Forge,
+		Theater,
+		Count
+	};
+
+	const std::string ServerLobbyTypeNames[(uint32_t)ServerLobbyType::Count] =
+	{
+		"Campaign",
+		"Matchmaking",
+		"Multiplayer",
+		"Forge",
+		"Theater"
+	};
+
 	typedef struct _BLAM_CONTENT_HEADER
 	{
 		uint64_t ID; // not sure about this
@@ -355,6 +374,12 @@ namespace GameGlobals
 		const size_t Player1ObjectDatumIdx = 0x18;
 		const size_t Player2ObjectDatumIdx = 0x1C;
 		const size_t Player3ObjectDatumIdx = 0x20;
+	}
+
+	namespace PersistentUserDataChud
+	{
+		const size_t TLSOffset = 0x424;
+		const size_t SprintMeterOffset = 0x157;
 	}
 
 	namespace ObjectHeader

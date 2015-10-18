@@ -59,8 +59,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>version.lib;ws2_32.lib;d3dx9.lib;libeay32MT.lib;Winhttp.lib;Iphlpapi.lib;miniupnpc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>version.lib;ws2_32.lib;d3dx9.lib;libeay32MT.lib;Winhttp.lib;Iphlpapi.lib;miniupnpc.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib/x86/;../ThirdParty/openssl-1.0.2c/lib;../ThirdParty/miniupnpc-1.9.20150609/miniupnpc/build/Debug</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>Copy /Y "$(TargetDir)$(TargetFileName)" "C:\Halo\$(TargetFileName)"</Command>
@@ -82,43 +83,49 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>version.lib;ws2_32.lib;d3dx9.lib;libeay32MT.lib;Winhttp.lib;Iphlpapi.lib;miniupnpc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>version.lib;ws2_32.lib;d3dx9.lib;libeay32MT.lib;Winhttp.lib;Iphlpapi.lib;miniupnpc.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib/x86/;../ThirdParty/openssl-1.0.2c/lib;../ThirdParty/miniupnpc-1.9.20150609/miniupnpc/build/Release</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>Copy /Y "$(TargetDir)$(TargetFileName)" "C:\Halo\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Camera\CameraCommandProvider.cpp" />
-    <ClCompile Include="src\Camera\CameraPatchProvider.cpp" />
-    <ClCompile Include="src\Debug\DebugCommandProvider.cpp" />
-    <ClCompile Include="src\Debug\DebugPatchProvider.cpp" />
-    <ClCompile Include="src\ElDewrito\ElDewritoCommandProvider.cpp" />
-    <ClCompile Include="src\Forge\ForgeCommandProvider.cpp" />
-    <ClCompile Include="src\Forge\ForgePatchProvider.cpp" />
-    <ClCompile Include="src\Game\GameCommandProvider.cpp" />
-    <ClCompile Include="src\Graphics\GraphicsCommandProvider.cpp" />
-    <ClCompile Include="src\Input\InputCommandProvider.cpp" />
-    <ClCompile Include="src\Player\PlayerCommandProvider.cpp" />
+    <ClCompile Include="src\CommandContexts\ConsoleContext.cpp" />
+    <ClCompile Include="src\CommandContexts\LogFileContext.cpp" />
+    <ClCompile Include="src\CommandContexts\RemoteConsoleContext.cpp" />
+    <ClCompile Include="src\Commands\CameraCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\GameRulesCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\UpdaterCommandProvider.cpp" />
+    <ClCompile Include="src\Patches\CameraPatchProvider.cpp" />
+    <ClCompile Include="src\Commands\DebugCommandProvider.cpp" />
+    <ClCompile Include="src\Patches\DebugPatchProvider.cpp" />
+    <ClCompile Include="src\Commands\ElDewritoCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\ForgeCommandProvider.cpp" />
+    <ClCompile Include="src\Patches\ForgePatchProvider.cpp" />
+    <ClCompile Include="src\Commands\GameCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\GraphicsCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\InputCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\PlayerCommandProvider.cpp" />
     <ClCompile Include="src\DebugLog.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\CommandManager.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\ElDorito.cpp" />
-    <ClCompile Include="src\Armor\ArmorPatchProvider.cpp" />
-    <ClCompile Include="src\ContentItems\ContentItemsPatchProvider.cpp" />
-    <ClCompile Include="src\Core\CorePatchProvider.cpp" />
-    <ClCompile Include="src\Input\InputPatchProvider.cpp" />
-    <ClCompile Include="src\Network\NetworkPatchProvider.cpp" />
-    <ClCompile Include="src\Network\PlayerPropertiesExtension.cpp" />
-    <ClCompile Include="src\Player\PlayerPatchProvider.cpp" />
-    <ClCompile Include="src\Scoreboard\ScoreboardPatchProvider.cpp" />
-    <ClCompile Include="src\Server\ServerCommandProvider.cpp" />
-    <ClCompile Include="src\Time\TimeCommandProvider.cpp" />
-    <ClCompile Include="src\UI\UICommandProvider.cpp" />
-    <ClCompile Include="src\UI\UIPatchProvider.cpp" />
-    <ClCompile Include="src\VirtualKeyboard\VirtualKeyboardPatchProvider.cpp" />
+    <ClCompile Include="src\Patches\ArmorPatchProvider.cpp" />
+    <ClCompile Include="src\Patches\ContentItemsPatchProvider.cpp" />
+    <ClCompile Include="src\Patches\CorePatchProvider.cpp" />
+    <ClCompile Include="src\Patches\GameRulesPatchProvider.cpp" />
+    <ClCompile Include="src\Patches\InputPatchProvider.cpp" />
+    <ClCompile Include="src\Patches\NetworkPatchProvider.cpp" />
+    <ClCompile Include="src\Patches\PlayerPropertiesExtension.cpp" />
+    <ClCompile Include="src\Patches\PlayerPatchProvider.cpp" />
+    <ClCompile Include="src\Patches\ScoreboardPatchProvider.cpp" />
+    <ClCompile Include="src\Commands\ServerCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\UICommandProvider.cpp" />
+    <ClCompile Include="src\Patches\UIPatchProvider.cpp" />
+    <ClCompile Include="src\Patches\VirtualKeyboardPatchProvider.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
     <ClCompile Include="src\Utils.cpp" />
     <ClCompile Include="src\Utils\VersionInfo.cpp" />
@@ -131,7 +138,9 @@
     <ClInclude Include="include\ElDorito\Blam\Tags\Scenario.hpp" />
     <ClInclude Include="include\ElDorito\Blam\Tags\Tags.hpp" />
     <ClInclude Include="include\ElDorito\Blam\BlamTypes.hpp" />
+    <ClInclude Include="include\ElDorito\CustomPackets.hpp" />
     <ClInclude Include="include\ElDorito\ElDorito.hpp" />
+    <ClInclude Include="include\ElDorito\ICommandContext.hpp" />
     <ClInclude Include="include\ElDorito\ICommandProvider.hpp" />
     <ClInclude Include="include\ElDorito\ICommandManager.hpp" />
     <ClInclude Include="include\ElDorito\IDebugLog.hpp" />
@@ -140,31 +149,36 @@
     <ClInclude Include="include\ElDorito\IPatchProvider.hpp" />
     <ClInclude Include="include\ElDorito\IUtils.hpp" />
     <ClInclude Include="include\ElDorito\Pointer.hpp" />
-    <ClInclude Include="src\Camera\CameraCommandProvider.hpp" />
-    <ClInclude Include="src\Camera\CameraPatchProvider.hpp" />
-    <ClInclude Include="src\Debug\DebugCommandProvider.hpp" />
-    <ClInclude Include="src\Debug\DebugPatchProvider.hpp" />
-    <ClInclude Include="src\ElDewrito\ElDewritoCommandProvider.hpp" />
-    <ClInclude Include="src\Forge\ForgeCommandProvider.hpp" />
-    <ClInclude Include="src\Forge\ForgePatchProvider.hpp" />
-    <ClInclude Include="src\Game\GameCommandProvider.hpp" />
-    <ClInclude Include="src\Graphics\GraphicsCommandProvider.hpp" />
-    <ClInclude Include="src\Input\InputCommandProvider.hpp" />
-    <ClInclude Include="src\Player\PlayerCommandProvider.hpp" />
-    <ClInclude Include="src\Server\ServerCommandProvider.hpp" />
-    <ClInclude Include="src\Time\TimeCommandProvider.hpp" />
-    <ClInclude Include="src\UI\UICommandProvider.hpp" />
+    <ClInclude Include="src\CommandContexts\ConsoleContext.hpp" />
+    <ClInclude Include="src\CommandContexts\LogFileContext.hpp" />
+    <ClInclude Include="src\CommandContexts\RemoteConsoleContext.hpp" />
+    <ClInclude Include="src\Commands\CameraCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\GameRulesCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\UpdaterCommandProvider.hpp" />
+    <ClInclude Include="src\Patches\CameraPatchProvider.hpp" />
+    <ClInclude Include="src\Commands\DebugCommandProvider.hpp" />
+    <ClInclude Include="src\Patches\DebugPatchProvider.hpp" />
+    <ClInclude Include="src\Commands\ElDewritoCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\ForgeCommandProvider.hpp" />
+    <ClInclude Include="src\Patches\ForgePatchProvider.hpp" />
+    <ClInclude Include="src\Commands\GameCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\GraphicsCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\InputCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\PlayerCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\ServerCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\UICommandProvider.hpp" />
+    <ClInclude Include="src\Patches\GameRulesPatchProvider.hpp" />
     <ClInclude Include="src\_CSkeleton.hpp" />
-    <ClInclude Include="src\Armor\ArmorPatchProvider.hpp" />
-    <ClInclude Include="src\ContentItems\ContentItemsPatchProvider.hpp" />
-    <ClInclude Include="src\Core\CorePatchProvider.hpp" />
-    <ClInclude Include="src\Input\InputPatchProvider.hpp" />
-    <ClInclude Include="src\Network\NetworkPatchProvider.hpp" />
-    <ClInclude Include="src\Network\PlayerPropertiesExtension.hpp" />
-    <ClInclude Include="src\Player\PlayerPatchProvider.hpp" />
-    <ClInclude Include="src\Scoreboard\ScoreboardPatchProvider.hpp" />
-    <ClInclude Include="src\UI\UIPatchProvider.hpp" />
-    <ClInclude Include="src\VirtualKeyboard\VirtualKeyboardPatchProvider.hpp" />
+    <ClInclude Include="src\Patches\ArmorPatchProvider.hpp" />
+    <ClInclude Include="src\Patches\ContentItemsPatchProvider.hpp" />
+    <ClInclude Include="src\Patches\CorePatchProvider.hpp" />
+    <ClInclude Include="src\Patches\InputPatchProvider.hpp" />
+    <ClInclude Include="src\Patches\NetworkPatchProvider.hpp" />
+    <ClInclude Include="src\Patches\PlayerPropertiesExtension.hpp" />
+    <ClInclude Include="src\Patches\PlayerPatchProvider.hpp" />
+    <ClInclude Include="src\Patches\ScoreboardPatchProvider.hpp" />
+    <ClInclude Include="src\Patches\UIPatchProvider.hpp" />
+    <ClInclude Include="src\Patches\VirtualKeyboardPatchProvider.hpp" />
     <ClInclude Include="src\_Skeleton.hpp" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="include\ElDorito\Blam\BitStream.hpp" />
