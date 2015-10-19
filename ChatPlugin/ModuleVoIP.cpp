@@ -231,7 +231,7 @@ namespace Modules
 		VarVoIPServerEnabled->ValueIntMax = 1;
 
 		VarVoIPServerPort = AddVariableInt("ServerPort", "voip_port", "The port number to listen for VoIP connections on."
-			"Tries listening on ports in the range [ServerPort..ServerPort+10].", (CommandFlags)(eCommandFlagsArchived | eCommandFlagsReplicated), 11794);
+			"Tries listening on ports in the range [ServerPort..ServerPort+10].", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsReplicated), 11794);
 		VarVoIPServerPort->ValueIntMin = 0;
 		VarVoIPServerPort->ValueIntMax = 0xFFFF;
 

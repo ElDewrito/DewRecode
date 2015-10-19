@@ -132,11 +132,11 @@ void ElDorito::Initialize()
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Console.FinishAddCommands()...");
 	CommandManager.FinishAdd(); // call this so that the default values can be applied to the game
 	
-	Logger.Log(LogSeverity::Debug, "ElDorito", "exec dewrito_prefs.cfg...");
-	CommandManager.Execute("exec dewrito_prefs.cfg", CommandManager.LogFileContext);
+	Logger.Log(LogSeverity::Debug, "ElDorito", "Executing dewrito_prefs.cfg...");
+	ElDewritoCommands->Execute("dewrito_prefs.cfg", CommandManager.LogFileContext);
 
-	Logger.Log(LogSeverity::Debug, "ElDorito", "exec autoexec.cfg...");
-	CommandManager.Execute("exec autoexec.cfg", CommandManager.LogFileContext); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
+	Logger.Log(LogSeverity::Debug, "ElDorito", "Executing autoexec.cfg...");
+	ElDewritoCommands->Execute("autoexec.cfg", CommandManager.LogFileContext); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
 	// HACKY - As we need a draw call in between this message and the actual generation, check it ahead of it actually generating
 	if (PlayerCommands->VarPubKey->ValueString.empty())

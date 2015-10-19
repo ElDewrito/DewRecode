@@ -149,7 +149,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 	}
 
 	auto cmd = Find(args[0]);
-	if (!cmd || (!context.IsInternal() && cmd->Flags & eCommandFlagsInternal))
+	if (!cmd || (!context.IsInternal() && cmd->Flags & eCommandFlagsInternal && !(cmd->Flags & eCommandFlagsArchived)))
 	{
 #ifdef _DEBUG
 		if (!cmd || numArgs > 1 || cmd->Type == CommandType::Command)
@@ -558,7 +558,7 @@ std::string CommandManager::SaveVariables()
 	std::stringstream ss;
 	for (auto cmd : List)
 	{
-		if (cmd.Type == CommandType::Command || !(cmd.Flags & eCommandFlagsArchived) || (cmd.Flags & eCommandFlagsInternal))
+		if (cmd.Type == CommandType::Command || !(cmd.Flags & eCommandFlagsArchived))
 			continue;
 
 		ss << cmd.Name << " \"" << cmd.ValueString << "\"" << std::endl;

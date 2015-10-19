@@ -738,9 +738,8 @@ void PublicUtils::GetEndpoints(std::vector<std::string>& destVect, const std::st
 
 		auto& mastersArray = json["masterServers"];
 		for (auto it = mastersArray.Begin(); it != mastersArray.End(); it++)
-		{
-			destVect.push_back((*it)[endpointType.c_str()].GetString());
-		}
+			if ((*it).HasMember(endpointType.c_str()))
+				destVect.push_back((*it)[endpointType.c_str()].GetString());
 	}
 }
 

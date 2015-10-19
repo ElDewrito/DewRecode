@@ -5,7 +5,7 @@ namespace Graphics
 {
 	void GraphicsCommandProvider::RegisterVariables(ICommandManager* manager)
 	{
-		VarSaturation = manager->Add(Command::CreateVariableFloat("Graphics", "Saturation", "saturation", "The saturation", (CommandFlags)(eCommandFlagsArchived | eCommandFlagsDontUpdateInitial), 1.0f, BIND_COMMAND(this, &GraphicsCommandProvider::VariableSaturationUpdate)));
+		VarSaturation = manager->Add(Command::CreateVariableFloat("Graphics", "Saturation", "saturation", "The saturation", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsDontUpdateInitial), 1.0f, BIND_COMMAND(this, &GraphicsCommandProvider::VariableSaturationUpdate)));
 		VarSaturation->ValueFloatMin = -10.0f;
 		VarSaturation->ValueFloatMax = 10.0f;
 
@@ -23,7 +23,7 @@ namespace Graphics
 
 		// TODO: consider breaking some of these out into a separate cinematics module or possibly moving dof to camera
 
-		VarBloom = manager->Add(Command::CreateVariableFloat("Graphics", "Bloom", "bloom", "The atmosphere bloom", (CommandFlags)(eCommandFlagsArchived | eCommandFlagsDontUpdateInitial), 0.0f, BIND_COMMAND(this, &GraphicsCommandProvider::VariableBloomUpdate)));
+		VarBloom = manager->Add(Command::CreateVariableFloat("Graphics", "Bloom", "bloom", "The atmosphere bloom", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsDontUpdateInitial), 0.0f, BIND_COMMAND(this, &GraphicsCommandProvider::VariableBloomUpdate)));
 		VarBloom->ValueFloatMin = 0.0f;
 		VarBloom->ValueFloatMax = 5.0f;
 

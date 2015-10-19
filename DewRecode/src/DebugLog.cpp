@@ -7,6 +7,8 @@
 
 #include "ElDorito.hpp"
 
+std::string startTime;
+
 /// <summary>
 /// Logs a line to the log file.
 /// </summary>
@@ -21,6 +23,23 @@ void DebugLog::Log(LogSeverity severity, const std::string& module, std::string 
 	if (format.length() > 4096)
 		return;
 
+	if (startTime.empty())
+	{
+
+		std::time_t rawtime;
+		std::tm timeinfo;
+		char buffer[80];
+
+		std::time(&rawtime);
+		//timeinfo = std::localtime(&rawtime);
+		localtime_s(&timeinfo, &rawtime);
+
+		std::strftime(buffer, 80, "%Y%m%d_%H%M%S", &timeinfo);
+
+		startTime = std::string(buffer);
+	}
+
+
 	va_list ap;
 	va_start(ap, format);
 
@@ -29,7 +48,7 @@ void DebugLog::Log(LogSeverity severity, const std::string& module, std::string 
 	va_end(ap);
 
 	auto debugCommands = ElDorito::Instance().DebugCommands;
-	std::string outFileName = "dorito.log";
+	std::string outFileName = startTime + "_startup.log";
 
 	if (debugCommands)
 	{
@@ -41,7 +60,13 @@ void DebugLog::Log(LogSeverity severity, const std::string& module, std::string 
 			if (strstr(buff, filter.c_str()) == NULL)
 				return; // string doesn't contain an included string
 
-		outFileName = debugCommands->VarLogName->ValueString;
+		_wmkdir(L"logs");
+
+		//_20151005_041903917
+		//YYYYMMDD_HHMMSSMS
+
+
+		outFileName = "logs\\" + startTime + "_" + debugCommands->VarLogName->ValueString;
 	}
 
 	std::ofstream outfile;

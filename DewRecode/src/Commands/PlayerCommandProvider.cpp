@@ -42,7 +42,7 @@ namespace Player
 		VarName = manager->Add(Command::CreateVariableString("Player", "Name", "name", "The players ingame name", eCommandFlagsArchived, "Jasper", BIND_COMMAND(this, &PlayerCommandProvider::VariableNameUpdate)));
 		// hack to add a small notice before Player.PrivKey in the cfg file
 		manager->Add(Command::CreateVariableString("Player", "PrivKeyNote", "priv_key_note", "", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsHidden), "The PrivKey below is used to keep your stats safe. Treat it like a password and don't share it with anyone!"));
-		VarPrivKey = manager->Add(Command::CreateVariableString("Player", "PrivKey", "player_privkey", "The players unique stats private key", static_cast<CommandFlags>(eCommandFlagsOmitValueInList | eCommandFlagsArchived | eCommandFlagsInternal), ""));
+		VarPrivKey = manager->Add(Command::CreateVariableString("Player", "PrivKey", "player_privkey", "The players unique stats private key", static_cast<CommandFlags>(eCommandFlagsInternal | eCommandFlagsArchived), ""));
 		VarPubKey = manager->Add(Command::CreateVariableString("Player", "PubKey", "player_pubkey", "The players unique stats public key", static_cast<CommandFlags>(eCommandFlagsOmitValueInList | eCommandFlagsArchived), ""));
 		memset(this->UserName, 0, sizeof(wchar_t) * 17);
 

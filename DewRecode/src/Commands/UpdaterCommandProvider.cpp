@@ -3,18 +3,124 @@
 
 #include <rapidjson/document.h>
 
+#include <fstream>
+
 namespace Updater
 {
+	const std::string updatePublicKey = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA+F9s5IpIvH/lpFgcvqACianoqFGAOo0nPJTjfpFdhbYQinW5L5RLSJm8l9Q1qvyUTLoIWMLvz3Kd4eDfquoDFywj/N8bCQXYgitroLCBIiuZ8BwRlhTAYt0MNW5/QHr8RK90HbmSOWF7WoWFndHk+9bdTpdeLpxB7A1vpER7qKVWDU8zziYOXn+/87WU8Z5DvPQpJr1z9W5CBsAjL8ATkMaHiSbqbUituNt1lz2dXl33FUz6EBYyOzPDLrpY6a7sZu7FjgWG9ie4WIOt8XcTSO9Jn1AnGvpCaDyO2HRlMbioSDSR+U1nqk3nkqjWI/4H8DlEQxjbBL7VtmFiFdfkm2Ae3bg0QJKOlsmXg4jX+l3fWKoC5eZoJpexK4fUQmnmkGftw2ZHbUWwUYU8E3XBp97YaXsIKQjcsBrZROLe1E2EPKpRO8RlHdYwwFwSvW1Yv3Ua98Bz8DDyiBzpdXx9sgFaYMzeuNt2uGV2/pCbhugdJ0Di62QBfRKXty1GEFtmPK8+Jrv1OAzVaBXJ7U4AON104BA1pXVfh0QWTfyfB6fpHoVmSQzI7hYdyY9x10JZJzoi/4Y6Bj4lOj4IF7BTxcToZCUopRdFsvbj1otEeya60K5LEuL40uhZK0F3tPi6nzH+NMzVZGRQCz2zgjf5oFbs7xGYfxw5+p3toUcT5csCAwEAAQ==";
+
 	void UpdaterCommandProvider::RegisterVariables(ICommandManager* manager)
 	{
-		VarUpdaterBranch = manager->Add(Command::CreateVariableString("Updater", "Branch", "update_branch", "The branch to use for updates.", eCommandFlagsArchived, "main"));
+		VarBranch = manager->Add(Command::CreateVariableString("Updater", "Branch", "update_branch", "The branch to use for updates.", eCommandFlagsArchived, "stable"));
+		VarCheckOnLaunch = manager->Add(Command::CreateVariableInt("Updater", "CheckOnLaunch", "autoupdate", "Check for updates on game launch.", eCommandFlagsArchived, 1));
+		VarCheckOnLaunch->ValueIntMin = 0;
+		VarCheckOnLaunch->ValueIntMax = 1;
 
 		manager->Add(Command::CreateCommand("Updater", "Check", "update_check", "Checks the update servers for updates.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandCheck)));
+		manager->Add(Command::CreateCommand("Updater", "SignManifest", "update_sign", "Signs an update manifest with the given private key.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandSignManifest), { "[filepath] The file to sign", "[keypath] The private key to sign with" }));
+	}
+
+	void UpdaterCommandProvider::RegisterCallbacks(IEngine* engine)
+	{
+		engine->OnEvent("Core", "Engine.MainMenuShown", BIND_CALLBACK(this, &UpdaterCommandProvider::CheckForUpdatesCallback));
+	}
+
+	bool UpdaterCommandProvider::CommandSignManifest(const std::vector<std::string>& Arguments, ICommandContext& context)
+	{
+		if (Arguments.size() < 2)
+		{
+			context.WriteOutput("Usage: Updater.SignManifest [manifestPath] [keyPath] [writeToSigFile]");
+			return false;
+		}
+
+		auto manifestPath = Arguments[0];
+		auto keyPath = Arguments[1];
+		bool writeToSigFile = false;
+		if (Arguments.size() > 2)
+			writeToSigFile = Arguments[2] == "true" || Arguments[2] == "1";
+
+		std::ifstream in(manifestPath, std::ios::in | std::ios::binary);
+		if (!in || !in.is_open())
+		{
+			context.WriteOutput("Unable to open manifest file.");
+			return false;
+		}
+		in.close();
+
+		std::ifstream in2(keyPath, std::ios::in | std::ios::binary);
+		if (!in2 || !in2.is_open())
+		{
+			context.WriteOutput("Unable to open key file.");
+			return false;
+		}
+
+		std::string contents;
+		in2.seekg(0, std::ios::end);
+		contents.resize((unsigned int)in2.tellg());
+		in2.seekg(0, std::ios::beg);
+		in2.read(&contents[0], contents.size());
+		in2.close();
+
+		auto formattedKey = ElDorito::Instance().Utils.RSAReformatKey(contents, true);
+		auto signature = SignManifest(manifestPath, formattedKey);
+		if (signature.empty())
+		{
+			context.WriteOutput("Manifest signature creation failed.");
+			return false;
+		}
+		if (!writeToSigFile)
+		{
+			context.WriteOutput(signature);
+			return true;
+		}
+
+		char fname[_MAX_FNAME];
+		char ext[_MAX_EXT];
+		ZeroMemory(fname, _MAX_FNAME);
+		ZeroMemory(ext, _MAX_EXT);
+
+		_splitpath_s(manifestPath.c_str(), 0, 0, 0, 0, fname, _MAX_FNAME, ext, _MAX_EXT);
+
+		std::string manifestFileName = std::string(fname);
+		if (strlen(ext) > 0)
+			manifestFileName = manifestFileName + std::string(ext);
+
+		std::ofstream out(manifestPath + ".sig", std::ios::out | std::ios::binary);
+		if (!out || !out.is_open())
+		{
+			context.WriteOutput("Unable to open .sig file for writing.");
+			return false;
+		}
+
+		out << "{\"" << manifestFileName << "\": \"" << signature << "\"}";
+		out.close();
+		context.WriteOutput("Wrote manifest signature to " + manifestPath + ".sig");
+		return true;
+	}
+
+	std::string UpdaterCommandProvider::SignManifest(const std::string& manifestPath, const std::string& privateKey)
+	{
+		std::ifstream in2(manifestPath, std::ios::in | std::ios::binary);
+		if (!in2 || !in2.is_open())
+			return "";
+
+		std::string contents;
+		in2.seekg(0, std::ios::end);
+		contents.resize((unsigned int)in2.tellg());
+		in2.seekg(0, std::ios::beg);
+		in2.read(&contents[0], contents.size());
+		in2.close();
+
+		std::string signature;
+		if (!ElDorito::Instance().Utils.RSACreateSignature(privateKey, (void*)contents.c_str(), contents.length(), signature))
+			return "";
+
+		return signature;
 	}
 
 	bool UpdaterCommandProvider::CommandCheck(const std::vector<std::string>& Arguments, ICommandContext& context)
 	{
-		std::string branch = VarUpdaterBranch->ValueString;
+		std::string branch = VarBranch->ValueString;
 		if (Arguments.size() > 0)
 			branch = Arguments[0];
 		
@@ -22,21 +128,24 @@ namespace Updater
 		return true;
 	}
 
-
-	void CallbackUpdate(const std::string& boxTag, const std::string& result)
+	void CallbackUpdate(const std::string& manifest, const std::string& branch)
 	{
-		if (result.compare("Yes"))
-			return;
+		//..	if (result.compare("Yes"))
+		//		return;
 
 		// launch update helper, pointing to the json file
 
 		auto& dorito = ElDorito::Instance();
-
-		dorito.Utils.ExecuteProcess(L"eldewrito_update_helper", dorito.Utils.WidenString("-manifest " + boxTag), 0);
+		auto params = dorito.Utils.WidenString("-manifest \"" + manifest + "\" -branch \"" + branch + "\"");
+		dorito.Utils.ExecuteProcess(L"DewritoUpdateHelper.exe", params, 0);
 		std::exit(0);
 	}
 
-	const std::string updateMasterKey = "MIIJKQIBAAKCAgEAzHwMJ37WMa/4Ph7KLdNYLsMvHZhOnAGs4A7hugtNSBJLpUhMtb6C4E+ozq4NJR/QrjkIw5nJBDkthHqZADE4D2yeHJf5DL7HjN00WL1K1/ChNF2LNQwxm9C9+ZJfgSXCriiHd+iaoGS6mcgRYvVDYS4gcFoIKXSoI8xIi8w5FFnkVoJ6VbnJOJVIiClEsfqyN/YOmbMpeq9pPGPcIAS0G6ZQZ4nYzn9DhirCT0Ru6iltsnVlqU0RbLe0XSD/3FypfEqcueZSJH+oJtpNG1b5nzs41sgbsFroNtiqPg7O3mN2gG4jLsRS8bw6ZnT+SPw5E+uUL3FU0oyv4yxnIl3g7fisX5Z1+YKATu0lyP4FtH0nx+BNqLMxp2TGEISht5i9YovvNHdmyDA+ZAZ+cx2oxB/pSQntPHUPvX90QzJ8eZEj9Z+NYJz1G2RmSJSPTokkmtyRuIWeI+oRvpZF/JjzMSZLVz/T7tqBm20B4JAKeOFOaM2sKR3WYeFXWKighJhDbH5fRbgDvv1BfgzWnzeRYlCWwSlU5XkkAjH5R4kBy8d1/w38KS9SglQo+uncCobjVl7hjiccXCFC8u5UQq+glsFQEk0+sEiSU9seNTE5gXFVmNINdWdTjVwdK6OuCsI2224uNfXyQTVE5NH4RGPz/AXg5fcspW9IhJot0As0yx0CAwEAAQKCAgEAw2ITyvkqeLeHHvQUgszaCXR+ZGzPT8laAYy2qil6Yk748Kiwg0fRjbsPtMwhy0MnBhGBCkS7CcoIb/kkkEZ3JmXGfdPIKCFyUmpaRiA4jzRhE8P962YHULaXjwwJLUGDTx1ys2QRuwgENEQyOLfY9dY5MKEWA2Zv8iSTfOBZ+dQalX5+ncKzPdmGQHQOK3E7MLVvJfVGwO8yQn24Ku/TmEfFs+jGvChlwKDCoTLmN9/17Pq3dJkq+RJeyE1rrIbtetFgB1DHVBCV/um/m0vzn+3aVX9G1a9HCoDjygAkMeIfrH+QJnN4PXp44sUO43X8o8gJA3vqbHP467vVn8TL0WDMYYTfx9qEbJZICbKwZudchzE+MfzqcSherkwMf6dhEACqj5+0jMiyamc5UhcacaO3A4+NU5vVO4PkTuRH6oXlSTG6F+I6cGX5U7YrCqJVv7OtmrPpnG0l7zxer8rKn1cy7aNWMUbVuLNzZq0/y3vKFDsfPrJ6gGT+IYK+lolaNLY/tPhaJhLORWGYjkvMhHDuI011EV73fMBqba3luMcqgYhtnz5Lk6GfKvwIiL/cdji6t+1RpvqXIqEqPi2nLYGzSLkzhwYrAMCdqIZEOMWf0fywtc7USU80KxJyoTq1Yv5Rxms/wnHsF1dsVbHvcJ091jjCw8r7l6dMyFPavoECggEBAOt5RETFS/HVmU3ibPcbs8ivVstfyEhYj/YKqzf3t/qZlb/zqq0p24gcTBwcPATOqFQt0ist9MhEcwypC0aaQ81785R1cLsSVd9vr100uP0989Hptjc39SAXanrQ6jlNUPhY84mgrLiD2I9Dzs53ppAY7soi84mjrSdIR9oiUYH76W29zQgZYBA+/l/b7qLnUS39TavCGuwI2mdrjwWLHTs+crVL90pKAqpQwjMlRkhuflXoFe8am5JM2RYLiWY8DyUuVe/rAaGhnNpAqEK1AGyQI/xN8ZpoaPQb0WBs42O1H1zUFlhEs2Mas9SjbYlcBJpd+V0R2/5I4VLGWIRAY6UCggEBAN5PPXVNAYKNq8Ac6iLmsWmDMPjpWaBiekXE96kT2aGSKo45g2+YRKDw+VAp03msbsbGV37NhsqRmfud5N04YHQaBaUa8HhBPwR9e/am1URXJmwtiN2Y/Sn1PcbKwj1lTpGGYIvhYNrpHBj4noylehSM+rQx/lEAFTm++gpLRbZ/xdjd3WLhysifsg8BVFFg0pjNRYZm/MUYCIJT1x/QM45g4n8OD2hItR1+wQQUfxqCKamRzsoP1J9BmI9ZEA3UunaATzFN/Zh1v2kBW6lgMFPND9sE2yQ/zI/qe3sCin5AueCzLT/zyA/isU94y0iHDCb75ymLrthM7QBAkMoR0BkCggEAH/svZ3u4bdcJ5Ecdb45mo5oU2rhellzY6JzYVlihtzqG2TQ5+RzXQSw+tg6rpCeBOzWh9tVeCpkpWw3WhzdKgC0WjxJIRlAeM6OSmMEhYtu4MslgQy2pcDtd7eJT/YZfuesy4H1fGAxoLEUUYHxltep8/B01IHuHd+9cOucwVMwnDw2ZPEFeB7bWi6RuS9fI8csWcn6Bc49cQnGcUi9rv/EiWTdBFejpZcJkLdghLJM9O2OzHu9pM7yWO2VDuwvrLqyVZWlwpkgx6n6fm7fDn/sPuCPJ7aPCpWzlygff9lnSMaRoiIKELrCgvf+YT/Cce27KAHb9fxLc74Ya3ZN1NQKCAQBD6QjpMGDptMVmpm6PwtEnXkAziXUrnWmkrorJR5sP1ErTr5YLHQS59WLzrhM/9ADTD/vibH5kmx3i01T6jyJH1TssOJKE6cmKYZrgug4kFktSeIZ6yyVrD9OTSpUTlELwCZCsqmif9t3ycuBcLqCgboCXUz5RGCljvoc7Zcsh+N5DZWMftcHwj3ghRVKwmVc7/ljiucs1miXfSiVJPpzBPa9zCKSEQtGw9OuZh3lca662cigtabCWBb/I6ngRAY8EbCXE9gIl9LJILXYGw69/qgDR8yXOaP7gZ8zYwunzr2oYziNgiePvllx73naa7UY1EnaHJnh+8uDjVtXkJJThAoIBAQCF5qKOqn60xqoEKjWZh/Zlre7O2J4EwO9qed2xkp/sZiFog3IlOwmLw1mXMZ4MPV5RFxvekHMcfNR3YXl3MKHkqNE3zYEBAEQYh7CWrbI0N179WxWQlYTY18dQzDpPia7frY/a3myrdPjxQNt0LOh0oHXItKFqCPiJCy0OqyvYwH2Nd+3xk8ICkuRK3BdFWOye/Dc6oWvBL01lyWe7qDPYQvRAtel+nOwYUU2Q93WMwMkOiAvP5FXoUj6OJYKTi0ugSEXC43/mv0kOPx7NEsQ9iUhGtnvT1i8C5b0a+Iqw1GTIzQxgf9TaEKgCbx0W9qsIoJTHXtp4fZDqMl2W95LN";
+	void UpdaterCommandProvider::CheckForUpdatesCallback(void* param)
+	{
+		if (VarCheckOnLaunch->ValueInt)
+			ElDorito::Instance().Logger.Log(LogSeverity::Debug, "UpdateCheck", CheckForUpdates(VarBranch->ValueString));
+	}
 
 	std::string UpdaterCommandProvider::CheckForUpdates(const std::string& branch)
 	{
@@ -46,6 +155,8 @@ namespace Updater
 		auto& dorito = ElDorito::Instance();
 
 		dorito.Utils.GetEndpoints(announceEndpoints, "update");
+		if (announceEndpoints.size() <= 0)
+			return "No update endpoints found.";
 
 		std::string currentVer = dorito.Engine.GetDoritoVersionString();
 
@@ -71,14 +182,14 @@ namespace Updater
 			std::wstring expected = L"HTTP/1.1 200 OK";
 			if (req.ResponseHeader.length() < expected.length())
 			{
-				ss << "Invalid master server update response from " << server << std::endl << std::endl;
+				ss << "Invalid update channels response from " << server << std::endl << std::endl;
 				continue;
 			}
 
 			auto respHdr = req.ResponseHeader.substr(0, expected.length());
 			if (respHdr.compare(expected))
 			{
-				ss << "Invalid master server update response from " << server << std::endl << std::endl;
+				ss << "Invalid update channels response from " << server << std::endl << std::endl;
 				continue;
 			}
 
@@ -87,27 +198,60 @@ namespace Updater
 			rapidjson::Document json;
 			if (json.Parse<0>(resp.c_str()).HasParseError() || !json.IsObject())
 			{
-				ss << "Invalid master server JSON response from " << server << std::endl << std::endl;
+				ss << "Invalid update channels response from " << server << std::endl << std::endl;
 				continue;
 			}
 
-			if (!json.HasMember("channels"))
+			if (!json.HasMember("Channels"))
 			{
-				ss << "Master server JSON response from " << server << " is missing data." << std::endl << std::endl;
+				ss << "Update manifest channels from " << server << " is missing data." << std::endl << std::endl;
 				continue;
 			}
 
-			auto& result = json["channels"];
+			auto& result = json["Channels"];
 			if (!result.HasMember(branch.c_str()))
 			{
-				ss << "Master server JSON response from " << server << " is missing branch \"" << branch << "\"" << std::endl << std::endl;
+				ss << "Update manifest channels from " << server << " is missing branch \"" << branch << "\"" << std::endl << std::endl;
 				continue;
 			}
 
-			std::string branchVer = result[branch.c_str()].GetString();
-			if (!branchVer.compare(currentVer))
+			auto& branchInfo = result[branch.c_str()];
+			if (!branchInfo.HasMember("Version") || !branchInfo.HasMember("ReleaseNo"))
 			{
-				ss << "Master server " << server << " [" << branch << "] is current." << std::endl << std::endl;
+				ss << "Update manifest channels from " << server << " is missing data for branch \"" << branch << "\"" << std::endl << std::endl;
+				continue;
+			}
+
+			auto branchVersion = branchInfo["Version"].GetString();
+			auto branchReleaseNo = branchInfo["ReleaseNo"].GetInt();
+
+			// read in current version info from version.json
+			std::string currentBranch = "";
+			int currentReleaseNo = 0;
+
+			std::ifstream in("version.json", std::ios::in | std::ios::binary);
+			if (in && in.is_open())
+			{
+				std::string contents;
+				in.seekg(0, std::ios::end);
+				contents.resize((unsigned int)in.tellg());
+				in.seekg(0, std::ios::beg);
+				in.read(&contents[0], contents.size());
+				in.close();
+
+				rapidjson::Document json;
+				if (!json.Parse<0>(contents.c_str()).HasParseError() && json.IsObject())
+				{
+					if (json.HasMember("Branch"))
+						currentBranch = json["Branch"].GetString();
+					if (json.HasMember("ReleaseNo"))
+						currentReleaseNo = json["ReleaseNo"].GetInt();
+				}
+			}
+
+			if (currentBranch == branch && currentReleaseNo == branchReleaseNo)
+			{
+				ss << "Update manifest from master server " << server << " [" << branch << "] is current (" << branchVersion << "-" << branchReleaseNo << ")" << std::endl << std::endl;
 				continue;
 			}
 
@@ -124,21 +268,21 @@ namespace Updater
 			}
 			catch (...) // TODO: find out what exception is being caused
 			{
-				ss << "Exception during master server update request to " << server << " [" << branch << "]" << std::endl << std::endl;
+				ss << "Exception during update manifest request to " << server << " [" << branch << "]" << std::endl << std::endl;
 				continue;
 			}
 
 			// make sure the server replied with 200 OK
 			if (req.ResponseHeader.length() < expected.length())
 			{
-				ss << "Invalid master server update response from " << server << " [" << branch << "]" << std::endl << std::endl;
+				ss << "Invalid update manifest response from " << server << " [" << branch << "]" << std::endl << std::endl;
 				continue;
 			}
 
 			respHdr = req.ResponseHeader.substr(0, expected.length());
 			if (respHdr.compare(expected))
 			{
-				ss << "Invalid master server update response from " << server << " [" << branch << "]" << std::endl << std::endl;
+				ss << "Invalid update manifest response from " << server << " [" << branch << "]" << std::endl << std::endl;
 				continue;
 			}
 
@@ -156,21 +300,21 @@ namespace Updater
 			}
 			catch (...) // TODO: find out what exception is being caused
 			{
-				ss << "Exception during master server update sig request to " << server << " [" << branch << "]" << std::endl << std::endl;
+				ss << "Exception during update manifest sig request to " << server << " [" << branch << "]" << std::endl << std::endl;
 				continue;
 			}
 
 			// make sure the server replied with 200 OK
 			if (req.ResponseHeader.length() < expected.length())
 			{
-				ss << "Invalid master server sig update response from " << server << " [" << branch << "]" << std::endl << std::endl;
+				ss << "Update manifest sig response from " << server << " [" << branch << "]" << std::endl << std::endl;
 				continue;
 			}
 
 			respHdr = req.ResponseHeader.substr(0, expected.length());
 			if (respHdr.compare(expected))
 			{
-				ss << "Invalid master server sig update response from " << server << " [" << branch << "]" << std::endl << std::endl;
+				ss << "Update manifest sig response from " << server << " [" << branch << "]" << std::endl << std::endl;
 				continue;
 			}
 
@@ -178,27 +322,29 @@ namespace Updater
 			rapidjson::Document sigJson;
 			if (sigJson.Parse<0>(manifestSig.c_str()).HasParseError() || !sigJson.IsObject())
 			{
-				ss << "Invalid master server sig JSON response from " << server << " [" << branch << "]" << std::endl << std::endl;
+				ss << "Update manifest sig JSON response from " << server << " [" << branch << "]" << std::endl << std::endl;
 				continue;
 			}
 
 			if (!sigJson.HasMember("manifest.json"))
 			{
-				ss << "Master server sig JSON response from " << server << " [" << branch << "]" " is missing data." << std::endl << std::endl;
+				ss << "Update manifest sig JSON response from " << server << " [" << branch << "]" " is missing data." << std::endl << std::endl;
 				continue;
 			}
 
 			std::string manifestSigB64 = sigJson["manifest.json"].GetString();
 
-			auto sigValid = dorito.Utils.RSAVerifySignature(updateMasterKey, manifestSigB64, (void*)manifest.c_str(), manifest.length());
+			auto sigValid = dorito.Utils.RSAVerifySignature(dorito.Utils.RSAReformatKey(updatePublicKey, false), manifestSigB64, (void*)manifest.c_str(), manifest.length());
 			if (!sigValid)
 			{
-				ss << "Master server " << server << " [" << branch << "]" " has invalid signature." << std::endl << std::endl;
+				ss << "Update manifest from server " << server << " [" << branch << "]" " has invalid signature." << std::endl << std::endl;
 				continue;
 			}
 
 			// manifest is validated & update is needed, prompt user?
-			dorito.Engine.ShowMessageBox("Update available", "An update for ElDewrito is available, do you want to update now?\nCurrent version: " + currentVer + ", Newer version: " + branchVer, manifestJsonPath, { "Yes", "No" }, CallbackUpdate);
+			//dorito.Engine.ShowMessageBox("Update available", "An update for ElDewrito is available, do you want to update now?\nCurrent version: " + currentVersion + ", Newer version: " + branchVersion, manifestJsonPath, { "Yes", "No" }, CallbackUpdate);
+
+			CallbackUpdate(manifestJsonPath, branch);
 		}
 
 		return ss.str();

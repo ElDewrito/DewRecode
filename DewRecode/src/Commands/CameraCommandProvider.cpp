@@ -30,7 +30,7 @@ namespace Camera
 		VarSpectatorIndex->ValueIntMin = 0;
 		VarSpectatorIndex->ValueIntMax = 15;
 
-		VarMode = manager->Add(Command::CreateVariableString("Camera", "Mode", "camera_mode", "Camera mode, valid modes: default, first, third, flying, static, spectator", (CommandFlags)(eCommandFlagsDontUpdateInitial), "default", BIND_COMMAND(this, &CameraCommandProvider::VariableModeUpdate)));
+		VarMode = manager->Add(Command::CreateVariableString("Camera", "Mode", "camera_mode", "Camera mode, valid modes: default, first, third, flying, static, spectator", eCommandFlagsDontUpdateInitial, "default", BIND_COMMAND(this, &CameraCommandProvider::VariableModeUpdate)));
 
 	}
 

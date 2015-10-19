@@ -223,6 +223,8 @@ namespace Server
 		auto& dorito = ElDorito::Instance();
 
 		dorito.Utils.GetEndpoints(announceEndpoints, "announce");
+		if (announceEndpoints.size() <= 0)
+			ss << "No announce endpoints found." << std::endl;
 
 		for (auto server : announceEndpoints)
 		{
@@ -305,6 +307,8 @@ namespace Server
 		auto& dorito = ElDorito::Instance();
 
 		dorito.Utils.GetEndpoints(announceEndpoints, "announce");
+		if (announceEndpoints.size() <= 0)
+			ss << "No announce endpoints found." << std::endl;
 
 		for (auto server : announceEndpoints)
 		{
@@ -387,6 +391,8 @@ namespace Server
 		auto& dorito = ElDorito::Instance();
 
 		dorito.Utils.GetEndpoints(statsEndpoints, "stats");
+		if (statsEndpoints.size() <= 0)
+			ss << "No stats endpoints found." << std::endl;
 
 		//typedef int(__cdecl *Game_GetLocalPlayerDatumIdxPtr)(int localPlayerIdx);
 		//auto Game_GetLocalPlayerDatumIdx = reinterpret_cast<Game_GetLocalPlayerDatumIdxPtr>(0x589C30);

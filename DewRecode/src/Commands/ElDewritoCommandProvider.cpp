@@ -9,8 +9,8 @@ namespace ElDewrito
 		std::vector<Command> commands =
 		{
 			Command::CreateCommand("ElDewrito", "Help", "help", "Displays this help text", eCommandFlagsNone, BIND_COMMAND(this, &ElDewritoCommandProvider::CommandHelp)),
-			Command::CreateCommand("ElDewrito", "Execute", "exec", "Executes a list of commands", eCommandFlagsNone, BIND_COMMAND(this, &ElDewritoCommandProvider::CommandExecute), { "filename(string) The list of commands to execute" }),
-			Command::CreateCommand("ElDewrito", "WriteConfig", "config_write", "Writes the ElDewrito config file", eCommandFlagsNone, BIND_COMMAND(this, &ElDewritoCommandProvider::CommandWriteConfig), { "filename(string) Optional, the filename to write the config to" })
+			Command::CreateCommand("ElDewrito", "Execute", "execute", "Executes a list of commands", eCommandFlagsNone, BIND_COMMAND(this, &ElDewritoCommandProvider::CommandExecute), { "filename(string) The list of commands to execute" }),
+			Command::CreateCommand("ElDewrito", "WriteConfig", "writeconfig", "Writes the ElDewrito config file", eCommandFlagsNone, BIND_COMMAND(this, &ElDewritoCommandProvider::CommandWriteConfig), { "filename(string) Optional, the filename to write the config to" })
 		};
 
 		return commands;
