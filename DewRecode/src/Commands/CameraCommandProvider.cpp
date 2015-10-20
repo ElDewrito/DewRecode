@@ -10,19 +10,19 @@ namespace Camera
 
 	void CameraCommandProvider::RegisterVariables(ICommandManager* manager)
 	{
-		VarCrosshair = manager->Add(Command::CreateVariableInt("Camera", "Crosshair", "crosshair", "Controls whether the crosshair should be centered", eCommandFlagsArchived, 0, BIND_COMMAND(this, &CameraCommandProvider::VariableCrosshairUpdate)));
+		VarCrosshair = manager->Add(Command::CreateVariableInt("Camera", "Crosshair", "crosshair", "Controls whether the crosshair should be centered", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsArchived), 0, BIND_COMMAND(this, &CameraCommandProvider::VariableCrosshairUpdate)));
 		VarCrosshair->ValueIntMin = 0;
 		VarCrosshair->ValueIntMax = 1;
 
-		VarFov = manager->Add(Command::CreateVariableFloat("Camera", "FOV", "fov", "The cameras field of view", eCommandFlagsArchived, 90.f, BIND_COMMAND(this, &CameraCommandProvider::VariableFovUpdate)));
+		VarFov = manager->Add(Command::CreateVariableFloat("Camera", "FOV", "fov", "The cameras field of view", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsArchived), 90.f, BIND_COMMAND(this, &CameraCommandProvider::VariableFovUpdate)));
 		VarFov->ValueFloatMin = 55.f;
 		VarFov->ValueFloatMax = 155.f;
 
-		VarHideHud = manager->Add(Command::CreateVariableInt("Camera", "HideHUD", "hud", "Toggles the HUD", eCommandFlagsArchived, 0, BIND_COMMAND(this, &CameraCommandProvider::VariableHideHudUpdate)));
+		VarHideHud = manager->Add(Command::CreateVariableInt("Camera", "HideHUD", "hud", "Toggles the HUD", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsArchived), 0, BIND_COMMAND(this, &CameraCommandProvider::VariableHideHudUpdate)));
 		VarHideHud->ValueIntMin = 0;
 		VarHideHud->ValueIntMax = 1;
 
-		VarSpeed = manager->Add(Command::CreateVariableFloat("Camera", "Speed", "camera_speed", "The camera speed", eCommandFlagsArchived, 0.1f, BIND_COMMAND(this, &CameraCommandProvider::VariableSpeedUpdate)));
+		VarSpeed = manager->Add(Command::CreateVariableFloat("Camera", "Speed", "camera_speed", "The camera speed", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsArchived), 0.1f, BIND_COMMAND(this, &CameraCommandProvider::VariableSpeedUpdate)));
 		VarSpeed->ValueFloatMin = 0.01f;
 		VarSpeed->ValueFloatMax = 5.0f;
 

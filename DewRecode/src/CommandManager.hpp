@@ -4,6 +4,7 @@
 
 #include "CommandContexts/ConsoleContext.hpp"
 #include "CommandContexts/LogFileContext.hpp"
+#include "CommandContexts/NullContext.hpp"
 
 namespace
 {
@@ -37,8 +38,8 @@ public:
 
 	const std::deque<Command>& GetList() { return List; }
 
-	bool Execute(const std::vector<std::string>& command, ICommandContext& context);
-	bool Execute(const std::string& command, ICommandContext& context);
+	CommandExecuteResult Execute(const std::vector<std::string>& command, ICommandContext& context);
+	CommandExecuteResult Execute(const std::string& command, ICommandContext& context);
 	bool ExecuteList(const std::string& commands, ICommandContext& context);
 	bool ExecuteQueue(ICommandContext& context);
 
@@ -75,6 +76,7 @@ public:
 
 	ConsoleContext ConsoleContext;
 	LogFileContext LogFileContext;
+	NullContext NullContext;
 
 private:
 	std::vector<std::string> queuedCommands;

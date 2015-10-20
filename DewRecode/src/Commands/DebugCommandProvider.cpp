@@ -25,9 +25,9 @@ namespace Debug
 	void DebugCommandProvider::RegisterVariables(ICommandManager* manager)
 	{
 		VarLogName = manager->Add(Command::CreateVariableString("Debug", "LogName", "debug_logname", "Filename to store debug log messages", eCommandFlagsArchived, "dorito.log"));
-		VarMemcpySrc = manager->Add(Command::CreateVariableInt("Debug", "MemcpySrc", "memcpy_src", "Allows breakpointing memcpy based on specified source address filter.", eCommandFlagsHidden, 0, BIND_COMMAND(this, &DebugCommandProvider::VariableMemcpySrcUpdate)));
-		VarMemcpyDst = manager->Add(Command::CreateVariableInt("Debug", "MemcpyDst", "memcpy_dst", "Allows breakpointing memcpy based on specified destination address filter.", eCommandFlagsHidden, 0, BIND_COMMAND(this, &DebugCommandProvider::VariableMemcpyDstUpdate)));
-		VarMemsetDst = manager->Add(Command::CreateVariableInt("Debug", "MemsetDst", "memset_dst", "Allows breakpointing memset based on specified destination address filter.", eCommandFlagsHidden, 0, BIND_COMMAND(this, &DebugCommandProvider::VariableMemsetDstUpdate)));
+		VarMemcpySrc = manager->Add(Command::CreateVariableInt("Debug", "MemcpySrc", "memcpy_src", "Allows breakpointing memcpy based on specified source address filter.", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsHidden), 0, BIND_COMMAND(this, &DebugCommandProvider::VariableMemcpySrcUpdate)));
+		VarMemcpyDst = manager->Add(Command::CreateVariableInt("Debug", "MemcpyDst", "memcpy_dst", "Allows breakpointing memcpy based on specified destination address filter.", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsHidden), 0, BIND_COMMAND(this, &DebugCommandProvider::VariableMemcpyDstUpdate)));
+		VarMemsetDst = manager->Add(Command::CreateVariableInt("Debug", "MemsetDst", "memset_dst", "Allows breakpointing memset based on specified destination address filter.", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsHidden), 0, BIND_COMMAND(this, &DebugCommandProvider::VariableMemsetDstUpdate)));
 	}
 
 	bool DebugCommandProvider::CommandLogMode(const std::vector<std::string>& Arguments, ICommandContext& context)

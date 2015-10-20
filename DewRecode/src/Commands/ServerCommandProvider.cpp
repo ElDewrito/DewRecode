@@ -49,11 +49,11 @@ namespace Server
 
 		VarName = manager->Add(Command::CreateVariableString("Server", "Name", "server_name", "The name of the server", eCommandFlagsArchived, "HaloOnline Server"));
 
-		VarMaxPlayers = manager->Add(Command::CreateVariableInt("Server", "MaxPlayers", "maxplayers", "Maximum number of connected players", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsRunOnMainMenu), 16, BIND_COMMAND(this, &ServerCommandProvider::VariableMaxPlayersUpdate)));
+		VarMaxPlayers = manager->Add(Command::CreateVariableInt("Server", "MaxPlayers", "maxplayers", "Maximum number of connected players", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsArchived | eCommandFlagsRunOnMainMenu), 16, BIND_COMMAND(this, &ServerCommandProvider::VariableMaxPlayersUpdate)));
 		VarMaxPlayers->ValueIntMin = 1;
 		VarMaxPlayers->ValueIntMax = 16;
 
-		VarMode = manager->Add(Command::CreateVariableInt("Server", "Mode", "mode", "Changes the game mode for the server. 0 = Xbox Live (Open Party); 1 = Xbox Live (Friends Only); 2 = Xbox Live (Invite Only); 3 = Online; 4 = Offline;", eCommandFlagsNone, 4, BIND_COMMAND(this, &ServerCommandProvider::VariableModeUpdate)));
+		VarMode = manager->Add(Command::CreateVariableInt("Server", "Mode", "mode", "Changes the game mode for the server. 0 = Xbox Live (Open Party); 1 = Xbox Live (Friends Only); 2 = Xbox Live (Invite Only); 3 = Online; 4 = Offline;", eCommandFlagsDontUpdateInitial, 4, BIND_COMMAND(this, &ServerCommandProvider::VariableModeUpdate)));
 		VarMode->ValueIntMin = 0;
 		VarMode->ValueIntMax = 4;
 

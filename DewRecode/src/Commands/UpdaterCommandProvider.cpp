@@ -17,7 +17,7 @@ namespace Updater
 		VarCheckOnLaunch->ValueIntMax = 1;
 
 		manager->Add(Command::CreateCommand("Updater", "Check", "update_check", "Checks the update servers for updates.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandCheck)));
-		manager->Add(Command::CreateCommand("Updater", "SignManifest", "update_sign", "Signs an update manifest with the given private key.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandSignManifest), { "[filepath] The file to sign", "[keypath] The private key to sign with" }));
+		manager->Add(Command::CreateCommand("Updater", "SignManifest", "update_sign", "Signs an update manifest with the given private key.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandSignManifest), { "[filePath] The file to sign", "[keyPath] The private key to sign with", "[writeToSigFile:bool] If true, writes signature to filepath.sig" }));
 	}
 
 	void UpdaterCommandProvider::RegisterCallbacks(IEngine* engine)
@@ -249,7 +249,7 @@ namespace Updater
 				}
 			}
 
-			if (currentBranch == branch && currentReleaseNo == branchReleaseNo)
+			if (currentBranch == branch && currentReleaseNo >= branchReleaseNo)
 			{
 				ss << "Update manifest from master server " << server << " [" << branch << "] is current (" << branchVersion << "-" << branchReleaseNo << ")" << std::endl << std::endl;
 				continue;

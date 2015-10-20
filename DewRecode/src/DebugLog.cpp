@@ -62,10 +62,6 @@ void DebugLog::Log(LogSeverity severity, const std::string& module, std::string 
 
 		_wmkdir(L"logs");
 
-		//_20151005_041903917
-		//YYYYMMDD_HHMMSSMS
-
-
 		outFileName = "logs\\" + startTime + "_" + debugCommands->VarLogName->ValueString;
 	}
 

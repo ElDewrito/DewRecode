@@ -126,6 +126,9 @@
     <ClCompile Include="src\CommandContexts\ConsoleContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\CommandContexts\NullContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ElDorito.hpp">
@@ -319,5 +322,8 @@
     <ResourceCompile Include="src\Resources.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\CommandContexts\NullContext.hpp" />
   </ItemGroup>
 </Project>

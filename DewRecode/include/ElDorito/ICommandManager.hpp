@@ -55,6 +55,35 @@ enum CommandFlags
 	eCommandFlagsInternal = 1 << 8,				// disallow the user from using this command, only internal ExecuteCommand calls can use it
 };
 
+enum class CommandExecuteResult
+{
+	Success,
+	InvalidInput,
+	NotFound,
+	Queued,
+	CheatCommand,
+	MustBeHost,
+	MustBeHostOrMainMenu,
+	CommandFailed,
+	InvalidValue,
+	OutOfRange,
+	Count
+};
+
+const std::string CommandExecuteResultString[(uint32_t)CommandExecuteResult::Count] =
+{
+	"Success",
+	"Invalid input",
+	"Not found",
+	"Queued",
+	"Cheat command",
+	"Must be host",
+	"Must be host or mainmenu",
+	"Command failed",
+	"Invalid value",
+	"Out of range"
+};
+
 typedef uint32_t SyncID;
 const size_t MaxStringLength = 512;
 
@@ -112,7 +141,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual bool Execute(const std::vector<std::string>& command, ICommandContext& context) = 0;
+	virtual CommandExecuteResult Execute(const std::vector<std::string>& command, ICommandContext& context) = 0;
 
 	/// <summary>
 	/// Executes a command string
@@ -120,7 +149,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual bool Execute(const std::string& command, ICommandContext& context) = 0;
+	virtual CommandExecuteResult Execute(const std::string& command, ICommandContext& context) = 0;
 
 	/// <summary>
 	/// Executes a list of commands, seperated by new lines

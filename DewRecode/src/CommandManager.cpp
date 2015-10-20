@@ -42,7 +42,7 @@ Command* CommandManager::Add(Command command)
 
 	auto* retval = &this->List.back();
 
-	auto clientCmd = Command::CreateVariableInt(command.ModuleName, command.Name + "Client", "client_" + command.ShortName, "", CommandFlags::eCommandFlagsInternal, command.DefaultValueInt, command.UpdateEvent);
+	auto clientCmd = Command::CreateVariableInt(command.ModuleName, command.Name + "Client", "client_" + command.ShortName, "", static_cast<CommandFlags>((command.Flags & ~eCommandFlagsReplicated) | eCommandFlagsInternal), command.DefaultValueInt, command.UpdateEvent);
 	command.UpdateEvent = nullptr;
 	clientCmd.Type = command.Type;
 
@@ -122,7 +122,7 @@ Command* CommandManager::Find(const std::string& name)
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-bool CommandManager::Execute(const std::vector<std::string>& command, ICommandContext& context)
+CommandExecuteResult CommandManager::Execute(const std::vector<std::string>& command, ICommandContext& context)
 {
 	std::string commandStr = "";
 	for (auto cmd : command)
@@ -137,7 +137,7 @@ bool CommandManager::Execute(const std::vector<std::string>& command, ICommandCo
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-bool CommandManager::Execute(const std::string& command, ICommandContext& context)
+CommandExecuteResult CommandManager::Execute(const std::string& command, ICommandContext& context)
 {
 	int numArgs = 0;
 	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
@@ -145,7 +145,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 	if (numArgs <= 0)
 	{
 		context.WriteOutput("Invalid input");
-		return false;
+		return CommandExecuteResult::InvalidInput;
 	}
 
 	auto cmd = Find(args[0]);
@@ -156,7 +156,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 		{
 #endif
 			context.WriteOutput("Command/variable not found");
-			return false;
+			return CommandExecuteResult::NotFound;
 #ifdef _DEBUG
 		}
 #endif
@@ -168,7 +168,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 	{
 		queuedCommands.push_back(command);
 		context.WriteOutput("Command/variable queued until mainmenu shows");
-		return false;
+		return CommandExecuteResult::Queued;
 	}
 
 	if ((cmd->Flags & eCommandFlagsCheat))
@@ -177,12 +177,12 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 		{
 			queuedCommands.push_back(command);
 			context.WriteOutput("Command/variable queued until mainmenu shows");
-			return false;
+			return CommandExecuteResult::Queued;
 		}
 		if (!dorito.ServerCommands->VarCheats->ValueInt && (numArgs > 1 || cmd->Type == CommandType::Command))
 		{
 			context.WriteOutput("Command/variable cannot be used unless Server.Cheats is set to 1");
-			return false;
+			return CommandExecuteResult::CheatCommand;
 		}
 	}
 
@@ -194,7 +194,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 			if (numArgs > 1 || cmd->Type == CommandType::Command)
 			{
 				context.WriteOutput("You must be hosting a game to use this command/variable");
-				return false;
+				return CommandExecuteResult::MustBeHost;
 			}
 		}
 
@@ -204,7 +204,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 			if (numArgs > 1 || cmd->Type == CommandType::Command)
 			{
 				context.WriteOutput("You must be at the main menu or hosting a game to use this command/variable");
-				return false;
+				return CommandExecuteResult::MustBeHostOrMainMenu;
 			}
 		}
 
@@ -214,7 +214,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 			argsVect.push_back(args[i]);
 
 	if (cmd->Type == CommandType::Command)
-		return cmd->UpdateEvent(argsVect, context);
+		return cmd->UpdateEvent(argsVect, context) ? CommandExecuteResult::Success : CommandExecuteResult::CommandFailed;
 
 	std::string previousValue;
 	auto updateRet = SetVariable(cmd, (numArgs > 1 ? argsVect[0] : ""), previousValue);
@@ -224,12 +224,12 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 	case VariableSetReturnValue::Error:
 	{
 		context.WriteOutput("Command/variable not found");
-		return false;
+		return CommandExecuteResult::NotFound;
 	}
 	case VariableSetReturnValue::InvalidArgument:
 	{
 		context.WriteOutput("Invalid value");
-		return false;
+		return CommandExecuteResult::InvalidValue;
 	}
 	case VariableSetReturnValue::OutOfRange:
 		if (cmd->Type == CommandType::VariableInt)
@@ -241,7 +241,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 		else
 			context.WriteOutput("Value " + argsVect[0] + " out of range [this shouldn't be happening!]");
 
-		return false;
+		return CommandExecuteResult::OutOfRange;
 	}
 
 	// special case for blanking strings
@@ -251,13 +251,13 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 	if (numArgs <= 1)
 	{
 		context.WriteOutput(previousValue);
-		return true;
+		return CommandExecuteResult::Success;
 	}
 
 	if (!cmd->UpdateEvent)
 	{
 		context.WriteOutput(previousValue + " -> " + cmd->ValueString); // no update event, so we'll just return with what we set the value to
-		return true;
+		return CommandExecuteResult::Success;
 	}
 
 	auto ret = cmd->UpdateEvent(argsVect, context);
@@ -267,7 +267,7 @@ bool CommandManager::Execute(const std::string& command, ICommandContext& contex
 
 	context.WriteOutput(previousValue + " -> " + cmd->ValueString); // TODO: don't write this if the updateevent has written something
 
-	return true;
+	return CommandExecuteResult::Success;
 }
 
 /// <summary>
@@ -284,9 +284,15 @@ bool CommandManager::ExecuteList(const std::string& commands, ICommandContext& c
 	int lineIdx = 0;
 	while (std::getline(stream, line))
 	{
-		if (!this->Execute(line, context))
+		auto trimmed = ElDorito::Instance().Utils.Trim(ElDorito::Instance().Utils.Trim(line, true));
+		if (trimmed.empty())
+			continue;
+
+		auto result = this->Execute(trimmed, context);
+		if (result != CommandExecuteResult::Success)
 		{
-			context.WriteOutput("Error at line " + std::to_string(lineIdx));
+			context.WriteOutput("Error at line " + std::to_string(lineIdx) + " (" + CommandExecuteResultString[(int)result] + ")");
+			context.WriteOutput(std::to_string(lineIdx) + ": " + trimmed);
 		}
 		lineIdx++;
 	}

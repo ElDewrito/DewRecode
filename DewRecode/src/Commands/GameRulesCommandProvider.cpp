@@ -10,7 +10,7 @@ namespace GameRules
 
 	void GameRulesCommandProvider::RegisterVariables(ICommandManager* manager)
 	{
-		VarGameSpeed = manager->Add(Command::CreateVariableFloat("GameRules", "GameSpeed", "game_speed", "The game's speed", static_cast<CommandFlags>(eCommandFlagsCheat | eCommandFlagsReplicated | eCommandFlagsDontUpdateInitial), 1.0f, BIND_COMMAND(this, &GameRulesCommandProvider::VariableGameSpeedUpdate)));
+		VarGameSpeed = manager->Add(Command::CreateVariableFloat("GameRules", "GameSpeed", "game_speed", "The games speed", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsCheat | eCommandFlagsReplicated), 1.0f, BIND_COMMAND(this, &GameRulesCommandProvider::VariableGameSpeedUpdate)));
 		VarGameSpeed->ValueFloatMin = 0.0f;
 		VarGameSpeed->ValueFloatMax = 10.0f;
 
