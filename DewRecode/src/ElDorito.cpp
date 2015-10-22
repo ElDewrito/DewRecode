@@ -112,6 +112,8 @@ void ElDorito::initClasses()
 	UpdaterCommands = std::make_shared<Updater::UpdaterCommandProvider>();
 	initCommandProvider(UpdaterCommands);
 
+	UserInterface = std::make_shared<UI::UserInterface>(&Engine);
+
 	initPatchProviders();
 
 }

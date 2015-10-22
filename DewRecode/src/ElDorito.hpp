@@ -29,6 +29,8 @@ class IPatchProvider;
 #include "Commands/UICommandProvider.hpp"
 #include "Commands/UpdaterCommandProvider.hpp"
 
+#include "UI/UserInterface.hpp"
+
 class ElDorito
 {
 private:
@@ -62,7 +64,7 @@ public:
 	std::shared_ptr<Server::ServerCommandProvider> ServerCommands;
 	std::shared_ptr<UI::UICommandProvider> UICommands;
 	std::shared_ptr<Updater::UpdaterCommandProvider> UpdaterCommands;
-
+	std::shared_ptr<UI::UserInterface> UserInterface;
 	void Initialize();
 
 	static ElDorito& Instance()

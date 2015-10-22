@@ -97,6 +97,7 @@
     <ClCompile Include="src\CommandContexts\NullContext.cpp" />
     <ClCompile Include="src\CommandContexts\RemoteConsoleContext.cpp" />
     <ClCompile Include="src\Commands\CameraCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\ConsoleCommandProvider.cpp" />
     <ClCompile Include="src\Commands\GameRulesCommandProvider.cpp" />
     <ClCompile Include="src\Commands\UpdaterCommandProvider.cpp" />
     <ClCompile Include="src\Patches\CameraPatchProvider.cpp" />
@@ -128,6 +129,11 @@
     <ClCompile Include="src\Patches\UIPatchProvider.cpp" />
     <ClCompile Include="src\Patches\VirtualKeyboardPatchProvider.cpp" />
     <ClCompile Include="src\PatchManager.cpp" />
+    <ClCompile Include="src\UI\ConsoleWindow.cpp" />
+    <ClCompile Include="src\UI\imgui\imgui.cpp" />
+    <ClCompile Include="src\UI\imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\UI\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\UI\UserInterface.cpp" />
     <ClCompile Include="src\Utils.cpp" />
     <ClCompile Include="src\Utils\VersionInfo.cpp" />
   </ItemGroup>
@@ -154,6 +160,7 @@
     <ClInclude Include="src\CommandContexts\LogFileContext.hpp" />
     <ClInclude Include="src\CommandContexts\RemoteConsoleContext.hpp" />
     <ClInclude Include="src\Commands\CameraCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\ConsoleCommandProvider.hpp" />
     <ClInclude Include="src\Commands\GameRulesCommandProvider.hpp" />
     <ClInclude Include="src\Commands\UpdaterCommandProvider.hpp" />
     <ClInclude Include="src\Patches\CameraPatchProvider.hpp" />
@@ -169,6 +176,14 @@
     <ClInclude Include="src\Commands\ServerCommandProvider.hpp" />
     <ClInclude Include="src\Commands\UICommandProvider.hpp" />
     <ClInclude Include="src\Patches\GameRulesPatchProvider.hpp" />
+    <ClInclude Include="src\UI\ConsoleWindow.hpp" />
+    <ClInclude Include="src\UI\imgui\imconfig.h" />
+    <ClInclude Include="src\UI\imgui\imgui.h" />
+    <ClInclude Include="src\UI\imgui\imgui_internal.h" />
+    <ClInclude Include="src\UI\imgui\stb_rect_pack.h" />
+    <ClInclude Include="src\UI\imgui\stb_textedit.h" />
+    <ClInclude Include="src\UI\imgui\stb_truetype.h" />
+    <ClInclude Include="src\UI\UserInterface.hpp" />
     <ClInclude Include="src\_CSkeleton.hpp" />
     <ClInclude Include="src\Patches\ArmorPatchProvider.hpp" />
     <ClInclude Include="src\Patches\ContentItemsPatchProvider.hpp" />

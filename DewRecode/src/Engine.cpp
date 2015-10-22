@@ -100,6 +100,24 @@ namespace
 		return device->EndScene();
 	}
 
+	void D3D9Device_InitHookImpl()
+	{
+		ElDorito::Instance().Engine.Event("Core", "Direct3D.Init", nullptr);
+	}
+
+	__declspec(naked) void D3D9Device_InitHook()
+	{
+		__asm
+		{
+			mov eax, 0xA20370
+				call eax
+				add esp, 8
+				call D3D9Device_InitHookImpl
+				push 0x42E5A0
+				ret
+		}
+	}
+
 	void PongReceivedHookImpl(const Blam::Network::NetworkAddress &from, const Blam::Network::PongPacket &pong, uint32_t latency)
 	{
 		auto* data = new std::tuple<const Blam::Network::NetworkAddress&, uint32_t, uint16_t, uint32_t>(from, pong.Timestamp, pong.ID, latency);
@@ -165,6 +183,7 @@ Engine::Engine()
 		Hook("ServerSessionInfo", 0x482AAC, Network_managed_session_create_session_internalHook, HookType::Call),
 		Hook("PlayerKick", 0x437E17, Network_leader_request_boot_machineHook, HookType::Call),
 		Hook("D3DEndScene2", 0xA21796, D3D9Device_EndSceneHook, HookType::Call),
+		Hook("D3DInit", 0x42E598, D3D9Device_InitHook, HookType::Jmp),
 		Hook("OnPong", 0x49D9DB, PongReceivedHook, HookType::Jmp),
 		Hook("LifeCycleStateChanged1", 0x48E527, LifeCycleStateChangedHook, HookType::Call),
 		Hook("LifeCycleStateChanged2", 0x48E10F, LifeCycleStateChangedHook, HookType::Call),
