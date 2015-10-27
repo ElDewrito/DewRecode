@@ -25,7 +25,7 @@ namespace Updater
 		engine->OnEvent("Core", "Engine.MainMenuShown", BIND_CALLBACK(this, &UpdaterCommandProvider::CheckForUpdatesCallback));
 	}
 
-	bool UpdaterCommandProvider::CommandSignManifest(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool UpdaterCommandProvider::CommandSignManifest(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (Arguments.size() < 2)
 		{
@@ -118,7 +118,7 @@ namespace Updater
 		return signature;
 	}
 
-	bool UpdaterCommandProvider::CommandCheck(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool UpdaterCommandProvider::CommandCheck(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		std::string branch = VarBranch->ValueString;
 		if (Arguments.size() > 0)

@@ -1,11 +1,11 @@
 #pragma once
 #include <memory>
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 #include "../Patches/CameraPatchProvider.hpp"
 
 namespace Camera
 {
-	class CameraCommandProvider : public ICommandProvider
+	class CameraCommandProvider : public CommandProvider
 	{
 	private:
 		std::shared_ptr<CameraPatchProvider> cameraPatches;
@@ -24,11 +24,11 @@ namespace Camera
 
 		virtual void RegisterVariables(ICommandManager* manager) override;
 		
-		bool VariableCrosshairUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableFovUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableHideHudUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableSpeedUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableSpectatorIndexUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableModeUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableCrosshairUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableFovUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableHideHudUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableSpeedUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableSpectatorIndexUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableModeUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 	};
 }

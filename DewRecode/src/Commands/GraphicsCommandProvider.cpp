@@ -36,7 +36,7 @@ namespace Graphics
 		VarLetterbox->ValueIntMax = 1;
 	}
 
-	bool GraphicsCommandProvider::VariableSaturationUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GraphicsCommandProvider::VariableSaturationUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto saturation = VarSaturation->ValueFloat;
 
@@ -48,7 +48,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool GraphicsCommandProvider::VariableRedHueUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GraphicsCommandProvider::VariableRedHueUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto redHue = VarRedHue->ValueFloat;
 
@@ -60,7 +60,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool GraphicsCommandProvider::VariableGreenHueUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GraphicsCommandProvider::VariableGreenHueUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto greenHue = VarGreenHue->ValueFloat;
 
@@ -72,7 +72,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool GraphicsCommandProvider::VariableBlueHueUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GraphicsCommandProvider::VariableBlueHueUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto blueHue = VarBlueHue->ValueFloat;
 
@@ -84,7 +84,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool GraphicsCommandProvider::VariableBloomUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GraphicsCommandProvider::VariableBloomUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto bloom = VarBloom->ValueFloat;
 
@@ -96,7 +96,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool GraphicsCommandProvider::VariableDepthOfFieldUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GraphicsCommandProvider::VariableDepthOfFieldUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto dof = VarDepthOfField->ValueFloat;
 
@@ -108,7 +108,7 @@ namespace Graphics
 		return true;
 	}
 
-	bool GraphicsCommandProvider::VariableLetterboxUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GraphicsCommandProvider::VariableLetterboxUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto enabled = VarLetterbox->ValueInt;
 

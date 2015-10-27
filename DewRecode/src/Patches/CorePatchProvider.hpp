@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace Core
 {
-	class CorePatchProvider : public IPatchProvider
+	class CorePatchProvider : public PatchProvider
 	{
 	public:
 		virtual PatchSet GetPatches() override;

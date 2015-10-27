@@ -24,13 +24,6 @@ public:
 	bool RegisterInterface(const std::string& interfaceName, void* ptrToInterface);
 	void* CreateInterface(const std::string& interfaceName, int* returnCode);
 
-	void PrintToConsole(const std::string& str);
-	ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer);
-	bool SetActiveConsoleBuffer(ConsoleBuffer* buffer);
-
-	void ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback);
-	void ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback);
-
 	bool HasMainMenuShown() { return mainMenuHasShown; }
 
 	HWND GetGameHWND() { return Pointer(0x199C014).Read<HWND>(); }
@@ -56,6 +49,7 @@ public:
 	uint16_t GetKeyMs(Blam::Input::KeyCodes key, Blam::Input::InputType type);
 	bool ReadKeyEvent(Blam::Input::KeyEvent* result, Blam::Input::InputType type);
 	void BlockInput(Blam::Input::InputType type, bool block);
+	void PushInputContext(std::shared_ptr<InputContext> context);
 
 	void SendPacket(int targetPeer, const void* packet, int packetSize);
 

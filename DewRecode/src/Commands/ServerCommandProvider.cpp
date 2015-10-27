@@ -287,7 +287,7 @@ namespace Server
 			dorito.Logger.Log(LogSeverity::Error, "ServerCommandProvider::announceServerThread", errors);
 	}
 
-	bool ServerCommandProvider::CommandAnnounce(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::CommandAnnounce(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		AnnounceServer();
 		return true;
@@ -371,7 +371,7 @@ namespace Server
 			dorito.Logger.Log(LogSeverity::Error, "ServerCommandProvider::unannounceServerThread", errors);
 	}
 
-	bool ServerCommandProvider::CommandUnannounce(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::CommandUnannounce(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		AnnounceServer();
 		return true;
@@ -531,7 +531,7 @@ namespace Server
 			dorito.Logger.Log(LogSeverity::Error, "ServerCommandProvider::announceStatsThread", errors);
 	}
 
-	bool ServerCommandProvider::CommandAnnounceStats(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::CommandAnnounceStats(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		// TODO1: check if they're in an online game
 		AnnounceStats();
@@ -544,7 +544,7 @@ namespace Server
 		thread.detach();
 	}
 
-	bool ServerCommandProvider::CommandConnect(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::CommandConnect(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		// TODO: move this into a thread so that non-responding hosts don't lag the game
 		if (Arguments.size() <= 0)
@@ -730,7 +730,7 @@ namespace Server
 		// TODO: move stuff from CommandConnect into here
 	}
 
-	bool ServerCommandProvider::CommandKickPlayer(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::CommandKickPlayer(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (Arguments.size() <= 0)
 		{
@@ -808,7 +808,7 @@ namespace Server
 		return Network_squad_session_boot_player(peerIdx, 4);
 	}
 
-	bool ServerCommandProvider::CommandListPlayers(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::CommandListPlayers(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto& dorito = ElDorito::Instance();
 
@@ -853,7 +853,7 @@ namespace Server
 		return ss.str();
 	}
 
-	bool ServerCommandProvider::VariableModeUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::VariableModeUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto retVal = SetLobbyMode((Blam::ServerLobbyMode)VarMode->ValueInt);
 		if (retVal)
@@ -873,7 +873,7 @@ namespace Server
 		return Lobby_SetNetworkMode((int)mode);
 	}
 
-	bool ServerCommandProvider::VariableLobbyTypeUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::VariableLobbyTypeUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto retVal = SetLobbyType((Blam::ServerLobbyType)VarLobbyType->ValueInt);
 		if (retVal)
@@ -893,7 +893,7 @@ namespace Server
 		return Lobby_SetLobbyType((int)type);
 	}
 
-	bool ServerCommandProvider::VariableCountdownUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::VariableCountdownUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		SetCountdown(VarCountdown->ValueInt); // shouldn't return false since range is checked by CommandManager
 
@@ -918,7 +918,7 @@ namespace Server
 		return true;
 	}
 
-	bool ServerCommandProvider::VariableMaxPlayersUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::VariableMaxPlayersUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (!SetMaxPlayers(VarMaxPlayers->ValueInt))
 		{
@@ -944,7 +944,7 @@ namespace Server
 		return true;
 	}
 
-	bool ServerCommandProvider::VariableShouldAnnounceUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::VariableShouldAnnounceUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		SetShouldAnnounce(VarShouldAnnounce->ValueInt == 1); // shouldn't return false since range is checked by CommandManager
 
@@ -958,7 +958,7 @@ namespace Server
 		VarShouldAnnounce->ValueInt = shouldAnnounce ? 1 : 0;
 	}
 
-	bool ServerCommandProvider::CommandPing(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ServerCommandProvider::CommandPing(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (Arguments.size() > 1)
 		{
@@ -973,9 +973,9 @@ namespace Server
 		return Ping(addr, context);
 	}
 
-	std::vector<ICommandContext*> pingContexts;
+	std::vector<CommandContext*> pingContexts;
 
-	bool ServerCommandProvider::Ping(const std::string& address, ICommandContext& context)
+	bool ServerCommandProvider::Ping(const std::string& address, CommandContext& context)
 	{
 		auto& dorito = ElDorito::Instance();
 

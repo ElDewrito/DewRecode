@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace GameRules
 {
-	class GameRulesPatchProvider : public IPatchProvider
+	class GameRulesPatchProvider : public PatchProvider
 	{
 		Patch* PatchSprintDisable;
 		Patch* PatchSprintUnlimited;

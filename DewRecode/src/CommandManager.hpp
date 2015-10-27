@@ -38,10 +38,10 @@ public:
 
 	const std::deque<Command>& GetList() { return List; }
 
-	CommandExecuteResult Execute(const std::vector<std::string>& command, ICommandContext& context);
-	CommandExecuteResult Execute(const std::string& command, ICommandContext& context);
-	bool ExecuteList(const std::string& commands, ICommandContext& context);
-	bool ExecuteQueue(ICommandContext& context);
+	CommandExecuteResult Execute(const std::vector<std::string>& command, CommandContext& context);
+	CommandExecuteResult Execute(const std::string& command, CommandContext& context);
+	bool ExecuteList(const std::string& commands, CommandContext& context);
+	bool ExecuteQueue(CommandContext& context);
 
 	bool GetVariableInt(const std::string& name, unsigned long& value);
 	bool GetVariableInt64(const std::string& name, unsigned long long& value);
@@ -60,7 +60,7 @@ public:
 	KeyBinding* GetBinding(const std::string& key);
 	KeyBinding* GetBinding(int keyCode);
 
-	ICommandContext& GetLogFileContext();
+	CommandContext& GetLogFileContext();
 
 	void TickSyncBindings(const std::chrono::duration<double>& deltaTime);
 	void TickBinding(SynchronizationBinding* binding);

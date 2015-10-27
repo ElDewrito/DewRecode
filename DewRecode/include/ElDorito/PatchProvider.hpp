@@ -1,7 +1,7 @@
 #pragma once
 #include "ElDorito.hpp"
 
-class IPatchProvider
+class PatchProvider
 {
 public:
 	virtual PatchSet GetPatches() { return PatchSet("null", {}, {}); }

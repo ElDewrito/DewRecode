@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 
 namespace Game
 {
@@ -14,7 +14,7 @@ namespace Game
 		LoadFailed
 	};
 
-	class GameCommandProvider : public ICommandProvider
+	class GameCommandProvider : public CommandProvider
 	{
 	public:
 		std::vector<std::string> MapList;
@@ -24,25 +24,25 @@ namespace Game
 		virtual std::vector<Command> GetCommands() override;
 		virtual void RegisterVariables(ICommandManager* manager) override;
 
-		bool CommandExit(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandExit(const std::vector<std::string>& Arguments, CommandContext& context);
 		void Exit();
 
-		bool CommandInfo(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandInfo(const std::vector<std::string>& Arguments, CommandContext& context);
 		std::string GetInfo();
 
-		bool CommandVersion(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandVersion(const std::vector<std::string>& Arguments, CommandContext& context);
 		std::string GetVersion();
 
-		bool CommandForceLoad(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandForceLoad(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool ForceLoad(const std::string& map, Blam::GameType gameType, Blam::GameMode gameMode);
 
-		bool CommandMap(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandMap(const std::vector<std::string>& Arguments, CommandContext& context);
 		SetGameTypeReturnCode SetMap(const std::string& name);
 
-		bool CommandGameType(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandGameType(const std::vector<std::string>& Arguments, CommandContext& context);
 		SetGameTypeReturnCode SetGameType(const std::string& gameType);
 
-		bool CommandStart(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandStart(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool Start();
 	};
 }

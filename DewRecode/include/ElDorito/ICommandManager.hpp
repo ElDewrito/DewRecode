@@ -99,9 +99,9 @@ struct SyncUpdatePacketVar
 	} Value;
 };
 
-//typedef bool(*CommandUpdateFunc)(const std::vector<std::string>& Arguments, ICommandContext& context);
-class ICommandProvider;
-typedef std::function<bool(const std::vector<std::string>& Arguments, ICommandContext& context)> CommandUpdateFunc;
+//typedef bool(*CommandUpdateFunc)(const std::vector<std::string>& Arguments, CommandContext& context);
+class CommandProvider;
+typedef std::function<bool(const std::vector<std::string>& Arguments, CommandContext& context)> CommandUpdateFunc;
 #define BIND_COMMAND(classPtr, funcPtr) std::bind(funcPtr, classPtr, std::placeholders::_1, std::placeholders::_2)
 
 struct Command;
@@ -141,7 +141,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual CommandExecuteResult Execute(const std::vector<std::string>& command, ICommandContext& context) = 0;
+	virtual CommandExecuteResult Execute(const std::vector<std::string>& command, CommandContext& context) = 0;
 
 	/// <summary>
 	/// Executes a command string
@@ -149,7 +149,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual CommandExecuteResult Execute(const std::string& command, ICommandContext& context) = 0;
+	virtual CommandExecuteResult Execute(const std::string& command, CommandContext& context) = 0;
 
 	/// <summary>
 	/// Executes a list of commands, seperated by new lines
@@ -157,13 +157,13 @@ public:
 	/// <param name="commands">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the commands executed successfully.</returns>
-	virtual bool ExecuteList(const std::string& commands, ICommandContext& context) = 0;
+	virtual bool ExecuteList(const std::string& commands, CommandContext& context) = 0;
 
 	/// <summary>
 	/// Executes the command queue.
 	/// </summary>
 	/// <returns>Whether the commands executed successfully.</returns>
-	virtual bool ExecuteQueue(ICommandContext& context) = 0;
+	virtual bool ExecuteQueue(CommandContext& context) = 0;
 
 	/// <summary>
 	/// Gets the value of an int variable.
@@ -257,7 +257,7 @@ public:
 	/// <returns>A pointer to the KeyBinding struct for this key code.</returns>
 	virtual KeyBinding* GetBinding(int keyCode) = 0;
 
-	virtual ICommandContext& GetLogFileContext() = 0;
+	virtual CommandContext& GetLogFileContext() = 0;
 };
 
 #define COMMANDMANAGER_INTERFACE_VERSION001 "CommandManager001"

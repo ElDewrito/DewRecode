@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace UI
 {
-	class UIPatchProvider : public IPatchProvider
+	class UIPatchProvider : public PatchProvider
 	{
 	public:
 		UIPatchProvider();

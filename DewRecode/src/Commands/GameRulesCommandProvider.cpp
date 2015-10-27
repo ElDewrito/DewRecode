@@ -23,7 +23,7 @@ namespace GameRules
 		VarSprintUnlimited->ValueIntMax = 1;
 	}
 
-	bool GameRulesCommandProvider::VariableGameSpeedUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameRulesCommandProvider::VariableGameSpeedUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto& dorito = ElDorito::Instance();
 
@@ -35,7 +35,7 @@ namespace GameRules
 		return true;
 	}
 
-	bool GameRulesCommandProvider::VariableSprintEnabledUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameRulesCommandProvider::VariableSprintEnabledUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto& dorito = ElDorito::Instance();
 
@@ -44,7 +44,7 @@ namespace GameRules
 		return true;
 	}
 
-	bool GameRulesCommandProvider::VariableSprintUnlimitedUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameRulesCommandProvider::VariableSprintUnlimitedUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto& dorito = ElDorito::Instance();
 

@@ -1,11 +1,11 @@
 #pragma once
 #include <memory>
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 #include "../Patches/InputPatchProvider.hpp"
 
 namespace Input
 {
-	class InputCommandProvider : public ICommandProvider
+	class InputCommandProvider : public CommandProvider
 	{
 	private:
 		std::shared_ptr<InputPatchProvider> inputPatches;
@@ -19,12 +19,12 @@ namespace Input
 		virtual std::vector<Command> GetCommands() override;
 		virtual void RegisterVariables(ICommandManager* manager) override;
 
-		bool VariableRawInputUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableControllerIndexUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableRawInputUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableControllerIndexUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 
-		bool CommandBind(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandBind(const std::vector<std::string>& Arguments, CommandContext& context);
 
-		bool CommandUIButtonPress(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandUIButtonPress(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool UIButtonPress(int controllerIdx, Blam::Input::ButtonCodes button);
 	};
 }

@@ -427,6 +427,8 @@ void* Engine::CreateInterface(const std::string& interfaceName, int* returnCode)
 		return &dorito.Logger;
 	if (!interfaceName.compare(PATCHMANAGER_INTERFACE_VERSION001))
 		return &dorito.PatchManager;
+	if (!interfaceName.compare(USERINTERFACE_INTERFACE_VERSION001))
+		return &dorito.UserInterface;
 	if (!interfaceName.compare(UTILS_INTERFACE_VERSION001))
 		return &dorito.Utils;
 
@@ -436,64 +438,6 @@ void* Engine::CreateInterface(const std::string& interfaceName, int* returnCode)
 
 	*returnCode = 1;
 	return nullptr;
-}
-
-/// <summary>
-/// Prints a string to the console UI.
-/// </summary>
-/// <param name="str">The string to print.</param>
-void Engine::PrintToConsole(const std::string& str)
-{
-	//TODO2:
-	//ElDorito::Instance().Modules.Console.PrintToConsole(str);
-}
-
-/// <summary>
-/// Adds a new buffer/queue to the console UI.
-/// </summary>
-/// <param name="buffer">The buffer to add.</param>
-/// <returns>A pointer to the added buffer.</returns>
-ConsoleBuffer* Engine::AddConsoleBuffer(ConsoleBuffer buffer)
-{
-	//TODO2:
-	//return ElDorito::Instance().Modules.Console.AddBuffer(buffer);
-	return nullptr;
-}
-
-/// <summary>
-/// Sets the active console UI buffer to this buffer (for the buffers group only)
-/// </summary>
-/// <param name="buffer">The buffer to set as active.</param>
-/// <returns>true if the buffer was set active.</returns>
-bool Engine::SetActiveConsoleBuffer(ConsoleBuffer* buffer)
-{
-	//TODO2:
-	//return ElDorito::Instance().Modules.Console.SetActiveBuffer(buffer);
-	return true;
-}
-
-/// <summary>
-/// Shows a message box to the user with choices specified by the vector, the result the user chose is given to the callback.
-/// </summary>
-/// <param name="text">The text to show to the user.</param>
-/// <param name="choices">The choices the user can choose from.</param>
-/// <param name="callback">The function to call after the user has made a selection.</param>
-void Engine::ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback)
-{
-	//TODO2:
-	//ElDorito::Instance().Modules.Console.ShowMessageBox(title, text, tag, choices, callback);
-}
-
-/// <summary>
-/// Shows an input box to the user where the user can type in an answer, the answer is passed as a parameter to the callback.
-/// </summary>
-/// <param name="text">The text to show to the user.</param>
-/// <param name="defaultText">The default text to fill the inputbox with.</param>
-/// <param name="callback">The function to call after the user has answered.</param>
-void Engine::ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback)
-{
-	//TODO2:
-	//ElDorito::Instance().Modules.Console.ShowInputBox(title, text, tag, defaultText, callback);
 }
 
 /// <summary>
@@ -662,6 +606,11 @@ void Engine::BlockInput(Blam::Input::InputType type, bool block)
 	typedef uint8_t(*EngineBlockInputPtr)(Blam::Input::InputType, bool);
 	auto EngineBlockInput = reinterpret_cast<EngineBlockInputPtr>(0x512530);
 	EngineBlockInput(type, block);
+}
+
+void Engine::PushInputContext(std::shared_ptr<InputContext> context)
+{
+	ElDorito::Instance().InputPatches->PushContext(context);
 }
 
 void Engine::SendPacket(int targetPeer, const void* packet, int packetSize)

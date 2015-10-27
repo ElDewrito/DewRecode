@@ -11,5 +11,5 @@ void ConsoleContext::HandleInput(const std::string& input)
 
 void ConsoleContext::WriteOutput(const std::string& output)
 {
-	ElDorito::Instance().UserInterface->Console->AddToLog(output);
+	ElDorito::Instance().UserInterface.WriteToConsole(output);
 }

@@ -60,7 +60,7 @@ namespace Player
 		manager->SetVariable(VarName, std::string(defaultNames[rand() % 41]), std::string());
 	}
 
-	bool PlayerCommandProvider::CommandPrintUid(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool PlayerCommandProvider::CommandPrintUid(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		bool uidIsValid = Pointer(0x19AB728).Read<bool>();
 		if (!uidIsValid)
@@ -76,13 +76,13 @@ namespace Player
 		return true;
 	}
 
-	bool PlayerCommandProvider::VariableArmorUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool PlayerCommandProvider::VariableArmorUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		armorPatches->SignalRefreshUIPlayerArmor();
 		return true;
 	}
 
-	bool PlayerCommandProvider::VariableNameUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool PlayerCommandProvider::VariableNameUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto& dorito = ElDorito::Instance();
 

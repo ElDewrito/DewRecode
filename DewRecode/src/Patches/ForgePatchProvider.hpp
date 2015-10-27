@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace Forge
 {
-	class ForgePatchProvider : public IPatchProvider
+	class ForgePatchProvider : public PatchProvider
 	{
 	public:
 		virtual PatchSet GetPatches() override;

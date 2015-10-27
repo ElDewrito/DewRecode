@@ -2,7 +2,7 @@
 
 namespace
 {
-	bool CommandExampleTest(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool CommandExampleTest(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		returnInfo = "Test command: passed!";
 		return true;

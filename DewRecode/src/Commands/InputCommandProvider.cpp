@@ -30,7 +30,7 @@ namespace Input
 		VarControllerIndex->ValueIntMax = 3;
 	}
 
-	bool InputCommandProvider::VariableRawInputUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool InputCommandProvider::VariableRawInputUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		unsigned long value = VarRawInput->ValueInt;
 
@@ -43,14 +43,14 @@ namespace Input
 		return true;
 	}
 
-	bool InputCommandProvider::VariableControllerIndexUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool InputCommandProvider::VariableControllerIndexUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		unsigned long value = VarControllerIndex->ValueInt;
 		inputPatches->SetControllerIndex(value);
 		return true;
 	}
 
-	bool InputCommandProvider::CommandBind(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool InputCommandProvider::CommandBind(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (Arguments.size() < 1)
 		{
@@ -92,7 +92,7 @@ namespace Input
 		return false;
 	}
 
-	bool InputCommandProvider::CommandUIButtonPress(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool InputCommandProvider::CommandUIButtonPress(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (Arguments.size() < 1)
 		{

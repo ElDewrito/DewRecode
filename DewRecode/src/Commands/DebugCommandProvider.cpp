@@ -30,7 +30,7 @@ namespace Debug
 		VarMemsetDst = manager->Add(Command::CreateVariableInt("Debug", "MemsetDst", "memset_dst", "Allows breakpointing memset based on specified destination address filter.", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsHidden), 0, BIND_COMMAND(this, &DebugCommandProvider::VariableMemsetDstUpdate)));
 	}
 
-	bool DebugCommandProvider::CommandLogMode(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool DebugCommandProvider::CommandLogMode(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto& dorito = ElDorito::Instance();
 		auto newFlags = DebugFlags;
@@ -132,7 +132,7 @@ namespace Debug
 		return true;
 	}
 
-	bool DebugCommandProvider::CommandLogFilter(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool DebugCommandProvider::CommandLogFilter(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		std::stringstream ss;
 		if (Arguments.size() != 3)
@@ -177,7 +177,7 @@ namespace Debug
 		return true;
 	}
 
-	bool DebugCommandProvider::VariableMemcpySrcUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool DebugCommandProvider::VariableMemcpySrcUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto src = VarMemcpySrc->ValueInt;
 
@@ -185,7 +185,7 @@ namespace Debug
 		return true;
 	}
 
-	bool DebugCommandProvider::VariableMemcpyDstUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool DebugCommandProvider::VariableMemcpyDstUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto dst = VarMemcpyDst->ValueInt;
 
@@ -193,7 +193,7 @@ namespace Debug
 		return true;
 	}
 
-	bool DebugCommandProvider::VariableMemsetDstUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool DebugCommandProvider::VariableMemsetDstUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto dst = VarMemsetDst->ValueInt;
 

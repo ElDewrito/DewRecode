@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace Network
 {
-	class NetworkPatchProvider : public IPatchProvider
+	class NetworkPatchProvider : public PatchProvider
 	{
 	public:
 		virtual PatchSet GetPatches() override;

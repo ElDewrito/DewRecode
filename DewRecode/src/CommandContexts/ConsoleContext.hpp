@@ -1,7 +1,7 @@
 #pragma once
 #include <ElDorito/ElDorito.hpp>
 
-class ConsoleContext : public ICommandContext
+class ConsoleContext : public CommandContext
 {
 public:
 	void HandleInput(const std::string& input);

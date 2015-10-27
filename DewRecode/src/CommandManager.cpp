@@ -122,7 +122,7 @@ Command* CommandManager::Find(const std::string& name)
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-CommandExecuteResult CommandManager::Execute(const std::vector<std::string>& command, ICommandContext& context)
+CommandExecuteResult CommandManager::Execute(const std::vector<std::string>& command, CommandContext& context)
 {
 	std::string commandStr = "";
 	for (auto cmd : command)
@@ -137,7 +137,7 @@ CommandExecuteResult CommandManager::Execute(const std::vector<std::string>& com
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-CommandExecuteResult CommandManager::Execute(const std::string& command, ICommandContext& context)
+CommandExecuteResult CommandManager::Execute(const std::string& command, CommandContext& context)
 {
 	int numArgs = 0;
 	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
@@ -276,7 +276,7 @@ CommandExecuteResult CommandManager::Execute(const std::string& command, IComman
 /// <param name="commands">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>Whether the command executed successfully.</returns>
-bool CommandManager::ExecuteList(const std::string& commands, ICommandContext& context)
+bool CommandManager::ExecuteList(const std::string& commands, CommandContext& context)
 {
 	std::istringstream stream(commands);
 	std::stringstream ss;
@@ -303,7 +303,7 @@ bool CommandManager::ExecuteList(const std::string& commands, ICommandContext& c
 /// Executes the command queue.
 /// </summary>
 /// <returns>Results of the executed commands.</returns>
-bool CommandManager::ExecuteQueue(ICommandContext& context)
+bool CommandManager::ExecuteQueue(CommandContext& context)
 {
 	for (auto cmd : queuedCommands)
 		Execute(cmd, context);
@@ -642,7 +642,7 @@ KeyBinding* CommandManager::GetBinding(int keyCode)
 	return &bindings[keyCode];
 }
 
-ICommandContext& CommandManager::GetLogFileContext()
+CommandContext& CommandManager::GetLogFileContext()
 {
 	return this->LogFileContext;
 }
@@ -860,6 +860,115 @@ void SyncUpdateHandler::HandlePacket(Blam::Network::ObserverChannel* sender, con
 
 namespace
 {
+	/*std::map<Blam::Input::KeyCodes, WPARAM> keyToVKEY =
+	{
+		{ Blam::Input::eKeyCodesEscape, VK_ESCAPE },
+		{ Blam::Input::eKeyCodesF1, VK_F1 },
+		{ Blam::Input::eKeyCodesF2, VK_F2 },
+		{ Blam::Input::eKeyCodesF3, VK_F3 },
+		{ Blam::Input::eKeyCodesF4, VK_F4 },
+		{ Blam::Input::eKeyCodesF5, VK_F5 },
+		{ Blam::Input::eKeyCodesF6, VK_F6 },
+		{ Blam::Input::eKeyCodesF7, VK_F7 },
+		{ Blam::Input::eKeyCodesF8, VK_F8 },
+		{ Blam::Input::eKeyCodesF9, VK_F9 },
+		{ Blam::Input::eKeyCodesF10, VK_F10 },
+		{ Blam::Input::eKeyCodesF11, VK_F11 },
+		{ Blam::Input::eKeyCodesF12, VK_F12 },
+		{ Blam::Input::eKeyCodesPrintScreen, VK_PRINT },
+		{ Blam::Input::eKeyCodesF14, VK_F14 },
+		{ Blam::Input::eKeyCodesF15, VK_F15 },
+		{ Blam::Input::eKeyCodesTilde, 0 },
+		{ Blam::Input::eKeyCodes1, 0x31 },
+		{ Blam::Input::eKeyCodes2, 0x32 },
+		{ Blam::Input::eKeyCodes3, 0x33 },
+		{ Blam::Input::eKeyCodes4, 0x34 },
+		{ Blam::Input::eKeyCodes5, 0x35 },
+		{ Blam::Input::eKeyCodes6, 0x36 },
+		{ Blam::Input::eKeyCodes7, 0x37 },
+		{ Blam::Input::eKeyCodes8, 0x38 },
+		{ Blam::Input::eKeyCodes9, 0x39 },
+		{ Blam::Input::eKeyCodes0, 0x30 },
+		{ Blam::Input::eKeyCodesMinus, VK_OEM_MINUS },
+		{ Blam::Input::eKeyCodesPlus, VK_OEM_PLUS },
+		{ Blam::Input::eKeyCodesBack, VK_BACK },
+		{ Blam::Input::eKeyCodesTab, VK_TAB },
+		{ Blam::Input::eKeyCodesA, 0x41 },
+		{ Blam::Input::eKeyCodesB, 0x42 },
+		{ Blam::Input::eKeyCodesC, 0x43 },
+		{ Blam::Input::eKeyCodesD, 0x44 },
+		{ Blam::Input::eKeyCodesE, 0x45 },
+		{ Blam::Input::eKeyCodesF, 0x46 },
+		{ Blam::Input::eKeyCodesG, 0x47 },
+		{ Blam::Input::eKeyCodesH, 0x48 },
+		{ Blam::Input::eKeyCodesI, 0x49 },
+		{ Blam::Input::eKeyCodesJ, 0x4A },
+		{ Blam::Input::eKeyCodesK, 0x4B },
+		{ Blam::Input::eKeyCodesL, 0x4C },
+		{ Blam::Input::eKeyCodesM, 0x4D },
+		{ Blam::Input::eKeyCodesN, 0x4E },
+		{ Blam::Input::eKeyCodesO, 0x4F },
+		{ Blam::Input::eKeyCodesP, 0x50 },
+		{ Blam::Input::eKeyCodesQ, 0x51 },
+		{ Blam::Input::eKeyCodesR, 0x52 },
+		{ Blam::Input::eKeyCodesS, 0x53 },
+		{ Blam::Input::eKeyCodesT, 0x54 },
+		{ Blam::Input::eKeyCodesU, 0x55 },
+		{ Blam::Input::eKeyCodesV, 0x56 },
+		{ Blam::Input::eKeyCodesW, 0x57 },
+		{ Blam::Input::eKeyCodesX, 0x58 },
+		{ Blam::Input::eKeyCodesY, 0x59 },
+		{ Blam::Input::eKeyCodesZ, 0x5A },
+		{ Blam::Input::eKeyCodesLBracket },
+		{ Blam::Input::eKeyCodesRBracket },
+		{ Blam::Input::eKeyCodesPipe },
+		{ Blam::Input::eKeyCodesCapital },
+		{ Blam::Input::eKeyCodesColon },
+		{ Blam::Input::eKeyCodesQuote },
+		{ Blam::Input::eKeyCodesEnter },
+		{ Blam::Input::eKeyCodesLShift },
+		{ Blam::Input::eKeyCodesComma },
+		{ Blam::Input::eKeyCodesPeriod },
+		{ Blam::Input::eKeyCodesQuestion },
+		{ Blam::Input::eKeyCodesRShift },
+		{ Blam::Input::eKeyCodesLControl },
+		{ Blam::Input::eKeyCodesLAlt },
+		{ Blam::Input::eKeyCodesSpace },
+		{ Blam::Input::eKeyCodesRAlt },
+		{ Blam::Input::eKeyCodesApps },
+		{ Blam::Input::eKeyCodesRcontrol },
+		{ Blam::Input::eKeyCodesUp },
+		{ Blam::Input::eKeyCodesDown },
+		{ Blam::Input::eKeyCodesLeft },
+		{ Blam::Input::eKeyCodesRight },
+		{ Blam::Input::eKeyCodesInsert },
+		{ Blam::Input::eKeyCodesHome },
+		{ Blam::Input::eKeyCodesPageUp },
+		{ Blam::Input::eKeyCodesDelete },
+		{ Blam::Input::eKeyCodesEnd },
+		{ Blam::Input::eKeyCodesPageDown },
+		{ Blam::Input::eKeyCodesNumLock },
+		{ Blam::Input::eKeyCodesDivide },
+		{ Blam::Input::eKeyCodesMultiply },
+		{ Blam::Input::eKeyCodesNumpad0 },
+		{ Blam::Input::eKeyCodesNumpad1 },
+		{ Blam::Input::eKeyCodesNumpad2 },
+		{ Blam::Input::eKeyCodesNumpad3 },
+		{ Blam::Input::eKeyCodesNumpad4 },
+		{ Blam::Input::eKeyCodesNumpad5 },
+		{ Blam::Input::eKeyCodesNumpad6 },
+		{ Blam::Input::eKeyCodesNumpad7 },
+		{ Blam::Input::eKeyCodesNumpad8 },
+		{ Blam::Input::eKeyCodesNumpad9 },
+		{ Blam::Input::eKeyCodesSubtract },
+		{ Blam::Input::eKeyCodesAdd },
+		{ Blam::Input::eKeyCodesNumpadEnter },
+		{ Blam::Input::eKeyCodesDecimal },
+		{ Blam::Input::eKeyCodesShift },
+		{ Blam::Input::eKeyCodesCtrl },
+		{ Blam::Input::eKeyCodesAlt }
+	};*/
+
 	// Key codes table
 	std::map<std::string, Blam::Input::KeyCodes> keyCodes =
 	{
@@ -967,7 +1076,7 @@ namespace
 		{ "decimal", Blam::Input::eKeyCodesDecimal },
 		{ "shift", Blam::Input::eKeyCodesShift },
 		{ "ctrl", Blam::Input::eKeyCodesCtrl },
-		{ "at", Blam::Input::eKeyCodesAlt },
+		{ "alt", Blam::Input::eKeyCodesAlt },
 	};
 
 	char** CommandLineToArgvA(char* CmdLine, int* _argc)

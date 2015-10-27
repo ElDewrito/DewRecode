@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace Armor
 {
-	class ArmorPatchProvider : public IPatchProvider
+	class ArmorPatchProvider : public PatchProvider
 	{
 	public:
 		virtual PatchSet GetPatches() override;

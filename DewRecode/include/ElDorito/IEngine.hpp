@@ -206,46 +206,6 @@ public:
 	virtual void* CreateInterface(const std::string& interfaceName, int* returnCode) = 0;
 
 	/// <summary>
-	/// Prints a string to the console UI.
-	/// </summary>
-	/// <param name="str">The string to print.</param>
-	virtual void PrintToConsole(const std::string& str) = 0;
-
-	/// <summary>
-	/// Adds a new buffer/queue to the console UI.
-	/// </summary>
-	/// <param name="buffer">The buffer to add.</param>
-	/// <returns>A pointer to the added buffer.</returns>
-	virtual ConsoleBuffer* AddConsoleBuffer(ConsoleBuffer buffer) = 0;
-
-	/// <summary>
-	/// Sets the active console UI buffer to this buffer (for the buffers group only)
-	/// </summary>
-	/// <param name="buffer">The buffer to set as active.</param>
-	/// <returns>true if the buffer was set active.</returns>
-	virtual bool SetActiveConsoleBuffer(ConsoleBuffer* buffer) = 0;
-
-	/// <summary>
-	/// Shows a message box to the user with choices specified by the vector, the result the user chose is given to the callback.
-	/// </summary>
-	/// <param name="text">The title of the box.</param>
-	/// <param name="text">The text to show to the user.</param>
-	/// <param name="tag">A tag/identifier value that gets passed to the callback function.</param>
-	/// <param name="choices">The choices the user can choose from.</param>
-	/// <param name="callback">The function to call after the user has made a selection.</param>
-	virtual void ShowMessageBox(const std::string& title, const std::string& text, const std::string& tag, const std::vector<std::string>& choices, UserInputBoxCallback callback) = 0;
-
-	/// <summary>
-	/// Shows an input box to the user where the user can type in an answer, the answer is passed as a parameter to the callback.
-	/// </summary>
-	/// <param name="text">The title of the box.</param>
-	/// <param name="text">The text to show to the user.</param>
-	/// <param name="tag">A tag/identifier value that gets passed to the callback function.</param>
-	/// <param name="defaultText">The default text to fill the inputbox with.</param>
-	/// <param name="callback">The function to call after the user has answered.</param>
-	virtual void ShowInputBox(const std::string& title, const std::string& text, const std::string& tag, const std::string& defaultText, UserInputBoxCallback callback) = 0;
-
-	/// <summary>
 	/// Returns true if the main menu has been shown, signifying that the game has initialized.
 	/// </summary>
 	/// <returns>true if the main menu has been shown.</returns>
@@ -359,6 +319,8 @@ public:
 	/// </summary>
 	/// <param name="type">The input type.</param>
 	virtual void BlockInput(Blam::Input::InputType type, bool block) = 0;
+
+	virtual void PushInputContext(std::shared_ptr<InputContext> context) = 0;
 
 	virtual void SendPacket(int targetPeer, const void* packet, int packetSize) = 0;
 

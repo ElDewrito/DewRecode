@@ -1,7 +1,7 @@
 #pragma once
 #include <ElDorito/ElDorito.hpp>
 
-class LogFileContext : public ICommandContext
+class LogFileContext : public CommandContext
 {
 public:
 	void HandleInput(const std::string& input);

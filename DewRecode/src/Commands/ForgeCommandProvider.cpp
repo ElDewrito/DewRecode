@@ -18,7 +18,7 @@ namespace Forge
 		return commands;
 	}
 
-	bool ForgeCommandProvider::CommandDeleteItem(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ForgeCommandProvider::CommandDeleteItem(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		DeleteItem();
 		return true;

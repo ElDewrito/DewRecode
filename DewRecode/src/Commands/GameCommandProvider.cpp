@@ -40,7 +40,7 @@ namespace Game
 		VarLanguageID->ValueIntMax = 11;
 	}
 
-	bool GameCommandProvider::CommandExit(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameCommandProvider::CommandExit(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		this->Exit();
 		return true;
@@ -51,7 +51,7 @@ namespace Game
 		std::exit(0);
 	}
 
-	bool GameCommandProvider::CommandInfo(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameCommandProvider::CommandInfo(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		context.WriteOutput(this->GetInfo());
 		return true;
@@ -107,7 +107,7 @@ namespace Game
 		return ss.str();
 	}
 
-	bool GameCommandProvider::CommandVersion(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameCommandProvider::CommandVersion(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		context.WriteOutput(this->GetVersion());
 		return true;
@@ -118,7 +118,7 @@ namespace Game
 		return Utils::Version::GetVersionString(); // todo: return game version here instead? it is Game.Version after all
 	}
 
-	bool GameCommandProvider::CommandForceLoad(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameCommandProvider::CommandForceLoad(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		std::stringstream ss;
 
@@ -217,7 +217,7 @@ namespace Game
 	}
 
 
-	bool GameCommandProvider::CommandMap(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameCommandProvider::CommandMap(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (Arguments.size() != 1)
 		{
@@ -293,7 +293,7 @@ namespace Game
 		return SetGameTypeReturnCode::Success;
 	}
 
-	bool GameCommandProvider::CommandGameType(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameCommandProvider::CommandGameType(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (Arguments.size() != 1)
 		{
@@ -366,7 +366,7 @@ namespace Game
 		return SetGameTypeReturnCode::Success;
 	}
 
-	bool GameCommandProvider::CommandStart(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool GameCommandProvider::CommandStart(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		context.WriteOutput("Starting game...");
 		auto ret = Start();

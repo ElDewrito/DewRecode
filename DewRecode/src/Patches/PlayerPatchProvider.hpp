@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace Player
 {
-	class PlayerPatchProvider : public IPatchProvider
+	class PlayerPatchProvider : public PatchProvider
 	{
 	public:
 		PlayerPatchProvider();

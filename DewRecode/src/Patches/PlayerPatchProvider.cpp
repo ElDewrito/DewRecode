@@ -73,7 +73,7 @@ namespace Player
 			dorito.CommandManager.SetVariable(dorito.PlayerCommands->VarPrivKey, privKey, std::string());
 			dorito.CommandManager.SetVariable(dorito.PlayerCommands->VarPubKey, pubKey, std::string());
 
-			dorito.Engine.PrintToConsole("Keypair generation complete!");
+//			dorito.Engine.PrintToConsole("Keypair generation complete!");
 
 			// save the keypair
 			dorito.CommandManager.Execute("WriteConfig", dorito.CommandManager.GetLogFileContext());

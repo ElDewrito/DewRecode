@@ -1,6 +1,6 @@
 #include <ElDorito/ElDorito.hpp>
 
-class RemoteConsoleContext : public ICommandContext
+class RemoteConsoleContext : public CommandContext
 {
 private:
 	bool isAuthed = false;

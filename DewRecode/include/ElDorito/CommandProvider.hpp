@@ -1,7 +1,7 @@
 #pragma once
 #include "ElDorito.hpp"
 
-class ICommandProvider
+class CommandProvider
 {
 public:
 	virtual std::vector<Command> GetCommands() { return std::vector<Command>(); }

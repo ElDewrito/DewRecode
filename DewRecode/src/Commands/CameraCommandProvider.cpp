@@ -34,7 +34,7 @@ namespace Camera
 
 	}
 
-	bool CameraCommandProvider::VariableCrosshairUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool CameraCommandProvider::VariableCrosshairUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		unsigned long value = VarCrosshair->ValueInt;
 
@@ -49,7 +49,7 @@ namespace Camera
 		return true;
 	}
 
-	bool CameraCommandProvider::VariableFovUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool CameraCommandProvider::VariableFovUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		float value = VarFov->ValueFloat;
 
@@ -59,7 +59,7 @@ namespace Camera
 		return true;
 	}
 
-	bool CameraCommandProvider::VariableHideHudUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool CameraCommandProvider::VariableHideHudUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		unsigned long value = VarHideHud->ValueInt;
 
@@ -74,7 +74,7 @@ namespace Camera
 		return true;
 	}
 
-	bool CameraCommandProvider::VariableSpeedUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool CameraCommandProvider::VariableSpeedUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		float speed = VarSpeed->ValueFloat;
 
@@ -82,7 +82,7 @@ namespace Camera
 		return true;
 	}
 
-	bool CameraCommandProvider::VariableSpectatorIndexUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool CameraCommandProvider::VariableSpectatorIndexUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		unsigned long index = VarSpectatorIndex->ValueInt;
 
@@ -95,7 +95,7 @@ namespace Camera
 		return true;
 	}
 
-	bool CameraCommandProvider::VariableModeUpdate(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool CameraCommandProvider::VariableModeUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		auto& dorito = ElDorito::Instance();
 		auto mode = dorito.Utils.ToLower(VarMode->ValueString);
@@ -195,7 +195,7 @@ namespace Camera
 		return true;
 	}
 
-	//bool VariableCameraSave(const std::vector<std::string>& Arguments, ICommandContext& context)
+	//bool VariableCameraSave(const std::vector<std::string>& Arguments, CommandContext& context)
 	//{
 	//	auto mode = Utils::String::ToLower(Modules::ModuleCamera::Instance().VarCameraMode->ValueString);
 	//	Pointer &directorGlobalsPtr = ElDorito::GetMainTls(GameGlobals::Director::TLSOffset)[0];
@@ -209,7 +209,7 @@ namespace Camera
 	//	return true;
 	//}
 	//
-	//bool VariableCameraLoad(const std::vector<std::string>& Arguments, ICommandContext& context)
+	//bool VariableCameraLoad(const std::vector<std::string>& Arguments, CommandContext& context)
 	//{
 	//	auto mode = Utils::String::ToLower(Modules::ModuleCamera::Instance().VarCameraMode->ValueString);
 	//	Pointer &directorGlobalsPtr = ElDorito::GetMainTls(GameGlobals::Director::TLSOffset)[0];

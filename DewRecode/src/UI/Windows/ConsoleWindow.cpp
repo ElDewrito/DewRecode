@@ -1,26 +1,20 @@
 #include "ConsoleWindow.hpp"
-#include "../ElDorito.hpp"
+#include "../../ElDorito.hpp"
 
 namespace UI
 {
+
 	static int TextEditCallbackStub(ImGuiTextEditCallbackData* data) // In C++11 you are better off using lambdas for this sort of forwarding callbacks
 	{
 		ConsoleWindow* console = (ConsoleWindow*)data->UserData;
 		return console->TextEditCallback(data);
 	}
 
-	ConsoleWindow::ConsoleWindow(std::string title, ICommandContext& context) : context(context)
+	ConsoleWindow::ConsoleWindow(CommandContext& context) : context(context)
 	{
-		this->title = title;
-
 		ClearLog();
 		historyPos = -1;
 		ZeroMemory(inputBuf, IM_ARRAYSIZE(inputBuf));
-	}
-
-	ConsoleWindow::~ConsoleWindow()
-	{
-
 	}
 
 	void ConsoleWindow::AddToLog(const std::string& text)
@@ -40,10 +34,13 @@ namespace UI
 		return 0;
 	}
 
-	void ConsoleWindow::Draw(bool* opened)
+	void ConsoleWindow::Draw()
 	{
-		ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiSetCond_FirstUseEver);
-		if (!ImGui::Begin(title.c_str(), opened))
+		if (!isVisible)
+			return;
+
+		ImGui::SetNextWindowSize(ImVec2(520, 300), ImGuiSetCond_FirstUseEver);
+		if (!ImGui::Begin("Console", &isVisible))
 		{
 			ImGui::End();
 			return;
@@ -71,13 +68,15 @@ namespace UI
 		}
 		if (scrollToBottom)
 			ImGui::SetScrollHere();
+
 		scrollToBottom = false;
+
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
 		ImGui::Separator();
 
 		// Command-line
-		if (ImGui::InputText("Input", inputBuf, IM_ARRAYSIZE(inputBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, &TextEditCallbackStub, (void*)this))
+		if (ImGui::InputText("", inputBuf, IM_ARRAYSIZE(inputBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, &TextEditCallbackStub, (void*)this))
 		{
 			char* input_end = inputBuf + strlen(inputBuf);
 			while (input_end > inputBuf && input_end[-1] == ' ') input_end--; *input_end = 0;
@@ -85,79 +84,21 @@ namespace UI
 			{
 				std::string input = std::string(inputBuf);
 				AddToLog(">" + input);
-				ElDorito::Instance().CommandManager.ConsoleContext.HandleInput(input);
-			//	AddToLog(CommandExecuteResultString[(int)retVal]);
+				context.HandleInput(input);
 				ZeroMemory(inputBuf, 256);
 				scrollToBottom = true;
 			}
-		}
-		/*std::string buffers[] = { "Console", "Global Chat", "Game Chat" };
-		for (size_t i = 0; i < 3; i++)
-		{
-			if (ImGui::RadioButton(buffers[i].c_str(), currentBuffer == buffers[i]))
+			else
 			{
-				currentBuffer = buffers[i];
+				// pressed enter with no text - hide the window
+				isVisible = false;
 			}
-			if (i+1 < 3)
-				ImGui::SameLine();
-		}*/
-
-		if (ImGui::IsRootWindowOrAnyChildFocused())
-		{
-			// disable game input
-		}
-		else
-		{
-			// enable game input
 		}
 
-		// Demonstrate keeping auto focus on the input box
+		// focus on the input box
 		if (ImGui::IsItemHovered() || (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
-			ImGui::SetKeyboardFocusHere(-1); // Auto focus*/
+			ImGui::SetKeyboardFocusHere(-1);
 
-		/*ImVec2 tabBarMin;
-
-		for (auto i = 0; i < tabs.size(); i++)
-		{
-			if (ImGui::Selectable(tabs[i].tabName.c_str(), selectedTab == i, 0, ImGui::CalcTextSize(tabs[i].tabName.c_str())))
-				selectedTab = i;
-			if (!i)
-				tabBarMin = ImGui::GetItemRectMin();
-
-			if ((i + 1) < tabs.size())
-				ImGui::SameLine(); ImGui::Text("|"); ImGui::SameLine();
-		}
-
-		ImVec2 tabBarLastTabTopRight = ImGui::GetItemRectMax();
-		ImGui::Separator();
-		ImVec2 tabBarLowerRight = ImGui::GetItemRectMax();
-		ImVec2 tabBarMax(tabBarLowerRight.x, tabBarLastTabTopRight.y);
-
-		if (ImGui::IsMouseHoveringRect(tabBarMin, tabBarMax) && ImGui::IsMouseClicked(1))
-		{
-			ImGui::OpenPopup("tab menu");
-		}
-
-		if (ImGui::BeginPopup("tab menu"))
-		{
-			for (int i = 0; i < tabs.size(); ++i)
-			{
-				if (ImGui::Selectable(tabs[i].tabName.c_str(), selectedTab == i))
-				{
-					selectedTab = i;
-				}
-			}
-
-			ImGui::EndPopup();
-		}*/
-
-		//selectedTab = clamp<int>(selectedTab, 0, tabs.size() - 1);
-
-		//PanelTab* selected = &tabs[selectedTab];
-		//ImGui::BeginChild(selected->tabName.c_str());
-//		selected->guiHandler(selected->userdata);
-		//
-	//	ImGui::EndChild();
 		ImGui::End();
 	}
 }

@@ -1,11 +1,11 @@
 #pragma once
 #include <memory>
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 #include "../Patches/GameRulesPatchProvider.hpp"
 
 namespace GameRules
 {
-	class GameRulesCommandProvider : public ICommandProvider
+	class GameRulesCommandProvider : public CommandProvider
 	{
 	private:
 		std::shared_ptr<GameRulesPatchProvider> gameRulesPatches;
@@ -19,8 +19,8 @@ namespace GameRules
 
 		virtual void RegisterVariables(ICommandManager* manager) override;
 
-		bool VariableGameSpeedUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableSprintEnabledUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableSprintUnlimitedUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableGameSpeedUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableSprintEnabledUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableSprintUnlimitedUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 	};
 }

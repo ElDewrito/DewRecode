@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 #include "../Patches/DebugPatchProvider.hpp"
 
 namespace Debug
@@ -15,7 +15,7 @@ namespace Debug
 		Packets = 1 << 5,
 	};
 
-	class DebugCommandProvider : public ICommandProvider
+	class DebugCommandProvider : public CommandProvider
 	{
 	private:
 		std::shared_ptr<DebugPatchProvider> debugPatches;
@@ -35,12 +35,12 @@ namespace Debug
 		virtual std::vector<Command> GetCommands() override;
 		virtual void RegisterVariables(ICommandManager* manager) override;
 
-		bool CommandLogMode(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool CommandLogFilter(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandLogMode(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool CommandLogFilter(const std::vector<std::string>& Arguments, CommandContext& context);
 
-		bool VariableMemcpySrcUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableMemcpyDstUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableMemsetDstUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableMemcpySrcUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableMemcpyDstUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableMemsetDstUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 
 	};
 }

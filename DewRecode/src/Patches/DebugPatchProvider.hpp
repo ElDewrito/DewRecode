@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace Debug
 {
-	class DebugPatchProvider : public IPatchProvider
+	class DebugPatchProvider : public PatchProvider
 	{
 	public:
 		Hook* NetworkLogHook;

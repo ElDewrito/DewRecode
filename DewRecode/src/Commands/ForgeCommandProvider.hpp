@@ -1,11 +1,11 @@
 #pragma once
 #include <memory>
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 #include "../Patches/ForgePatchProvider.hpp"
 
 namespace Forge
 {
-	class ForgeCommandProvider : public ICommandProvider
+	class ForgeCommandProvider : public CommandProvider
 	{
 	private:
 		std::shared_ptr<ForgePatchProvider> forgePatches;
@@ -15,7 +15,7 @@ namespace Forge
 
 		virtual std::vector<Command> GetCommands() override;
 		
-		bool CommandDeleteItem(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandDeleteItem(const std::vector<std::string>& Arguments, CommandContext& context);
 		void DeleteItem();
 	};
 }

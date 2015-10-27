@@ -1,5 +1,5 @@
 #pragma once
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 
 #define WM_RCON WM_USER + 1337
 #define WM_INFOSERVER WM_RCON + 1
@@ -16,7 +16,7 @@ namespace Server
 		NotFound
 	};
 
-	class ServerCommandProvider : public ICommandProvider
+	class ServerCommandProvider : public CommandProvider
 	{
 	private:
 		void announceServerThread();
@@ -69,42 +69,42 @@ namespace Server
 		void CallbackPongReceived(void* param);
 		void CallbackLifeCycleStateChanged(void* param);
 
-		bool CommandAnnounce(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandAnnounce(const std::vector<std::string>& Arguments, CommandContext& context);
 		void AnnounceServer();
 
-		bool CommandUnannounce(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandUnannounce(const std::vector<std::string>& Arguments, CommandContext& context);
 		void UnannounceServer();
 
-		bool CommandAnnounceStats(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandAnnounceStats(const std::vector<std::string>& Arguments, CommandContext& context);
 		void AnnounceStats();
 
-		bool CommandConnect(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandConnect(const std::vector<std::string>& Arguments, CommandContext& context);
 		void Connect();
 
-		bool CommandKickPlayer(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandKickPlayer(const std::vector<std::string>& Arguments, CommandContext& context);
 		KickPlayerReturnCode KickPlayer(const std::string& playerName);
 		bool KickPlayer(int peerIdx);
 
-		bool CommandListPlayers(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandListPlayers(const std::vector<std::string>& Arguments, CommandContext& context);
 		std::string ListPlayers();
 
-		bool VariableModeUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableModeUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool SetLobbyMode(Blam::ServerLobbyMode mode);
 
-		bool VariableLobbyTypeUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableLobbyTypeUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool SetLobbyType(Blam::ServerLobbyType type);
 
-		bool VariableCountdownUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableCountdownUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool SetCountdown(int seconds);
 
-		bool VariableMaxPlayersUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableMaxPlayersUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool SetMaxPlayers(int maxPlayers);
 
-		bool VariableShouldAnnounceUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableShouldAnnounceUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 		void SetShouldAnnounce(bool shouldAnnounce);
 
-		bool CommandPing(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool Ping(const std::string& address, ICommandContext& context);
+		bool CommandPing(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool Ping(const std::string& address, CommandContext& context);
 
 		LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	};

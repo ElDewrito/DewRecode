@@ -16,7 +16,7 @@ namespace
 	void ProcessUiInputHook();
 	void KeyTestHook();
 
-	std::stack<std::shared_ptr<Input::InputContext>> contextStack;
+	std::stack<std::shared_ptr<InputContext>> contextStack;
 	std::vector<Input::DefaultInputHandler> defaultHandlers;
 	bool contextDone = false;
 }

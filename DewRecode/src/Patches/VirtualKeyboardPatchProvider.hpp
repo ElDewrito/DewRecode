@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace VirtualKeyboard
 {
-	class VirtualKeyboardPatchProvider : public IPatchProvider
+	class VirtualKeyboardPatchProvider : public PatchProvider
 	{
 	public:
 		virtual PatchSet GetPatches() override;

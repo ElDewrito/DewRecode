@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace ContentItems
 {
-	class ContentItemsPatchProvider : public IPatchProvider
+	class ContentItemsPatchProvider : public PatchProvider
 	{
 	public:
 		virtual PatchSet GetPatches() override;

@@ -16,7 +16,7 @@ namespace ElDewrito
 		return commands;
 	}
 
-	bool ElDewritoCommandProvider::CommandHelp(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ElDewritoCommandProvider::CommandHelp(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		std::string cmdName = "";
 		if (Arguments.size() > 0)
@@ -54,7 +54,7 @@ namespace ElDewrito
 		return dorito.CommandManager.GenerateHelpText(*cmd);
 	}
 
-	bool ElDewritoCommandProvider::CommandExecute(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ElDewritoCommandProvider::CommandExecute(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		if (Arguments.size() <= 0)
 		{
@@ -65,7 +65,7 @@ namespace ElDewrito
 		return Execute(Arguments[0], context);
 	}
 
-	bool ElDewritoCommandProvider::Execute(const std::string& commandFile, ICommandContext& context)
+	bool ElDewritoCommandProvider::Execute(const std::string& commandFile, CommandContext& context)
 	{
 		std::ifstream in(commandFile, std::ios::in | std::ios::binary);
 		if (in && in.is_open())
@@ -83,7 +83,7 @@ namespace ElDewrito
 		return false;
 	}
 
-	bool ElDewritoCommandProvider::CommandWriteConfig(const std::vector<std::string>& Arguments, ICommandContext& context)
+	bool ElDewritoCommandProvider::CommandWriteConfig(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		std::string prefsName = "dewrito_prefs.cfg";
 		if (Arguments.size() > 0)

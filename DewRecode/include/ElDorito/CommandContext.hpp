@@ -1,7 +1,7 @@
 #pragma once
 #include "ElDorito.hpp"
 
-class ICommandContext
+class CommandContext
 {
 public:
 	virtual void HandleInput(const std::string& input) = 0;

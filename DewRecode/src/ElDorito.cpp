@@ -15,6 +15,8 @@
 #include "Patches/UIPatchProvider.hpp"
 #include "Patches/VirtualKeyboardPatchProvider.hpp"
 
+#include "Packets/ServerChat.hpp"
+
 ElDorito::ElDorito()
 {
 
@@ -37,7 +39,7 @@ void ElDorito::initPatchProviders()
 	}
 }
 
-void ElDorito::initCommandProvider(std::shared_ptr<ICommandProvider> command)
+void ElDorito::initCommandProvider(std::shared_ptr<CommandProvider> command)
 {
 	auto cmds = command->GetCommands();
 	for (auto cmd : cmds)
@@ -62,11 +64,11 @@ void ElDorito::initClasses()
 	auto corePatchProvider = std::make_shared<Core::CorePatchProvider>();
 	auto forgePatchProvider = std::make_shared<Forge::ForgePatchProvider>();
 	auto gameRulesPatchProvider = std::make_shared<GameRules::GameRulesPatchProvider>();
-	auto inputPatchProvider = std::make_shared<Input::InputPatchProvider>();
+	InputPatches = std::make_shared<Input::InputPatchProvider>();
 	auto networkPatchProvider = std::make_shared<Network::NetworkPatchProvider>();
 	auto playerPatchProvider = std::make_shared<Player::PlayerPatchProvider>();
 	auto scoreboardPatchProvider = std::make_shared<Scoreboard::ScoreboardPatchProvider>();
-	auto uiPatchProvider = std::make_shared<UI::UIPatchProvider>();
+	auto UIPatchProvider = std::make_shared<UI::UIPatchProvider>();
 	auto vkPatchProvider = std::make_shared<VirtualKeyboard::VirtualKeyboardPatchProvider>();
 
 	Patches.push_back(armorPatchProvider);
@@ -75,11 +77,11 @@ void ElDorito::initClasses()
 	Patches.push_back(corePatchProvider);
 	Patches.push_back(forgePatchProvider);
 	Patches.push_back(gameRulesPatchProvider);
-	Patches.push_back(inputPatchProvider);
+	Patches.push_back(InputPatches);
 	Patches.push_back(networkPatchProvider);
 	Patches.push_back(playerPatchProvider);
 	Patches.push_back(scoreboardPatchProvider);
-	Patches.push_back(uiPatchProvider);
+	Patches.push_back(UIPatchProvider);
 	Patches.push_back(vkPatchProvider);
 
 	CameraCommands = std::make_shared<Camera::CameraCommandProvider>(cameraPatchProvider);
@@ -97,7 +99,7 @@ void ElDorito::initClasses()
 	GameRulesCommands = std::make_shared<GameRules::GameRulesCommandProvider>(gameRulesPatchProvider);
 	initCommandProvider(GameRulesCommands);
 
-	InputCommands = std::make_shared<Input::InputCommandProvider>(inputPatchProvider);
+	InputCommands = std::make_shared<Input::InputCommandProvider>(InputPatches);
 	initCommandProvider(InputCommands);
 
 	PlayerCommands = std::make_shared<Player::PlayerCommandProvider>(armorPatchProvider, playerPatchProvider);
@@ -106,13 +108,13 @@ void ElDorito::initClasses()
 	ServerCommands = std::make_shared<Server::ServerCommandProvider>();
 	initCommandProvider(ServerCommands);
 
-	UICommands = std::make_shared<UI::UICommandProvider>(uiPatchProvider);
+	UICommands = std::make_shared<UI::UICommandProvider>(UIPatchProvider);
 	initCommandProvider(UICommands);
 
 	UpdaterCommands = std::make_shared<Updater::UpdaterCommandProvider>();
 	initCommandProvider(UpdaterCommands);
 
-	UserInterface = std::make_shared<UI::UserInterface>(&Engine);
+	//UserInterface = std::make_shared<UI::UserInterface>(&Engine);
 
 	initPatchProviders();
 
@@ -133,6 +135,8 @@ void ElDorito::Initialize()
 
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Console.FinishAddCommands()...");
 	CommandManager.FinishAdd(); // call this so that the default values can be applied to the game
+
+	Server::Chat::Initialize();
 	
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Executing dewrito_prefs.cfg...");
 	ElDewritoCommands->Execute("dewrito_prefs.cfg", CommandManager.NullContext);
@@ -141,8 +145,8 @@ void ElDorito::Initialize()
 	ElDewritoCommands->Execute("autoexec.cfg", CommandManager.NullContext); // also execute autoexec, which is a user-made cfg guaranteed not to be overwritten by ElDew/launcher
 
 	// HACKY - As we need a draw call in between this message and the actual generation, check it ahead of it actually generating
-	if (PlayerCommands->VarPubKey->ValueString.empty())
-		Engine.PrintToConsole("Generating player keypair\nThis may take a moment...");
+//	if (PlayerCommands->VarPubKey->ValueString.empty())
+//		Engine.PrintToConsole("Generating player keypair\nThis may take a moment...");
 
 	// add and toggle(enable) the language patch, can't be done in a module since we have to patch this after cfg files are read
 	PatchManager.TogglePatch(PatchManager.AddPatch("GameLanguage", 0x6333FD, { (unsigned char)GameCommands->VarLanguageID->ValueInt }));

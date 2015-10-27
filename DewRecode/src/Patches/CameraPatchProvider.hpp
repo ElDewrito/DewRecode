@@ -1,9 +1,9 @@
 #pragma once
-#include <ElDorito/IPatchProvider.hpp>
+#include <ElDorito/PatchProvider.hpp>
 
 namespace Camera
 {
-	class CameraPatchProvider : public IPatchProvider
+	class CameraPatchProvider : public PatchProvider
 	{
 	public:
 		PatchSet* CustomModePatches;

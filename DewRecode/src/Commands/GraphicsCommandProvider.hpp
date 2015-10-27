@@ -1,10 +1,10 @@
 #pragma once
 #include <memory>
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 
 namespace Graphics
 {
-	class GraphicsCommandProvider : public ICommandProvider
+	class GraphicsCommandProvider : public CommandProvider
 	{
 	public:
 		Command* VarSaturation;
@@ -17,12 +17,12 @@ namespace Graphics
 
 		virtual void RegisterVariables(ICommandManager* manager) override;
 		
-		bool VariableSaturationUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableRedHueUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableGreenHueUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableBlueHueUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableBloomUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableDepthOfFieldUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableLetterboxUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool VariableSaturationUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableRedHueUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableGreenHueUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableBlueHueUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableBloomUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableDepthOfFieldUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableLetterboxUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 	};
 }

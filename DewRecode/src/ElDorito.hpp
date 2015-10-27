@@ -15,7 +15,7 @@
 #include <ElDorito/Pointer.hpp>
 #include <ElDorito/Blam/ArrayGlobal.hpp>
 
-class IPatchProvider;
+class PatchProvider;
 
 #include "Commands/CameraCommandProvider.hpp"
 #include "Commands/DebugCommandProvider.hpp"
@@ -41,7 +41,7 @@ private:
 
 	void initClasses();
 	void initPatchProviders();
-	void initCommandProvider(std::shared_ptr<ICommandProvider> command);
+	void initCommandProvider(std::shared_ptr<CommandProvider> command);
 
 public:
 	DebugLog Logger;
@@ -50,8 +50,10 @@ public:
 	PublicUtils Utils;
 	Engine Engine;
 	Network::PlayerPropertiesExtender PlayerPropertiesExtender;
+	UI::UserInterface UserInterface;
 
-	std::vector<std::shared_ptr<IPatchProvider>> Patches;
+	std::vector<std::shared_ptr<PatchProvider>> Patches;
+	std::shared_ptr<Input::InputPatchProvider> InputPatches;
 
 	std::shared_ptr<Camera::CameraCommandProvider> CameraCommands;
 	std::shared_ptr<Debug::DebugCommandProvider> DebugCommands;
@@ -64,7 +66,7 @@ public:
 	std::shared_ptr<Server::ServerCommandProvider> ServerCommands;
 	std::shared_ptr<UI::UICommandProvider> UICommands;
 	std::shared_ptr<Updater::UpdaterCommandProvider> UpdaterCommands;
-	std::shared_ptr<UI::UserInterface> UserInterface;
+
 	void Initialize();
 
 	static ElDorito& Instance()

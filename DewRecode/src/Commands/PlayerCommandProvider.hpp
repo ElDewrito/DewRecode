@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <ElDorito/ICommandProvider.hpp>
+#include <ElDorito/CommandProvider.hpp>
 #include "../Patches/PlayerPatchProvider.hpp"
 
 namespace Armor
@@ -10,7 +10,7 @@ namespace Armor
 
 namespace Player
 {
-	class PlayerCommandProvider : public ICommandProvider
+	class PlayerCommandProvider : public CommandProvider
 	{
 	private:
 		std::shared_ptr<Armor::ArmorPatchProvider> armorPatches;
@@ -42,9 +42,9 @@ namespace Player
 		virtual std::vector<Command> GetCommands() override;
 		virtual void RegisterVariables(ICommandManager* manager) override;
 
-		bool CommandPrintUid(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableArmorUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
-		bool VariableNameUpdate(const std::vector<std::string>& Arguments, ICommandContext& context);
+		bool CommandPrintUid(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableArmorUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool VariableNameUpdate(const std::vector<std::string>& Arguments, CommandContext& context);
 
 		std::string GetFormattedPrivKey();
 	};

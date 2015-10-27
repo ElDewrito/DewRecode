@@ -1,15 +1,58 @@
 #include "UserInterface.hpp"
-#include "ConsoleWindow.hpp"
+#include "Windows/ConsoleWindow.hpp"
+#include "Windows/MessageBoxWindow.hpp"
 #include "../ElDorito.hpp"
-
 namespace UI
 {
-	UserInterface::UserInterface(IEngine* engine)
+	class UIInputContext : public InputContext
 	{
-		this->engine = engine;
-		engine->OnWndProc(BIND_WNDPROC(this, &UserInterface::WndProc));
-		engine->OnEndScene(BIND_CALLBACK(this, &UserInterface::EndScene));
-		engine->OnEvent("Core", "Direct3D.Init", BIND_CALLBACK(this, &UserInterface::Init));
+	public:
+		explicit UIInputContext(UserInterface* ui) : ui(ui) {}
+
+		virtual void InputActivated() override
+		{
+			// TODO: Allow input contexts to block input more easily without
+			// potentially overriding blocks the game has set
+
+			// Block UI input
+			ElDorito::Instance().Engine.BlockInput(Blam::Input::eInputTypeUi, true);
+		}
+
+		virtual void InputDeactivated() override
+		{
+			// Unblock UI input
+			ElDorito::Instance().Engine.BlockInput(Blam::Input::eInputTypeUi, false);
+		}
+
+		virtual bool GameInputTick() override
+		{
+			// The "done" state is delayed a tick in order to prevent input
+			// replication, since the UI can get new keys before the game does
+			return done;
+		}
+
+		virtual bool UiInputTick() override
+		{
+			auto& dorito = ElDorito::Instance();
+			dorito.Engine.BlockInput(Blam::Input::eInputTypeUi, false); // UI input needs to be unblocked
+			done = ui->IsShown();
+			dorito.Engine.BlockInput(Blam::Input::eInputTypeUi, true);
+			return true;
+		}
+
+	private:
+		UserInterface* ui;
+		bool done = true;
+	};
+
+	UserInterface::UserInterface()
+	{
+		auto& engine = ElDorito::Instance().Engine;
+		engine.OnWndProc(BIND_WNDPROC(this, &UserInterface::WndProc));
+		engine.OnEndScene(BIND_CALLBACK(this, &UserInterface::EndScene));
+		engine.OnEvent("Core", "Direct3D.Init", BIND_CALLBACK(this, &UserInterface::Init));
+
+		engine.PushInputContext(std::make_shared<UIInputContext>(this));
 	}
 
 	bool UserInterface::createFontsTexture()
@@ -209,6 +252,9 @@ namespace UI
 
 	LRESULT UserInterface::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		if (!uiShown)
+			return 0;
+
 		ImGuiIO& io = ImGui::GetIO();
 		switch (msg)
 		{
@@ -236,6 +282,8 @@ namespace UI
 				io.KeysDown[wParam] = 1;
 			return true;
 		case WM_KEYUP:
+			if (wParam == VK_ESCAPE && io.KeysDown[wParam] == 1)
+				ShowUI(false);
 			if (wParam < 256)
 				io.KeysDown[wParam] = 0;
 			return true;
@@ -244,16 +292,37 @@ namespace UI
 			if (wParam > 0 && wParam < 0x10000)
 				io.AddInputCharacter((unsigned short)wParam);
 			return true;
+		default:
+			return 0;
 		}
-		return 0;
+		return 1;
 	}
 
 	void UserInterface::EndScene(void* param)
 	{
+		if (!uiShown || (windows.size() <= 0 && !console->GetVisible() && !chat->GetVisible()))
+		{
+			ShowUI(false);
+			return;
+		}
+
 		newFrame();
 		{
-			static bool show_another_window = true;
-			Console->Draw(&show_another_window);
+			for (auto window = windows.begin(); window != windows.end();)
+			{
+				(*window)->Draw();
+				if (!(*window)->GetVisible())
+				{
+					(*window).reset();
+					window = windows.erase(window);
+				}
+				else
+					++window;
+			}
+			if (console)
+				console->Draw();
+			if (chat)
+				chat->Draw();
 		}
 		ImGui::Render();
 	}
@@ -261,7 +330,7 @@ namespace UI
 
 	void UserInterface::Init(void* param)
 	{
-		this->hwnd = engine->GetGameHWND();
+		this->hwnd = ElDorito::Instance().Engine.GetGameHWND();
 		this->device = Pointer(0x50DADDC).Read<IDirect3DDevice9*>();
 
 		if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticksPerSecond))
@@ -293,7 +362,26 @@ namespace UI
 		io.RenderDrawListsFn = BIND_CALLBACK(this, &UserInterface::renderDrawLists);
 		io.ImeWindowHandle = hwnd;
 
-		Console = std::make_shared<ConsoleWindow>("Console", ElDorito::Instance().CommandManager.ConsoleContext);
+		this->chat = std::make_shared<ChatWindow>();
+		this->console = std::make_shared<ConsoleWindow>(ElDorito::Instance().CommandManager.ConsoleContext);
+
+		//ShowMessageBox("TestMsg", "This is a test message brought to you by Leon", { "Ayy", "Lmao" }, BIND_CALLBACK2(this, &UserInterface::TestCallback));
+	}
+
+	bool UserInterface::ShowChat(bool show)
+	{
+		chat->SetVisible(show);
+		if (show)
+			ShowUI(true);
+		return show;
+	}
+
+	bool UserInterface::ShowConsole(bool show)
+	{
+		console->SetVisible(show);
+		if (show)
+			ShowUI(true);
+		return show;
 	}
 
 	void UserInterface::Shutdown()
@@ -304,4 +392,39 @@ namespace UI
 		hwnd = 0;
 	}
 
+	bool UserInterface::ShowMessageBox(const std::string& title, const std::string& message, std::vector<std::string> choices, MsgBoxCallback callback)
+	{
+		auto msgBox = std::make_shared<MessageBoxWindow>(title, message, choices, callback);
+		windows.push_back(msgBox);
+		ShowUI(true);
+		return true;
+	}
+
+	void UserInterface::WriteToConsole(const std::string& text)
+	{
+		if (console)
+			console->AddToLog(text);
+	}
+
+	void UserInterface::AddToChat(const std::string& text, bool globalChat)
+	{
+		if (chat)
+			chat->AddToChat(text, globalChat);
+	}
+
+	bool UserInterface::ShowUI(bool show)
+	{
+		if (show != uiShown)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			for (int i = 0; i < 512; i++)
+				io.KeysDown[i] = 0;
+		}
+
+		if (!uiShown && show) // being shown again, so push a new context
+			ElDorito::Instance().Engine.PushInputContext(std::make_shared<UIInputContext>(this));
+
+		uiShown = show;
+		return uiShown;
+	}
 }
