@@ -13,6 +13,7 @@ namespace
 	void ClientObjectHealthHook();
 	void ClientObjectShieldHook();
 	void GrenadeLoadoutHook();
+	void AudioMaxChannelsHook();
 }
 
 namespace Core
@@ -68,7 +69,8 @@ namespace Core
 			Hook("ClientObjectHealthHook", 0xB33F13, ClientObjectHealthHook, HookType::Jmp),
 			Hook("ClientObjectShieldHook", 0xB329CE, ClientObjectShieldHook, HookType::Jmp),
 
-			Hook("GrenadeLoadoutHook", 0x5A3267, GrenadeLoadoutHook, HookType::Jmp)
+			Hook("GrenadeLoadoutHook", 0x5A3267, GrenadeLoadoutHook, HookType::Jmp),
+			Hook("AudioMaxChannelsHook", 0x404E9C, AudioMaxChannelsHook, HookType::Jmp)
 		});
 
 		return patches;
@@ -449,6 +451,20 @@ namespace
 			call GrenadeLoadoutHookImpl
 			add esp, 4
 			push 0x5A32C7
+			ret
+		}
+	}
+
+	__declspec(naked) void AudioMaxChannelsHook()
+	{
+		__asm
+		{
+			push 0
+			push ebx
+			push 0x400 // increase max channels from 0x40 to 0x400
+			push eax
+			call dword ptr [ecx] // inits fmod
+			push 0x404EA4
 			ret
 		}
 	}
