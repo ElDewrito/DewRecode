@@ -153,6 +153,9 @@
     <ClCompile Include="src\UI\Windows\MessageBoxWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Commands\IRCCommandProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ElDorito.hpp">
@@ -381,6 +384,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\UI\Windows\MessageBoxWindow.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Commands\IRCCommandProvider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

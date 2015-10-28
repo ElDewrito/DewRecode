@@ -4,7 +4,7 @@
 
 #define IM_ARRAYSIZE(_ARR)  ((int)(sizeof(_ARR)/sizeof(*_ARR)))
 
-typedef std::function<void(const std::string& answer, void* tag)> MsgBoxCallback;
+typedef std::function<void(const std::string& boxTag, const std::string& result)> MsgBoxCallback;
 
 
 /*
@@ -20,7 +20,7 @@ public:
 	virtual bool ShowUI(bool show) = 0;
 	virtual bool ShowChat(bool show) = 0;
 	virtual bool ShowConsole(bool show) = 0;
-	virtual bool ShowMessageBox(const std::string& title, const std::string& message, std::vector<std::string> choices, MsgBoxCallback callback) = 0;
+	virtual bool ShowMessageBox(const std::string& title, const std::string& message, const std::string& tag, std::vector<std::string> choices, MsgBoxCallback callback) = 0;
 	virtual void WriteToConsole(const std::string& text) = 0;
 	virtual void AddToChat(const std::string& text, bool globalChat) = 0;
 };

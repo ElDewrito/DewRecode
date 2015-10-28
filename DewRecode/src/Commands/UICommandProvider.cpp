@@ -125,21 +125,21 @@ namespace UI
 
 		if (menuName.empty())
 		{
-			//dorito.Engine.ShowMessageBox("ElDewrito settings", "Which settings do you want to change?", "settingsChoice", { "Player", "Server", "IRC", "Return" }, BIND_CALLBACK2(this, &UICommandProvider::CallbackMsgBox));
+			dorito.UserInterface.ShowMessageBox("ElDewrito settings", "Which settings do you want to change?", "edSettingsMenu", { "Player", "Server", "IRC", "Return" }, BIND_CALLBACK2(this, &UICommandProvider::CallbackMsgBox));
 			return true;
 		}
 		const std::string& menu = dorito.Utils.ToLower(menuName);
 
-		/*if (menu == "player")
-			dorito.Engine.ShowMessageBox("Player settings", "", "playerSettingsChoice", { "Player Name", "Return" }, BIND_CALLBACK2(this, &UICommandProvider::CallbackSettingsMsgBox));
+		if (menu == "player")
+			dorito.UserInterface.ShowMessageBox("Player settings", "", "playerSettingsChoice", { "Player Name", "Return" }, BIND_CALLBACK2(this, &UICommandProvider::CallbackSettingsMsgBox));
 		else if (menu == "server")
-			dorito.Engine.ShowMessageBox("Server settings", "", "serverSettingsChoice", { "Server Name", "Server Password", "Return" }, BIND_CALLBACK2(this, &UICommandProvider::CallbackSettingsMsgBox));
+			dorito.UserInterface.ShowMessageBox("Server settings", "", "serverSettingsChoice", { "Server Name", "Server Password", "Return" }, BIND_CALLBACK2(this, &UICommandProvider::CallbackSettingsMsgBox));
 		else if (menu == "irc")
-			dorito.Engine.ShowMessageBox("IRC settings", "", "ircSettingsChoice", { "IRC Server Host", "IRC Server Port", "IRC Global Channel", "Return" }, BIND_CALLBACK2(this, &UICommandProvider::CallbackSettingsMsgBox));
-		else if (menu == "setup")
-			dorito.Engine.ShowInputBox("Player name", "Enter the nickname you want to be known as online.\nPress ENTER to confirm.", "Player.Name", "Player.Name", BIND_CALLBACK2(this, &UICommandProvider::CallbackInitialSetup));
+			dorito.UserInterface.ShowMessageBox("IRC settings", "", "ircSettingsChoice", { "IRC Server Host", "IRC Server Port", "IRC Global Channel", "Return" }, BIND_CALLBACK2(this, &UICommandProvider::CallbackSettingsMsgBox));
+		/*else if (menu == "setup")
+			dorito.Engine.ShowInputBox("Player name", "Enter the nickname you want to be known as online.\nPress ENTER to confirm.", "Player.Name", "Player.Name", BIND_CALLBACK2(this, &UICommandProvider::CallbackInitialSetup));*/
 		else
-			return false;*/
+			return false;
 
 		return true;
 	}
@@ -164,11 +164,11 @@ namespace UI
 			dorito.Engine.ShowInputBox("IRC server port", "Enter the port number of the IRC server.\nPress ENTER to confirm.", "IRC.ServerPort", "IRC.ServerPort", BIND_CALLBACK2(this, &UICommandProvider::CallbackSettingChanged));
 		else if (result == "IRC Global Channel")
 			dorito.Engine.ShowInputBox("Global channel name", "Enter the name of the global chat channel.\nPress ENTER to confirm.", "IRC.GlobalChannel", "IRC.GlobalChannel", BIND_CALLBACK2(this, &UICommandProvider::CallbackSettingChanged));
-		else
+		else*/
 		{
 			CallbackMsgBox("", "");
 			return;
-		}*/
+		}
 		dorito.CommandManager.Execute("WriteConfig", dorito.CommandManager.LogFileContext);
 	}
 

@@ -2,6 +2,10 @@
 #include "Windows/ConsoleWindow.hpp"
 #include "Windows/MessageBoxWindow.hpp"
 #include "../ElDorito.hpp"
+#include <mutex>
+
+std::mutex m;
+
 namespace UI
 {
 	class UIInputContext : public InputContext
@@ -307,23 +311,32 @@ namespace UI
 		}
 
 		newFrame();
+		std::lock_guard<std::mutex> lock(m);
+
+		for (auto window = windows.begin(); window != windows.end();)
 		{
-			for (auto window = windows.begin(); window != windows.end();)
+			if (!*window)
+				continue;
+			(*window)->Draw();
+			if (!*window)
+				continue;
+			if (!(*window)->GetVisible())
 			{
-				(*window)->Draw();
-				if (!(*window)->GetVisible())
-				{
-					(*window).reset();
-					window = windows.erase(window);
-				}
-				else
-					++window;
+				if (!*window)
+					continue;
+				(*window).reset();
+				if (!*window)
+					continue;
+				window = windows.erase(window);
 			}
-			if (console)
-				console->Draw();
-			if (chat)
-				chat->Draw();
+			else
+				++window;
 		}
+		if (console)
+			console->Draw();
+		if (chat)
+			chat->Draw();
+
 		ImGui::Render();
 	}
 
@@ -392,10 +405,13 @@ namespace UI
 		hwnd = 0;
 	}
 
-	bool UserInterface::ShowMessageBox(const std::string& title, const std::string& message, std::vector<std::string> choices, MsgBoxCallback callback)
+	bool UserInterface::ShowMessageBox(const std::string& title, const std::string& message, const std::string& tag, std::vector<std::string> choices, MsgBoxCallback callback)
 	{
-		auto msgBox = std::make_shared<MessageBoxWindow>(title, message, choices, callback);
+		auto msgBox = std::make_shared<MessageBoxWindow>(title, message, tag, choices, callback);
+
+		std::lock_guard<std::mutex> lock(m);
 		windows.push_back(msgBox);
+		msgBox->SetVisible(true);
 		ShowUI(true);
 		return true;
 	}

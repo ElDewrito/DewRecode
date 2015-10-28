@@ -102,6 +102,9 @@ void ElDorito::initClasses()
 	InputCommands = std::make_shared<Input::InputCommandProvider>(InputPatches);
 	initCommandProvider(InputCommands);
 
+	IRCCommands = std::make_shared<IRC::IRCCommandProvider>();
+	initCommandProvider(IRCCommands);
+
 	PlayerCommands = std::make_shared<Player::PlayerCommandProvider>(armorPatchProvider, playerPatchProvider);
 	initCommandProvider(PlayerCommands);
 

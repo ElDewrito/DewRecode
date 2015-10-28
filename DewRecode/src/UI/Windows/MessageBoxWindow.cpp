@@ -2,10 +2,11 @@
 
 namespace UI
 {
-	MessageBoxWindow::MessageBoxWindow(const std::string& title, const std::string& message, std::vector<std::string> choices, MsgBoxCallback callback)
+	MessageBoxWindow::MessageBoxWindow(const std::string& title, const std::string& message, const std::string& tag, std::vector<std::string> choices, MsgBoxCallback callback)
 	{
 		this->title = title;
 		this->message = message;
+		this->tag = tag;
 		this->choices = choices;
 		this->callback = callback;
 	}
@@ -28,7 +29,7 @@ namespace UI
 			if (ImGui::Button(i.c_str()))
 			{
 				isVisible = false;
-				callback(i, nullptr);
+				callback(tag, i);
 			}
 			ImGui::SameLine();
 		}

@@ -98,6 +98,7 @@
     <ClCompile Include="src\CommandContexts\RemoteConsoleContext.cpp" />
     <ClCompile Include="src\Commands\CameraCommandProvider.cpp" />
     <ClCompile Include="src\Commands\GameRulesCommandProvider.cpp" />
+    <ClCompile Include="src\Commands\IRCCommandProvider.cpp" />
     <ClCompile Include="src\Commands\UpdaterCommandProvider.cpp" />
     <ClCompile Include="src\Packets\ServerChat.cpp" />
     <ClCompile Include="src\Patches\CameraPatchProvider.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="src\CommandContexts\RemoteConsoleContext.hpp" />
     <ClInclude Include="src\Commands\CameraCommandProvider.hpp" />
     <ClInclude Include="src\Commands\GameRulesCommandProvider.hpp" />
+    <ClInclude Include="src\Commands\IRCCommandProvider.hpp" />
     <ClInclude Include="src\Commands\UpdaterCommandProvider.hpp" />
     <ClInclude Include="src\Packets\ServerChat.hpp" />
     <ClInclude Include="src\Patches\CameraPatchProvider.hpp" />

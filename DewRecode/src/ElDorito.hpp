@@ -24,6 +24,7 @@ class PatchProvider;
 #include "Commands/GameCommandProvider.hpp"
 #include "Commands/GameRulesCommandProvider.hpp"
 #include "Commands/InputCommandProvider.hpp"
+#include "Commands/IRCCommandProvider.hpp"
 #include "Commands/PlayerCommandProvider.hpp"
 #include "Commands/ServerCommandProvider.hpp"
 #include "Commands/UICommandProvider.hpp"
@@ -62,6 +63,7 @@ public:
 	std::shared_ptr<Game::GameCommandProvider> GameCommands;
 	std::shared_ptr<GameRules::GameRulesCommandProvider> GameRulesCommands;
 	std::shared_ptr<Input::InputCommandProvider> InputCommands;
+	std::shared_ptr<IRC::IRCCommandProvider> IRCCommands;
 	std::shared_ptr<Player::PlayerCommandProvider> PlayerCommands;
 	std::shared_ptr<Server::ServerCommandProvider> ServerCommands;
 	std::shared_ptr<UI::UICommandProvider> UICommands;

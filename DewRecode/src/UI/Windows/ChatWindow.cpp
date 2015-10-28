@@ -129,6 +129,8 @@ namespace UI
 		ImGui::EndChild();
 		ImGui::Separator();
 
+		auto& dorito = ElDorito::Instance();
+
 		// Command-line
 		if (ImGui::InputText("", inputBuf, IM_ARRAYSIZE(inputBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, &TextEditCallbackStub, (void*)this))
 		{
@@ -142,21 +144,22 @@ namespace UI
 					// Messages beginning with !t or !team are team messages
 					if (input.substr(0, 3) == "!t " || input.substr(0, 6) == "!team ")
 					{
-						input = ElDorito::Instance().Utils.Trim(input.substr(input.find(' ') + 1));
+						input = dorito.Utils.Trim(input.substr(input.find(' ') + 1));
 						if (input.length() && !Server::Chat::SendTeamMessage(input))
 							AddToChat("(Failed to send message! Are you in a game with teams enabled?)", false);
 					}
 					else
 					{
-						input = ElDorito::Instance().Utils.Trim(input);
+						input = dorito.Utils.Trim(input);
 						if (input.length() && !Server::Chat::SendGlobalMessage(input))
 							AddToChat("(Failed to send message! Are you in a game?)", false);
 					}
 				}
 				else
 				{
-					AddToChat("(Global chat not implemented yet... Switch to game chat below)", globalChatSelected);
-					// TODO: send to IRC/global chat
+					// send to global chat
+					if(dorito.IRCCommands->SendMsg(input))
+						AddToChat("<" + dorito.PlayerCommands->VarName->ValueString + "> " + input, true);
 				}
 
 				ZeroMemory(inputBuf, 256);

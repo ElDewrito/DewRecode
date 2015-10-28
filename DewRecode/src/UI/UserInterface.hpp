@@ -52,7 +52,7 @@ namespace UI
 		bool ShowUI(bool show);
 		bool ShowChat(bool show);
 		bool ShowConsole(bool show);
-		bool ShowMessageBox(const std::string& title, const std::string& message, std::vector<std::string> choices, MsgBoxCallback callback);
+		bool ShowMessageBox(const std::string& title, const std::string& message, const std::string& tag, std::vector<std::string> choices, MsgBoxCallback callback);
 		void WriteToConsole(const std::string& text);
 		void AddToChat(const std::string& text, bool globalChat);
 
