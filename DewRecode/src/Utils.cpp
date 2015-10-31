@@ -352,6 +352,15 @@ void PublicUtils::BytesToHexString(void* const data, const size_t dataLength, st
 	dest = hexStringStream.str();
 }
 
+bool PublicUtils::IsNull(void* const data, const size_t dataLength)
+{
+	for (size_t i = 0; i < dataLength; i++)
+		if (((BYTE*)data)[i] != 0)
+			return false;
+
+	return true;
+}
+
 void PublicUtils::ReplaceCharacters(std::string& str, char find, char replaceWith)
 {
 	for( unsigned i = 0; i < str.length(); ++i )

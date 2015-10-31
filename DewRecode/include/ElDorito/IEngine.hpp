@@ -212,6 +212,12 @@ public:
 	virtual bool HasMainMenuShown() = 0;
 
 	/// <summary>
+	/// Returns true if this is a dedicated server instance.
+	/// </summary>
+	/// <returns>true if this is a dedicated server instance.</returns>
+	virtual bool IsDedicated() = 0;
+
+	/// <summary>
 	/// Returns the HWND for the game window.
 	/// </summary>
 	/// <returns>The HWND for the game window.</returns>

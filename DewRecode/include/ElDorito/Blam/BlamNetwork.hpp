@@ -16,6 +16,9 @@ namespace Blam
 		// The maximum number of players in a network session.
 		const int MaxPlayers = 16;
 
+		// The maximum number of managed sessons
+		const int MaxManagedSessions = 8;
+
 		enum PeerConnectionState
 		{
 			ePeerConnectionStateNone,
@@ -312,6 +315,48 @@ namespace Blam
 			}
 		};
 		static_assert(sizeof(MessageGateway) == 0x688, "Invalid c_network_message_gateway size");
+
+		struct XnetEntry
+		{
+			uint8_t Unknown0[0x10];
+			uint8_t Xnkid[0x10];
+			uint8_t Xnaddr[0x10];
+			uint8_t Unknown[0x120];
+		};
+		static_assert(sizeof(XnetEntry) == 0x150, "Invalid xnet_entry size");
+
+		enum class ManagedSessionState : uint32_t
+		{
+			Create,
+			Delete,
+			Modify,
+			AddPlayers,
+			RemovePlayers,
+			Start,
+			End
+		};
+
+		// c_managed_session
+		struct ManagedSession
+		{
+			uint32_t Unknown0;
+			uint32_t Unknown4;
+			uint32_t Flags;
+			uint32_t UnknownC;
+			uint32_t vfTable;
+			//ManagedSessionState State;
+			uint8_t Unknown14[0xC];
+			uint32_t Unknown20; // ??
+			uint32_t Unknown24; // funcPtr ?
+			uint32_t Unknown28; // flag?
+			uint32_t Unknown2C; // ??
+			uint8_t Unknown30[0xE8];
+			XnetEntry HostAddr;
+			XnetEntry Unknown268;
+			XnetEntry PacketDestAddr;
+			uint8_t Unknown508[0x100];
+		};
+		static_assert(sizeof(ManagedSession) == 0x608, "Invalid c_managed_session size");
 
 		// c_network_session
 		struct Session

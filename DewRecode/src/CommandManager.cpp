@@ -100,6 +100,7 @@ void CommandManager::FinishAdd()
 	auto& engine = ElDorito::Instance().Engine;
 	engine.OnTick(BIND_CALLBACK(this, &CommandManager::TickSyncBindings));
 	engine.OnEvent("Core", "Game.Leave", BIND_CALLBACK(this, &CommandManager::OnGameLeave));
+	engine.OnEvent("Core", "Engine.MainMenuShown", BIND_CALLBACK(this, &CommandManager::OnMainMenuShown));
 }
 
 /// <summary>
@@ -775,6 +776,11 @@ void CommandManager::OnGameLeave(void* param)
 		binding.second.ServerVariable->Reset();
 		binding.second.ClientVariable->Reset();
 	}
+}
+
+void CommandManager::OnMainMenuShown(void* param)
+{
+	ExecuteQueue(ConsoleContext);
 }
 
 CommandManager::CommandManager()

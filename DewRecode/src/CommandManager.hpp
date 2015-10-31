@@ -69,6 +69,7 @@ public:
 	std::vector<SynchronizationBinding*> FindOutOfDateBindings(int peerIndex);
 
 	void OnGameLeave(void* param);
+	void OnMainMenuShown(void* param);
 
 	CommandManager();
 	std::deque<Command> List;

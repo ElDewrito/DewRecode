@@ -70,6 +70,7 @@ void DebugLog::Log(LogSeverity severity, const std::string& module, std::string 
 			outBuff << msg;
 			outBuff << temp;
 		}
+		queuedMsgs.clear();
 	}
 
 	for (auto filter : debugCommands->FiltersExclude)

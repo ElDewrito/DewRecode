@@ -25,6 +25,7 @@ public:
 	void* CreateInterface(const std::string& interfaceName, int* returnCode);
 
 	bool HasMainMenuShown() { return mainMenuHasShown; }
+	bool IsDedicated();
 
 	HWND GetGameHWND() { return Pointer(0x199C014).Read<HWND>(); }
 	Pointer GetMainTls(size_t offset = 0);

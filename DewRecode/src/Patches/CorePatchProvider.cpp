@@ -14,6 +14,7 @@ namespace
 	void ClientObjectShieldHook();
 	void GrenadeLoadoutHook();
 	void AudioMaxChannelsHook();
+	void DedicatedServerFix();
 }
 
 namespace Core
@@ -70,7 +71,8 @@ namespace Core
 			Hook("ClientObjectShieldHook", 0xB329CE, ClientObjectShieldHook, HookType::Jmp),
 
 			Hook("GrenadeLoadoutHook", 0x5A3267, GrenadeLoadoutHook, HookType::Jmp),
-			Hook("AudioMaxChannelsHook", 0x404E9C, AudioMaxChannelsHook, HookType::Jmp)
+			Hook("AudioMaxChannelsHook", 0x404E9C, AudioMaxChannelsHook, HookType::Jmp),
+			Hook("DedicatedServerFix", 0xA2E6F3, DedicatedServerFix, HookType::Jmp)
 		});
 
 		return patches;
@@ -465,6 +467,23 @@ namespace
 			push eax
 			call dword ptr [ecx] // inits fmod
 			push 0x404EA4
+			ret
+		}
+	}
+
+	__declspec(naked) void DedicatedServerFix()
+	{
+		__asm
+		{
+			cmp edi, 0xffffffff
+			jz end
+			movzx ecx, di
+			mov eax, [eax+0x40]
+			imul ecx, 0x2f08
+			mov eax, [eax+0x44]
+			mov edi, [eax+ecx+0x30]
+		end:
+			push 0xA2E709
 			ret
 		}
 	}

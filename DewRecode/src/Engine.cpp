@@ -440,6 +440,11 @@ void* Engine::CreateInterface(const std::string& interfaceName, int* returnCode)
 	return nullptr;
 }
 
+bool Engine::IsDedicated()
+{
+	return ElDorito::Instance().NetworkPatches->GetDedicatedServerMode();
+}
+
 /// <summary>
 /// Gets the IP of the server we're connected to (only works if connected through Server.Connect!)
 /// </summary>

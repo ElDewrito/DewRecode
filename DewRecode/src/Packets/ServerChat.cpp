@@ -179,8 +179,15 @@ namespace
 
 		// Don't trust the Sender field
 		auto broadcastMessage = message;
-		if (!FillInSenderName(session, peer, &broadcastMessage))
-			return false;
+		if (peer == session->MembershipInfo.LocalPeerIndex && ElDorito::Instance().Engine.IsDedicated())
+		{
+			// message came from us and we're dedicated, copy our username over
+			memset(broadcastMessage.Sender, 0, sizeof(broadcastMessage.Sender));
+			wcsncpy(broadcastMessage.Sender, L"Server", sizeof(broadcastMessage.Sender) / sizeof(broadcastMessage.Sender[0]) - 1);
+		}
+		else
+			if (!FillInSenderName(session, peer, &broadcastMessage))
+				return false;
 
 		PeerBitSet targetPeers;
 		if (!GetMessagePeers(session, peer, message, &targetPeers))

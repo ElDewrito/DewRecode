@@ -28,6 +28,18 @@ namespace
 }
 namespace Network
 {
+	NetworkPatchProvider::NetworkPatchProvider()
+	{
+		auto& patches = ElDorito::Instance().PatchManager;
+
+		PatchDedicatedServer = patches.AddPatchSet("PatchDedicatedServer", {
+			Patch("ModePatch", 0x42E600, { 0xB0, 0x01 }),
+			Patch("SyslinkPatch1", 0x52D62E, { 0xEB }),
+			Patch("SyslinkPatch2", 0x52D67A, { 0xEB }),
+			Patch("SyslinkPatch3", 0x45A8BB, { 0xEB }),
+			Patch("UICrashPatch", 0x109C5E0, { 0xC2, 0x08, 0x00 })
+		});
+	}
 	PatchSet NetworkPatchProvider::GetPatches()
 	{
 		auto versionNum = Utils::Misc::ConvertToVector<uint32_t>(Utils::Version::GetVersionInt());
@@ -57,6 +69,17 @@ namespace Network
 		});
 
 		return patches;
+	}
+
+	bool NetworkPatchProvider::SetDedicatedServerMode(bool isDedicated)
+	{
+		ElDorito::Instance().PatchManager.EnablePatchSet(PatchDedicatedServer, isDedicated);
+		return isDedicated;
+	}
+
+	bool NetworkPatchProvider::GetDedicatedServerMode()
+	{
+		return PatchDedicatedServer->Enabled;
 	}
 }
 

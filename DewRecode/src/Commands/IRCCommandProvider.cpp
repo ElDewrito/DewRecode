@@ -208,8 +208,8 @@ namespace IRC
 			message = message.substr(0, message.find("\r\n"));
 
 		std::string preparedLineForUI = bufferSplitBySpace.at(0).substr(bufferSplitBySpace.at(0).find_first_of("|") + 1, std::string::npos);
-		preparedLineForUI = preparedLineForUI.substr(0, preparedLineForUI.find_first_of("!"));
-		preparedLineForUI += ": " + message;
+		preparedLineForUI = "<" + preparedLineForUI.substr(0, preparedLineForUI.find_first_of("!"));
+		preparedLineForUI += "> " + message;
 		if (topic)
 			preparedLineForUI = "Channel topic: " + message;
 

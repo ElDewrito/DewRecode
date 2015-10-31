@@ -65,7 +65,7 @@ void ElDorito::initClasses()
 	auto forgePatchProvider = std::make_shared<Forge::ForgePatchProvider>();
 	auto gameRulesPatchProvider = std::make_shared<GameRules::GameRulesPatchProvider>();
 	InputPatches = std::make_shared<Input::InputPatchProvider>();
-	auto networkPatchProvider = std::make_shared<Network::NetworkPatchProvider>();
+	NetworkPatches = std::make_shared<Network::NetworkPatchProvider>();
 	auto playerPatchProvider = std::make_shared<Player::PlayerPatchProvider>();
 	auto scoreboardPatchProvider = std::make_shared<Scoreboard::ScoreboardPatchProvider>();
 	auto UIPatchProvider = std::make_shared<UI::UIPatchProvider>();
@@ -78,7 +78,7 @@ void ElDorito::initClasses()
 	Patches.push_back(forgePatchProvider);
 	Patches.push_back(gameRulesPatchProvider);
 	Patches.push_back(InputPatches);
-	Patches.push_back(networkPatchProvider);
+	Patches.push_back(NetworkPatches);
 	Patches.push_back(playerPatchProvider);
 	Patches.push_back(scoreboardPatchProvider);
 	Patches.push_back(UIPatchProvider);
@@ -191,6 +191,9 @@ void ElDorito::Initialize()
 			CommandManager.Execute(argname + " \"" + argvalue + "\"", CommandManager.ConsoleContext);
 		}
 	}
+
+	if (dedicated)
+		NetworkPatches->SetDedicatedServerMode(true);
 
 	Logger.Log(LogSeverity::Info, "ElDorito", "ElDewrito initialized!");
 	this->inited = true;

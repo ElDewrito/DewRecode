@@ -25,9 +25,9 @@ namespace Game
 			Command::CreateCommand("Game", "Exit", "exit", "Ends the game process", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandExit)),
 			Command::CreateCommand("Game", "Version", "version", "Displays the game's version", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandVersion)),
 			Command::CreateCommand("Game", "ForceLoad", "forceload", "Forces a map to load", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandForceLoad), { "mapname(string) The name of the map to load", "gametype(int) The gametype to load", "gamemode(int) The type of gamemode to play", }),
-			Command::CreateCommand("Game", "Map", "map", "Loads a map or map variant", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandMap), { "name(string) The internal name of the map or Forge map to load" }),
-			Command::CreateCommand("Game", "GameType", "gametype", "Loads a gametype", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandGameType), { "name(string) The internal name of the built-in gametype or custom gametype to load" }),
-			Command::CreateCommand("Game", "Start", "start", "Starts or restarts the game", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandStart))
+			Command::CreateCommand("Game", "Map", "map", "Loads a map or map variant", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandMap), { "name(string) The internal name of the map or Forge map to load" }),
+			Command::CreateCommand("Game", "GameType", "gametype", "Loads a gametype", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandGameType), { "name(string) The internal name of the built-in gametype or custom gametype to load" }),
+			Command::CreateCommand("Game", "Start", "start", "Starts or restarts the game", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStart))
 		};
 
 		return commands;
@@ -62,8 +62,6 @@ namespace Game
 		std::stringstream ss;
 		std::string ArgList((char*)Pointer(0x199C0A4)[0]);
 		std::string LocalSecureKey((char*)Pointer(0x50CCDB4 + 1));
-		std::string Xnkid;
-		std::string Xnaddr;
 		std::string Build((char*)Pointer(0x199C0F0));
 		std::string SystemID((char*)Pointer(0x199C130));
 		std::string SessionID((char*)Pointer(0x199C1D0));
@@ -75,15 +73,25 @@ namespace Game
 
 		auto& dorito = ElDorito::Instance();
 
-		dorito.Utils.BytesToHexString((char*)Pointer(0x2247b80), 0x10, Xnkid);
-		dorito.Utils.BytesToHexString((char*)Pointer(0x2247b90), 0x10, Xnaddr);
 
 		ss << std::hex << "ThreadLocalStorage: 0x" << std::hex << (size_t)(void*)dorito.Engine.GetMainTls() << std::endl;
 
 		ss << "Command line args: " << (ArgList.empty() ? "(null)" : ArgList) << std::endl;
 		ss << "Local secure key: " << (LocalSecureKey.empty() ? "(null)" : LocalSecureKey) << std::endl;
-		ss << "XNKID: " << Xnkid << std::endl;
-		ss << "XNAddr: " << Xnaddr << std::endl;
+
+		auto* session = dorito.Engine.GetActiveNetworkSession();
+		if (session && (session->IsEstablished() || session->IsHost()))
+		{
+			auto managedBase = Pointer(0x2247450);
+			Blam::Network::ManagedSession* managedSession = managedBase(session->AddressIndex * 0x608);
+
+			std::string xnkid;
+			std::string xnaddr;
+			dorito.Utils.BytesToHexString((char*)managedSession->HostAddr.Xnkid, 0x10, xnkid);
+			dorito.Utils.BytesToHexString((char*)managedSession->HostAddr.Xnaddr, 0x10, xnaddr);
+			ss << "XNKID: " << xnkid << std::endl;
+			ss << "XNAddr: " << xnaddr << std::endl;
+		}
 		ss << "Game server port: " << std::dec << Pointer(0x1860454).Read<uint32_t>() << std::endl;
 		ss << "Info server running: " << (dorito.ServerCommands->IsInfoServerRunning() ? "true" : "false") << std::endl;
 		ss << "Info server port: " << std::dec << dorito.ServerCommands->VarPort->ValueInt << std::endl;

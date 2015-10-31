@@ -11,6 +11,7 @@
 #include "Utils/Utils.hpp"
 
 #include "Patches/PlayerPropertiesExtension.hpp"
+#include "Patches/NetworkPatchProvider.hpp"
 
 #include <ElDorito/Pointer.hpp>
 #include <ElDorito/Blam/ArrayGlobal.hpp>
@@ -55,6 +56,7 @@ public:
 
 	std::vector<std::shared_ptr<PatchProvider>> Patches;
 	std::shared_ptr<Input::InputPatchProvider> InputPatches;
+	std::shared_ptr<Network::NetworkPatchProvider> NetworkPatches;
 
 	std::shared_ptr<Camera::CameraCommandProvider> CameraCommands;
 	std::shared_ptr<Debug::DebugCommandProvider> DebugCommands;

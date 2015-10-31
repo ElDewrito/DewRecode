@@ -20,6 +20,7 @@ public:
 
 	void HexStringToBytes(const std::string& in, void* const data, size_t length);
 	void BytesToHexString(void* const data, const size_t dataLength, std::string& dest);
+	bool IsNull(void* const data, const size_t dataLength);
 
 	std::string ToLower(const std::string& str);
 

@@ -31,7 +31,8 @@ namespace Server
 			Command::CreateCommand("Server", "AnnounceStats", "announcestats", "Announces the players stats to the masters at the end of the game", eCommandFlagsNone, BIND_COMMAND(this, &ServerCommandProvider::CommandAnnounceStats)),
 			Command::CreateCommand("Server", "Connect", "connect", "Begins establishing a connection to a server", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &ServerCommandProvider::CommandConnect), { "host:port The server info to connect to", "password(string) The password for the server" }),
 			Command::CreateCommand("Server", "KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandKickPlayer), { "playername/UID The name or UID of the player to kick" }),
-			Command::CreateCommand("Server", "ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandListPlayers))
+			Command::CreateCommand("Server", "ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandListPlayers)),
+			Command::CreateCommand("Server", "Ping", "ping", "Pings a server", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &ServerCommandProvider::CommandPing), { "host:port The host to ping" })
 		};
 
 		return commands;
@@ -53,11 +54,11 @@ namespace Server
 		VarMaxPlayers->ValueIntMin = 1;
 		VarMaxPlayers->ValueIntMax = 16;
 
-		VarMode = manager->Add(Command::CreateVariableInt("Server", "Mode", "mode", "Changes the game mode for the server. 0 = Xbox Live (Open Party); 1 = Xbox Live (Friends Only); 2 = Xbox Live (Invite Only); 3 = Online; 4 = Offline;", eCommandFlagsDontUpdateInitial, 4, BIND_COMMAND(this, &ServerCommandProvider::VariableModeUpdate)));
+		VarMode = manager->Add(Command::CreateVariableInt("Server", "Mode", "mode", "Changes the game mode for the server. 0 = Xbox Live (Open Party); 1 = Xbox Live (Friends Only); 2 = Xbox Live (Invite Only); 3 = Online; 4 = Offline;", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsRunOnMainMenu), 4, BIND_COMMAND(this, &ServerCommandProvider::VariableModeUpdate)));
 		VarMode->ValueIntMin = 0;
 		VarMode->ValueIntMax = 4;
 
-		VarLobbyType = manager->Add(Command::CreateVariableInt("Server", "LobbyType", "lobbytype", "Changes the lobby type for the server. 0 = Campaign; 1 = Matchmaking; 2 = Multiplayer; 3 = Forge; 4 = Theater;", eCommandFlagsDontUpdateInitial, 2, BIND_COMMAND(this, &ServerCommandProvider::VariableLobbyTypeUpdate)));
+		VarLobbyType = manager->Add(Command::CreateVariableInt("Server", "LobbyType", "lobbytype", "Changes the lobby type for the server. 0 = Campaign; 1 = Matchmaking; 2 = Multiplayer; 3 = Forge; 4 = Theater;", static_cast<CommandFlags>(eCommandFlagsDontUpdateInitial | eCommandFlagsRunOnMainMenu), 2, BIND_COMMAND(this, &ServerCommandProvider::VariableLobbyTypeUpdate)));
 		VarLobbyType->ValueIntMin = 0;
 		VarLobbyType->ValueIntMax = 4;
 
@@ -389,6 +390,9 @@ namespace Server
 		std::stringstream ss;
 		std::vector<std::string> statsEndpoints;
 		auto& dorito = ElDorito::Instance();
+
+		if (dorito.Engine.IsDedicated())
+			return; // no stats announcement for dedis
 
 		dorito.Utils.GetEndpoints(statsEndpoints, "stats");
 		if (statsEndpoints.size() <= 0)
@@ -1168,15 +1172,10 @@ namespace Server
 					std::string mapName((char*)Pointer(0x22AB018)(0x1A4));
 					std::wstring mapVariantName((wchar_t*)Pointer(0x1863ACA));
 					std::wstring variantName((wchar_t*)Pointer(0x23DAF4C));
-					std::string xnkid;
-					std::string xnaddr;
 					std::string gameVersion((char*)Pointer(0x199C0F0));
 					std::string status = "InGame";
 					std::string playerName = dorito.PlayerCommands->VarName->ValueString;
 					unsigned long maxPlayers = VarMaxPlayers->ValueInt;
-
-					dorito.Utils.BytesToHexString((char*)Pointer(0x2247b80), 0x10, xnkid);
-					dorito.Utils.BytesToHexString((char*)Pointer(0x2247b90), 0x10, xnaddr);
 
 					Pointer &gameModePtr = dorito.Engine.GetMainTls(GameGlobals::GameInfo::TLSOffset)[0](GameGlobals::GameInfo::GameMode);
 					uint32_t gameMode = gameModePtr.Read<uint32_t>();
@@ -1234,6 +1233,19 @@ namespace Server
 
 					if (authenticated)
 					{
+						std::string xnkid;
+						std::string xnaddr;
+
+						auto* session = dorito.Engine.GetActiveNetworkSession();
+						if (session && (session->IsEstablished() || session->IsHost()))
+						{
+							auto managedBase = Pointer(0x2247450);
+							Blam::Network::ManagedSession* managedSession = managedBase(session->AddressIndex * 0x608);
+
+							dorito.Utils.BytesToHexString((char*)managedSession->HostAddr.Xnkid, 0x10, xnkid);
+							dorito.Utils.BytesToHexString((char*)managedSession->HostAddr.Xnaddr, 0x10, xnaddr);
+						}
+
 						writer.Key("xnkid");
 						writer.String(xnkid.c_str());
 
@@ -1263,45 +1275,46 @@ namespace Server
 						uint32_t playerInfoBase = 0x2162E08;
 						uint32_t menuPlayerInfoBase = 0x1863B58;
 						uint32_t playerStatusBase = 0x2161808;
-						for (int i = 0; i < 16; i++)
-						{
-							uint16_t score = Pointer(playerScoresBase + (1080 * i)).Read<uint16_t>();
-							uint16_t kills = Pointer(playerScoresBase + (1080 * i) + 4).Read<uint16_t>();
-							uint16_t assists = Pointer(playerScoresBase + (1080 * i) + 6).Read<uint16_t>();
-							uint16_t deaths = Pointer(playerScoresBase + (1080 * i) + 8).Read<uint16_t>();
+						if (GetNumPlayers() > 0)
+							for (int i = 0; i < 16; i++)
+							{
+								uint16_t score = Pointer(playerScoresBase + (1080 * i)).Read<uint16_t>();
+								uint16_t kills = Pointer(playerScoresBase + (1080 * i) + 4).Read<uint16_t>();
+								uint16_t assists = Pointer(playerScoresBase + (1080 * i) + 6).Read<uint16_t>();
+								uint16_t deaths = Pointer(playerScoresBase + (1080 * i) + 8).Read<uint16_t>();
 
-							wchar_t* name = Pointer(playerInfoBase + (5696 * i));
-							std::string nameStr = dorito.Utils.ThinString(name);
+								wchar_t* name = Pointer(playerInfoBase + (5696 * i));
+								std::string nameStr = dorito.Utils.ThinString(name);
 
-							wchar_t* menuName = Pointer(menuPlayerInfoBase + (0x1628 * i));
-							std::string menuNameStr = dorito.Utils.ThinString(menuName);
+								wchar_t* menuName = Pointer(menuPlayerInfoBase + (0x1628 * i));
+								std::string menuNameStr = dorito.Utils.ThinString(menuName);
 
-							uint32_t ipAddr = Pointer(playerInfoBase + (5696 * i) - 88).Read<uint32_t>();
-							uint16_t team = Pointer(playerInfoBase + (5696 * i) + 32).Read<uint16_t>();
-							uint16_t num7 = Pointer(playerInfoBase + (5696 * i) + 36).Read<uint16_t>();
+								uint32_t ipAddr = Pointer(playerInfoBase + (5696 * i) - 88).Read<uint32_t>();
+								uint16_t team = Pointer(playerInfoBase + (5696 * i) + 32).Read<uint16_t>();
+								uint16_t num7 = Pointer(playerInfoBase + (5696 * i) + 36).Read<uint16_t>();
 
-							uint8_t alive = Pointer(playerStatusBase + (176 * i)).Read<uint8_t>();
+								uint8_t alive = Pointer(playerStatusBase + (176 * i)).Read<uint8_t>();
 
-							if (menuNameStr.empty() && nameStr.empty() && ipAddr == 0)
-								continue;
+								if (menuNameStr.empty() && nameStr.empty() && ipAddr == 0)
+									continue;
 
-							writer.StartObject();
-							writer.Key("name");
-							writer.String(menuNameStr.c_str());
-							writer.Key("score");
-							writer.Int(score);
-							writer.Key("kills");
-							writer.Int(kills);
-							writer.Key("assists");
-							writer.Int(assists);
-							writer.Key("deaths");
-							writer.Int(deaths);
-							writer.Key("team");
-							writer.Int(team);
-							writer.Key("isAlive");
-							writer.Bool(alive == 1);
-							writer.EndObject();
-						}
+								writer.StartObject();
+								writer.Key("name");
+								writer.String(menuNameStr.c_str());
+								writer.Key("score");
+								writer.Int(score);
+								writer.Key("kills");
+								writer.Int(kills);
+								writer.Key("assists");
+								writer.Int(assists);
+								writer.Key("deaths");
+								writer.Int(deaths);
+								writer.Key("team");
+								writer.Int(team);
+								writer.Key("isAlive");
+								writer.Bool(alive == 1);
+								writer.EndObject();
+							}
 						writer.EndArray();
 					}
 					else
