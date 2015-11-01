@@ -12,6 +12,10 @@ namespace ChatCommands
 		VarRTVEnabled->ValueIntMin = 0;
 		VarRTVEnabled->ValueIntMax = 1;
 
-		VarVotingTime = manager->Add(Command::CreateVariableInt("Voting", "VotingTime", "voting_time", "How many seconds voting should last for", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsReplicated), 30));		
+		VarRTVPercent = manager->Add(Command::CreateVariableInt("Voting", "RTVPercent", "voting_rtvpercent", "The percent of connected players needed for RTV to trigger", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsReplicated), 75));
+		VarRTVPercent->ValueIntMin = 0;
+		VarRTVPercent->ValueIntMax = 100;
+
+		VarVotingTime = manager->Add(Command::CreateVariableInt("Voting", "VotingTime", "voting_time", "How many seconds voting should last for", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsReplicated), 60));		
 	}
 }

@@ -8,6 +8,7 @@ namespace ChatCommands
 	public:
 		Command* VarEnabled;
 		Command* VarRTVEnabled;
+		Command* VarRTVPercent;
 		Command* VarVotingTime;
 
 		virtual void RegisterVariables(ICommandManager* manager) override;

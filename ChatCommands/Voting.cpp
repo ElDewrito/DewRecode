@@ -390,8 +390,10 @@ namespace ChatCommands
 		if (!session || !session->IsHost())
 			return 0;
 
-		int connected = engine->GetNumPlayers();
-		int needed = connected / 2;
+		float connected = (float)engine->GetNumPlayers();
+		float multi = (float)votingCmds->VarRTVPercent->ValueInt / 100.f;
+		int needed = (int)(connected * multi);
+		
 		if (needed < 1 || needed > 16)
 			needed = 1;
 
