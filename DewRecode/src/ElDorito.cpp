@@ -117,7 +117,7 @@ void ElDorito::initClasses()
 	UpdaterCommands = std::make_shared<Updater::UpdaterCommandProvider>();
 	initCommandProvider(UpdaterCommands);
 
-	//UserInterface = std::make_shared<UI::UserInterface>(&Engine);
+	loadPlugins();
 
 	initPatchProviders();
 
@@ -134,7 +134,6 @@ void ElDorito::Initialize()
 	initClasses();
 
 	Logger.Log(LogSeverity::Info, "ElDorito", "ElDewrito | Version: " + Utils::Version::GetVersionString() + " | Build Date: " __DATE__);
-	loadPlugins();
 
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Console.FinishAddCommands()...");
 	CommandManager.FinishAdd(); // call this so that the default values can be applied to the game
@@ -244,14 +243,22 @@ void ElDorito::loadPlugins()
 		}
 
 		Logger.Log(LogSeverity::Debug, "Plugins", "Initing \"%s\"", info->Name);
-		if (!InitializePlugin())
+		std::vector<std::shared_ptr<CommandProvider>> cmdProviders;
+		std::vector<std::shared_ptr<PatchProvider>> patchProviders;
+		if (!InitializePlugin(&cmdProviders, &patchProviders))
 		{
 			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Initialization failed!", path.c_str());
 			FreeLibrary(dllHandle);
 			continue;
 		}
 
+		for (auto cmd : cmdProviders)
+			initCommandProvider(cmd);
+
+		for (auto patch : patchProviders)
+			Patches.push_back(patch);
+
 		plugins.insert(std::pair<std::string, HMODULE>(path, dllHandle));
-		Logger.Log(LogSeverity::Info, "Plugins", "Loaded \"%s\"", info->Name);
+		Logger.Log(LogSeverity::Info, "Plugins", "Loaded \"%s\" v%s by %s", info->Name, info->FriendlyVersion, info->Author);
 	}
 }

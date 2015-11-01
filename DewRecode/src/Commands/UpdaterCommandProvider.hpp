@@ -10,6 +10,7 @@ namespace Updater
 		Command* VarBranch;
 		Command* VarCheckOnLaunch;
 
+		virtual std::vector<Command> UpdaterCommandProvider::GetCommands() override;
 		virtual void RegisterVariables(ICommandManager* manager) override;
 		virtual void RegisterCallbacks(IEngine* engine) override;
 

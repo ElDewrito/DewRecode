@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <ElDorito/ElDorito.hpp>
-#include "ModuleExample.hpp"
+#include "ExampleCommandProvider.hpp"
 
 #define PLUGIN_API extern "C" __declspec(dllexport)
 
@@ -18,23 +18,20 @@ ElDoritoPluginInfo ourPluginInfo =
 	"0.1"
 };
 
-Modules::ModuleExample test;
+std::shared_ptr<Example::ExampleCommandProvider> exampleCmds;
 
 PLUGIN_API ElDoritoPluginInfo* __cdecl GetPluginInfo()
 {
 	return &ourPluginInfo;
 }
 
-PLUGIN_API bool __cdecl InitializePlugin()
+PLUGIN_API bool __cdecl InitializePlugin(std::vector<std::shared_ptr<CommandProvider>>* commandProviders, std::vector<std::shared_ptr<PatchProvider>>* patchProviders)
 {
 	int version = GetDoritoVersion();
 
-	ICommands* commands = reinterpret_cast<ICommands*>(CreateInterface(COMMANDS_INTERFACE_LATEST, &version));
-	commands->Execute("Command001-plugin");
+	exampleCmds = std::make_shared<Example::ExampleCommandProvider>();
+	commandProviders->push_back(exampleCmds);
 
-	IPatchManager* patches = reinterpret_cast<IPatchManager*>(CreateInterface(PATCHMANAGER_INTERFACE_LATEST, &version));
-
-	auto ret = commands->Execute("Help");
 	return true;
 }
 

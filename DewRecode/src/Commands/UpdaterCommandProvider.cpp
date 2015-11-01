@@ -8,6 +8,17 @@
 namespace Updater
 {
 	const std::string updatePublicKey = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA+F9s5IpIvH/lpFgcvqACianoqFGAOo0nPJTjfpFdhbYQinW5L5RLSJm8l9Q1qvyUTLoIWMLvz3Kd4eDfquoDFywj/N8bCQXYgitroLCBIiuZ8BwRlhTAYt0MNW5/QHr8RK90HbmSOWF7WoWFndHk+9bdTpdeLpxB7A1vpER7qKVWDU8zziYOXn+/87WU8Z5DvPQpJr1z9W5CBsAjL8ATkMaHiSbqbUituNt1lz2dXl33FUz6EBYyOzPDLrpY6a7sZu7FjgWG9ie4WIOt8XcTSO9Jn1AnGvpCaDyO2HRlMbioSDSR+U1nqk3nkqjWI/4H8DlEQxjbBL7VtmFiFdfkm2Ae3bg0QJKOlsmXg4jX+l3fWKoC5eZoJpexK4fUQmnmkGftw2ZHbUWwUYU8E3XBp97YaXsIKQjcsBrZROLe1E2EPKpRO8RlHdYwwFwSvW1Yv3Ua98Bz8DDyiBzpdXx9sgFaYMzeuNt2uGV2/pCbhugdJ0Di62QBfRKXty1GEFtmPK8+Jrv1OAzVaBXJ7U4AON104BA1pXVfh0QWTfyfB6fpHoVmSQzI7hYdyY9x10JZJzoi/4Y6Bj4lOj4IF7BTxcToZCUopRdFsvbj1otEeya60K5LEuL40uhZK0F3tPi6nzH+NMzVZGRQCz2zgjf5oFbs7xGYfxw5+p3toUcT5csCAwEAAQ==";
+	
+	std::vector<Command> UpdaterCommandProvider::GetCommands()
+	{
+		std::vector<Command> commands =
+		{
+			Command::CreateCommand("Updater", "Check", "update_check", "Checks the update servers for updates.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandCheck)),
+			Command::CreateCommand("Updater", "SignManifest", "update_sign", "Signs an update manifest with the given private key.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandSignManifest), { "[filePath] The file to sign", "[keyPath] The private key to sign with", "[writeToSigFile:bool] If true, writes signature to filepath.sig" })
+		};
+
+		return commands;
+	}
 
 	void UpdaterCommandProvider::RegisterVariables(ICommandManager* manager)
 	{
@@ -15,9 +26,6 @@ namespace Updater
 		VarCheckOnLaunch = manager->Add(Command::CreateVariableInt("Updater", "CheckOnLaunch", "autoupdate", "Check for updates on game launch.", eCommandFlagsArchived, 1));
 		VarCheckOnLaunch->ValueIntMin = 0;
 		VarCheckOnLaunch->ValueIntMax = 1;
-
-		manager->Add(Command::CreateCommand("Updater", "Check", "update_check", "Checks the update servers for updates.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandCheck)));
-		manager->Add(Command::CreateCommand("Updater", "SignManifest", "update_sign", "Signs an update manifest with the given private key.", eCommandFlagsNone, BIND_COMMAND(this, &UpdaterCommandProvider::CommandSignManifest), { "[filePath] The file to sign", "[keyPath] The private key to sign with", "[writeToSigFile:bool] If true, writes signature to filepath.sig" }));
 	}
 
 	void UpdaterCommandProvider::RegisterCallbacks(IEngine* engine)

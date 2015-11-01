@@ -4,6 +4,8 @@
 
 #include <Windows.h>
 #include <memory>
+#include <vector>
+
 #ifdef DORITO_EXPORTS
 #define DORITO_API extern "C" __declspec(dllexport)
 #define DORITO_CPP_API __declspec(dllexport)
@@ -21,9 +23,12 @@ struct ElDoritoPluginInfo
 	char* FriendlyVersion;
 };
 
+class CommandProvider;
+class PatchProvider;
+
 /* exports from plugin dlls */
 typedef ElDoritoPluginInfo*(__cdecl *GetPluginInfoPtr)();
-typedef bool(__cdecl *InitializePluginPtr)();
+typedef bool(__cdecl *InitializePluginPtr)(std::vector<std::shared_ptr<CommandProvider>>* commandProviders, std::vector<std::shared_ptr<PatchProvider>>* patchProviders);
 
 /* exports from eldewrito */
 DORITO_API DWORD GetGameThreadID();
@@ -44,3 +49,5 @@ DORITO_API void* CreateInterface(const char* name, int* returnCode);
 #include "IUtils.hpp"
 #include "UI/IUserInterface.hpp"
 #include "UI/UIWindow.hpp"
+#include "CommandProvider.hpp"
+#include "PatchProvider.hpp"

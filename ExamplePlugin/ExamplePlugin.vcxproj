@@ -89,10 +89,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="ModuleExample.cpp" />
+    <ClCompile Include="ExampleCommandProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ModuleExample.hpp" />
+    <ClInclude Include="ExampleCommandProvider.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

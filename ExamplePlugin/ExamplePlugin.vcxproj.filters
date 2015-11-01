@@ -18,12 +18,12 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ModuleExample.cpp">
+    <ClCompile Include="ExampleCommandProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ModuleExample.hpp">
+    <ClInclude Include="ExampleCommandProvider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
