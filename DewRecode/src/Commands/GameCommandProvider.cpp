@@ -385,6 +385,9 @@ namespace Game
 
 	bool GameCommandProvider::Start()
 	{
+		if (ElDorito::Instance().Engine.GetNumPlayers() <= 0)
+			return false; // no players in lobby, game won't start
+
 		typedef bool(__thiscall *SetSessionModePtr)(void* thisptr, int mode);
 		auto SetSessionMode = reinterpret_cast<SetSessionModePtr>(0x459A40);
 

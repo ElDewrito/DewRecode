@@ -12,10 +12,14 @@ namespace ChatCommands
 
 		time_t voteTimeStarted = 0;
 		time_t lastTally = 0;
+		//bool inGame = false;
+		Blam::Network::LifeCycleState lifeCycleState;
 
 		IEngine* engine;
 		IUtils* utils;
 		ICommandManager* commands;
+
+		std::string nextMap;
 
 		std::shared_ptr<VotingCommandProvider> votingCmds;
 
@@ -23,6 +27,7 @@ namespace ChatCommands
 		Voting(std::shared_ptr<VotingCommandProvider> votingCmds);
 
 		void OnTick(const std::chrono::duration<double>& deltaTime);
+		void CallbackLifeCycleStateChanged(void* param);
 
 		int NumVoted();
 		int NumNeeded();

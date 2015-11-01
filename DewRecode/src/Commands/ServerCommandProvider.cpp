@@ -1072,8 +1072,8 @@ namespace Server
 
 	void ServerCommandProvider::CallbackLifeCycleStateChanged(void* param)
 	{
-		auto* state = (Blam::Network::LifeCycleState*)param;
-		switch (*state)
+		auto state = *(Blam::Network::LifeCycleState*)param;
+		switch (state)
 		{
 		case Blam::Network::LifeCycleState::None:
 			// Switch to global chat on the main menu

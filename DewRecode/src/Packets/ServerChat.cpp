@@ -183,7 +183,7 @@ namespace
 		{
 			// message came from us and we're dedicated, copy our username over
 			memset(broadcastMessage.Sender, 0, sizeof(broadcastMessage.Sender));
-			wcsncpy(broadcastMessage.Sender, L"<SERVER>", sizeof(broadcastMessage.Sender) / sizeof(broadcastMessage.Sender[0]) - 1);
+			wcsncpy(broadcastMessage.Sender, L"SERVER", sizeof(broadcastMessage.Sender) / sizeof(broadcastMessage.Sender[0]) - 1);
 		}
 		else
 			if (!FillInSenderName(session, peer, &broadcastMessage))

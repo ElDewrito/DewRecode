@@ -22,6 +22,7 @@ namespace ChatCommands
 			throw std::runtime_error("Failed to create command manager interface");
 
 		engine->OnTick(BIND_CALLBACK(this, &Voting::OnTick));
+		engine->OnEvent("Core", "Server.LifeCycleStateChanged", BIND_CALLBACK(this, &Voting::CallbackLifeCycleStateChanged));
 	}
 
 	void Voting::OnTick(const std::chrono::duration<double>& deltaTime)
@@ -46,6 +47,24 @@ namespace ChatCommands
 
 		if (elapsed < voteTimeSecs && !(elapsedTally >= secsBetweenTallys))
 			return;
+
+		if (!nextMap.empty())
+		{
+			if (elapsed >= voteTimeSecs + 5)
+			{
+				if (lifeCycleState == Blam::Network::LifeCycleState::InGame || lifeCycleState == Blam::Network::LifeCycleState::StartGame)
+					commands->Execute("Game.Stop", commands->GetLogFileContext()); // return to lobby and let the life cycle handler change the map
+				else
+				{
+					commands->Execute("Game.Map " + nextMap, commands->GetLogFileContext());
+					commands->Execute("Game.Start", commands->GetLogFileContext());
+					nextMap = "";
+				}
+
+				voteTimeStarted = 0;
+			}
+			return;
+		}
 
 		std::map<std::string, int> totals;
 		for (auto v : mapVotes)
@@ -91,15 +110,24 @@ namespace ChatCommands
 		if (winner == "")
 		{
 			engine->SendChatServerMessage("Voting ended, map extended.", peers);
+			voteTimeStarted = 0;
 		}
 		else
 		{
-			engine->SendChatServerMessage("Voting ended! Changing map to " + winner + "...", peers);
-			commands->Execute("Game.Map " + winner, commands->GetLogFileContext());
+			engine->SendChatServerMessage("Voting ended! Changing map to " + winner + " in 5 seconds...", peers);
+			nextMap = winner;
 		}
+	}
 
-		voteTimeStarted = 0;
-
+	void Voting::CallbackLifeCycleStateChanged(void* param)
+	{
+		lifeCycleState = *(Blam::Network::LifeCycleState*)param;
+		if (lifeCycleState == Blam::Network::LifeCycleState::PreGame && !nextMap.empty())
+		{
+			commands->Execute("Game.Map " + nextMap, commands->GetLogFileContext());
+			commands->Execute("Game.Start", commands->GetLogFileContext());
+			nextMap = "";
+		}
 	}
 
 	bool Voting::HostMessageReceived(Blam::Network::Session *session, int peer, const Server::Chat::ChatMessage &message)
@@ -130,7 +158,7 @@ namespace ChatCommands
 
 		int retCode = 0;
 		
-		engine->SendChatServerMessage("Map vote started! Type /vote [mapname] to vote for a map!", peers);
+		engine->SendChatServerMessage("Map vote started! Type /vote [mapname] to vote for a map.", peers);
 	}
 
 	bool Voting::CommandVote(Blam::Network::Session *session, int peer, const std::string& body)
@@ -230,7 +258,7 @@ namespace ChatCommands
 
 		if (voteTimeStarted != 0)
 		{
-			engine->SendChatDirectedServerMessage("Can't rtv, voting has already started or is over", peer);
+			engine->SendChatDirectedServerMessage("Can't rtv, voting is already in progress!", peer);
 			return true;
 		}
 
@@ -271,9 +299,11 @@ namespace ChatCommands
 			engine->SendChatServerMessage("Rock the Vote passed! Starting map vote...", peers);
 
 			time(&voteTimeStarted);
+			lastTally = 0;
 			wantsVote.clear();
 			mapVotes.clear();
 			hasVoted.clear();
+			nextMap.clear();
 
 			SendVoteText();
 		}
@@ -287,7 +317,7 @@ namespace ChatCommands
 
 		if (voteTimeStarted != 0)
 		{
-			engine->SendChatDirectedServerMessage("Can't unrtv, voting has already started or is over", peer);
+			engine->SendChatDirectedServerMessage("Can't unrtv, voting is already in progress!", peer);
 			return true;
 		}
 
