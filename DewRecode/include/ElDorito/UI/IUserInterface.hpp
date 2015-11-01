@@ -19,6 +19,7 @@ public:
 	virtual bool IsShown() = 0;
 	virtual bool ShowUI(bool show) = 0;
 	virtual bool ShowChat(bool show) = 0;
+	virtual bool SwitchChat(bool globalChat) = 0;
 	virtual bool ShowConsole(bool show) = 0;
 	virtual bool ShowMessageBox(const std::string& title, const std::string& message, const std::string& tag, std::vector<std::string> choices, MsgBoxCallback callback) = 0;
 	virtual void WriteToConsole(const std::string& text) = 0;

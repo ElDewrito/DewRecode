@@ -25,6 +25,7 @@ namespace UI
 
 		bool SetVisible(bool visible) { isVisible = visible; return visible; }
 		bool GetVisible() { return isVisible; }
+		bool SwitchChat(bool globalChat) { globalChatSelected = globalChat; return globalChat; }
 
 		void AddToChat(const std::string& text, bool globalChat);
 		void ClearChat(bool globalChat);

@@ -176,7 +176,7 @@ namespace UI
 		if (ImGui::IsItemHovered() || (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
 			ImGui::SetKeyboardFocusHere(-1);
 
-		static int e = 0;
+		int e = globalChatSelected ? 0 : 1;
 		if (ImGui::RadioButton("Global Chat", &e, 0))
 			globalChatSelected = true;
 

@@ -51,6 +51,7 @@ namespace UI
 		bool IsShown() { return uiShown; }
 		bool ShowUI(bool show);
 		bool ShowChat(bool show);
+		bool SwitchChat(bool globalChat);
 		bool ShowConsole(bool show);
 		bool ShowMessageBox(const std::string& title, const std::string& message, const std::string& tag, std::vector<std::string> choices, MsgBoxCallback callback);
 		void WriteToConsole(const std::string& text);

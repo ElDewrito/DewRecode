@@ -73,7 +73,6 @@ namespace Game
 
 		auto& dorito = ElDorito::Instance();
 
-
 		ss << std::hex << "ThreadLocalStorage: 0x" << std::hex << (size_t)(void*)dorito.Engine.GetMainTls() << std::endl;
 
 		ss << "Command line args: " << (ArgList.empty() ? "(null)" : ArgList) << std::endl;

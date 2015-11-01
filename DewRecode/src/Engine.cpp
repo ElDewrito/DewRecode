@@ -110,11 +110,11 @@ namespace
 		__asm
 		{
 			mov eax, 0xA20370
-				call eax
-				add esp, 8
-				call D3D9Device_InitHookImpl
-				push 0x42E5A0
-				ret
+			call eax
+			add esp, 8
+			call D3D9Device_InitHookImpl
+			push 0x42E5A0
+			ret
 		}
 	}
 

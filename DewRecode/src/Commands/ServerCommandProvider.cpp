@@ -1078,16 +1078,18 @@ namespace Server
 	void ServerCommandProvider::CallbackLifeCycleStateChanged(void* param)
 	{
 		auto* state = (Blam::Network::LifeCycleState*)param;
-		/*switch (*state)
+		switch (*state)
 		{
-		case Blam::Network::LifeCycleState::None
+		case Blam::Network::LifeCycleState::None:
 			// Switch to global chat on the main menu
-			//break;
+			ElDorito::Instance().UserInterface.SwitchChat(true);
+			break;
 		case Blam::Network::LifeCycleState::PreGame:
 		case Blam::Network::LifeCycleState::InGame:
 			// Switch to game chat when joining a game
-			//break;
-		}*/
+			ElDorito::Instance().UserInterface.SwitchChat(false);
+			break;
+		}
 	}
 
 	LRESULT ServerCommandProvider::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

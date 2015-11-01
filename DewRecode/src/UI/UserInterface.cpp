@@ -389,6 +389,12 @@ namespace UI
 		return show;
 	}
 
+	bool UserInterface::SwitchChat(bool globalChat)
+	{
+		chat->SwitchChat(globalChat);
+		return globalChat;
+	}
+
 	bool UserInterface::ShowConsole(bool show)
 	{
 		console->SetVisible(show);
