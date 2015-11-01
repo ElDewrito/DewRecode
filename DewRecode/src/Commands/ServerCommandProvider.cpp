@@ -177,8 +177,10 @@ namespace Server
 		rconSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		SOCKADDR_IN bindAddr;
 		bindAddr.sin_family = AF_INET;
-		bindAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-		//bindAddr.sin_port = htons(2448);
+		if (!VarRconPassword->ValueString.empty())
+			bindAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+		else
+			bindAddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 		unsigned long rconPort = VarRconPort->ValueInt;
 
@@ -1077,12 +1079,12 @@ namespace Server
 		{
 		case Blam::Network::LifeCycleState::None:
 			// Switch to global chat on the main menu
-			ElDorito::Instance().UserInterface.SwitchChat(true);
+			ElDorito::Instance().UserInterface.SwitchToTab(ChatWindowTab::GlobalChat);
 			break;
 		case Blam::Network::LifeCycleState::PreGame:
 		case Blam::Network::LifeCycleState::InGame:
 			// Switch to game chat when joining a game
-			ElDorito::Instance().UserInterface.SwitchChat(false);
+			ElDorito::Instance().UserInterface.SwitchToTab(ChatWindowTab::GameChat);
 			break;
 		}
 	}
@@ -1098,7 +1100,7 @@ namespace Server
 		{
 			time_t curTime;
 			time(&curTime);
-			if (curTime - lastAnnounce > serverContactTimeLimit) // re-announce every "serverContactTimeLimit" seconds
+			if (curTime - lastAnnounce > serverContactTimeLimit) // re-announce every "serverContactTimeLimit" seconds (TODO: move this to OnTick)
 			{
 				lastAnnounce = curTime;
 				AnnounceServer();

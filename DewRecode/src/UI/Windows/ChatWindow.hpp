@@ -11,24 +11,25 @@ namespace UI
 		char inputBuf[256];
 		std::vector<std::string> globalChatItems;
 		std::vector<std::string> gameChatItems;
+		std::vector<std::string> rconItems;
+
 		bool scrollToBottom;
 		std::vector<std::string> history;
 		int historyPos;    // -1: new line, 0..History.Size-1 browsing history.
-		bool globalChatSelected = true;
-
-		//CommandContext& context;
+		ChatWindowTab selectedTab = ChatWindowTab::GlobalChat;
 
 	public:
-		ChatWindow();// CommandContext& context);
+		ChatWindow();
 
 		void Draw();
 
 		bool SetVisible(bool visible) { isVisible = visible; return visible; }
 		bool GetVisible() { return isVisible; }
-		bool SwitchChat(bool globalChat) { globalChatSelected = globalChat; return globalChat; }
 
-		void AddToChat(const std::string& text, bool globalChat);
-		void ClearChat(bool globalChat);
+		ChatWindowTab SwitchToTab(ChatWindowTab tab) { selectedTab = tab; return selectedTab; }
+		void AddToChat(const std::string& text, ChatWindowTab tab);
+		void ClearChat(ChatWindowTab tab);
+
 		int TextEditCallback(ImGuiTextEditCallbackData* data);
 	};
 }

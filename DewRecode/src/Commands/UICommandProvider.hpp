@@ -16,7 +16,7 @@ namespace UI
 		virtual std::vector<Command> GetCommands() override;
 
 		bool CommandShowChat(const std::vector<std::string>& Arguments, CommandContext& context);
-		void ShowChat(bool show);
+		void ShowChat(bool show, const std::string& text);
 
 		bool CommandShowConsole(const std::vector<std::string>& Arguments, CommandContext& context);
 		void ShowConsole(bool show);

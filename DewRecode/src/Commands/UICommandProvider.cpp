@@ -24,18 +24,22 @@ namespace UI
 	bool UICommandProvider::CommandShowChat(const std::vector<std::string>& Arguments, CommandContext& context)
 	{
 		bool show = true;
+		std::string text = "";
 		if (Arguments.size() > 0)
 			if (Arguments[0] == "false" || Arguments[0] == "no" || Arguments[0] == "0")
 				show = false;
+			else
+				text = Arguments[0];
 
-		ShowChat(show);
-
+		ShowChat(show, text);
 		return true;
 	}
 
-	void UICommandProvider::ShowChat(bool show)
+	void UICommandProvider::ShowChat(bool show, const std::string& text)
 	{
-		ElDorito::Instance().UserInterface.ShowChat(show);
+		auto& dorito = ElDorito::Instance();
+		// TODO: set textbox value to text
+		dorito.UserInterface.ShowChat(show);
 	}
 
 	bool UICommandProvider::CommandShowConsole(const std::vector<std::string>& Arguments, CommandContext& context)

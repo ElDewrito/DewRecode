@@ -6,6 +6,13 @@
 
 typedef std::function<void(const std::string& boxTag, const std::string& result)> MsgBoxCallback;
 
+enum class ChatWindowTab
+{
+	GlobalChat,
+	GameChat,
+	Rcon,
+	Count
+};
 
 /*
 if you want to make changes to this interface create a new IUtils002 class and make them there, then edit Utils class to inherit from the new class + this older one
@@ -19,11 +26,11 @@ public:
 	virtual bool IsShown() = 0;
 	virtual bool ShowUI(bool show) = 0;
 	virtual bool ShowChat(bool show) = 0;
-	virtual bool SwitchChat(bool globalChat) = 0;
 	virtual bool ShowConsole(bool show) = 0;
 	virtual bool ShowMessageBox(const std::string& title, const std::string& message, const std::string& tag, std::vector<std::string> choices, MsgBoxCallback callback) = 0;
 	virtual void WriteToConsole(const std::string& text) = 0;
-	virtual void AddToChat(const std::string& text, bool globalChat) = 0;
+	virtual void AddToChat(const std::string& text, ChatWindowTab tab) = 0;
+	virtual ChatWindowTab SwitchToTab(ChatWindowTab tab) = 0;
 };
 
 #define USERINTERFACE_INTERFACE_VERSION001 "UserInterface001"

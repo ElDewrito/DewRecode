@@ -100,14 +100,14 @@ namespace IRC
 		{
 			if (i >= 2)
 			{
-				dorito.UserInterface.AddToChat("(Failed to connect to IRC!)", true);
+				dorito.UserInterface.AddToChat("(Failed to connect to IRC!)", ChatWindowTab::GlobalChat);
 				closesocket(winSocket);
 				connected = false;
 				return;
 			}
 			else
 			{
-				dorito.UserInterface.AddToChat("(Failed to connect to IRC, retrying in 5 seconds...)", true);
+				dorito.UserInterface.AddToChat("(Failed to connect to IRC, retrying in 5 seconds...)", ChatWindowTab::GlobalChat);
 				Sleep(5000);
 			}
 		}
@@ -118,12 +118,12 @@ namespace IRC
 
 			if (i >= 2)
 			{
-				dorito.UserInterface.AddToChat("(Failed to run IRC loop!)", true);
+				dorito.UserInterface.AddToChat("(Failed to run IRC loop!)", ChatWindowTab::GlobalChat);
 				break;
 			}
 			else
 			{
-				dorito.UserInterface.AddToChat("(Failed to run IRC loop, retrying in 5 seconds...)", true);
+				dorito.UserInterface.AddToChat("(Failed to run IRC loop, retrying in 5 seconds...)", ChatWindowTab::GlobalChat);
 				Sleep(5000);
 			}
 		}
@@ -145,13 +145,13 @@ namespace IRC
 
 		if (retVal = getaddrinfo(VarServer->ValueString.c_str(), VarServerPort->ValueString.c_str(), &hints, &ai))
 		{
-			dorito.UserInterface.AddToChat("(IRC GAI error: " + std::string(gai_strerrorA(retVal)) + " (" + std::to_string(retVal) + "/" + std::to_string(WSAGetLastError()) + "))", true);
+			dorito.UserInterface.AddToChat("(IRC GAI error: " + std::string(gai_strerrorA(retVal)) + " (" + std::to_string(retVal) + "/" + std::to_string(WSAGetLastError()) + "))", ChatWindowTab::GlobalChat);
 			return false;
 		}
 		winSocket = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
 		if (retVal = connect(winSocket, ai->ai_addr, ai->ai_addrlen))
 		{
-			dorito.UserInterface.AddToChat("(IRC connect error: " + std::string(gai_strerrorA(retVal)) + " (" + std::to_string(retVal) + "/" + std::to_string(WSAGetLastError()) + "))", true);
+			dorito.UserInterface.AddToChat("(IRC connect error: " + std::string(gai_strerrorA(retVal)) + " (" + std::to_string(retVal) + "/" + std::to_string(WSAGetLastError()) + "))", ChatWindowTab::GlobalChat);
 			return false;
 		}
 		freeaddrinfo(ai);
@@ -213,7 +213,7 @@ namespace IRC
 		if (topic)
 			preparedLineForUI = "Channel topic: " + message;
 
-		ElDorito::Instance().UserInterface.AddToChat(preparedLineForUI, true);
+		ElDorito::Instance().UserInterface.AddToChat(preparedLineForUI, ChatWindowTab::GlobalChat);
 	}
 
 	std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems, bool keepDelimiter)
@@ -276,7 +276,7 @@ namespace IRC
 				if (!strncmp(bufferSplitBySpace.at(1).c_str(), "001", 3)) // received welcome msg
 				{
 					ChannelJoin(VarGlobalChannel->ValueString);
-					dorito.UserInterface.AddToChat("(Connected to global chat!)", true);
+					dorito.UserInterface.AddToChat("(Connected to global chat!)", ChatWindowTab::GlobalChat);
 				}
 				else if (!strncmp(bufferSplitBySpace.at(1).c_str(), "332", 3)) // received channel topic
 				{
@@ -290,7 +290,7 @@ namespace IRC
 				}
 				else if (bufferSplitByNewLines[i].find("Erroneous Nickname") != std::string::npos)
 				{
-					dorito.UserInterface.AddToChat("(Global chat error: Invalid username)", true);
+					dorito.UserInterface.AddToChat("(Global chat error: Invalid username)", ChatWindowTab::GlobalChat);
 				}
 			}
 		}
@@ -298,6 +298,6 @@ namespace IRC
 		int nError = WSAGetLastError();
 		std::string errorString("Winsock error code: ");
 		errorString.append(std::to_string(nError));
-		dorito.UserInterface.AddToChat("(" + errorString + ")", true);
+		dorito.UserInterface.AddToChat("(" + errorString + ")", ChatWindowTab::GlobalChat);
 	}
 }

@@ -389,10 +389,9 @@ namespace UI
 		return show;
 	}
 
-	bool UserInterface::SwitchChat(bool globalChat)
+	ChatWindowTab UserInterface::SwitchToTab(ChatWindowTab tab)
 	{
-		chat->SwitchChat(globalChat);
-		return globalChat;
+		return chat->SwitchToTab(tab);
 	}
 
 	bool UserInterface::ShowConsole(bool show)
@@ -428,10 +427,10 @@ namespace UI
 			console->AddToLog(text);
 	}
 
-	void UserInterface::AddToChat(const std::string& text, bool globalChat)
+	void UserInterface::AddToChat(const std::string& text, ChatWindowTab tab)
 	{
 		if (chat)
-			chat->AddToChat(text, globalChat);
+			chat->AddToChat(text, tab);
 	}
 
 	bool UserInterface::ShowUI(bool show)
