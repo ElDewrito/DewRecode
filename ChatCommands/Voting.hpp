@@ -1,6 +1,7 @@
 #pragma once
 #include <ElDorito/ElDorito.hpp>
 #include <map>
+#include "VotingCommandProvider.hpp"
 namespace ChatCommands
 {
 	class Voting : public Server::Chat::ChatHandler
@@ -16,9 +17,10 @@ namespace ChatCommands
 		IUtils* utils;
 		ICommandManager* commands;
 
-	public:
-		Voting();
+		std::shared_ptr<VotingCommandProvider> votingCmds;
 
+	public:
+		Voting(std::shared_ptr<VotingCommandProvider> votingCmds);
 
 		void OnTick(const std::chrono::duration<double>& deltaTime);
 

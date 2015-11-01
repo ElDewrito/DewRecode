@@ -2,11 +2,12 @@
 
 namespace ChatCommands
 {
-	const int votingTimeSeconds = 30;
 	const int secsBetweenTallys = 10;
 
-	Voting::Voting()
+	Voting::Voting(std::shared_ptr<VotingCommandProvider> votingCmds)
 	{
+		this->votingCmds = votingCmds;
+
 		int retCode = 0;
 		engine = reinterpret_cast<IEngine*>(CreateInterface(ENGINE_INTERFACE_LATEST, &retCode));
 		if (retCode != 0)
@@ -41,7 +42,9 @@ namespace ChatCommands
 
 		auto elapsedTally = curTime - lastTally;
 
-		if (elapsed < votingTimeSeconds && !(elapsedTally >= secsBetweenTallys))
+		int voteTimeSecs = votingCmds->VarVotingTime->ValueInt;
+
+		if (elapsed < voteTimeSecs && !(elapsedTally >= secsBetweenTallys))
 			return;
 
 		std::map<std::string, int> totals;
@@ -63,7 +66,7 @@ namespace ChatCommands
 
 		if (elapsedTally >= secsBetweenTallys)
 		{
-			engine->SendChatServerMessage("Voting ends in " + std::to_string(votingTimeSeconds - elapsed) + " seconds, current votes:", peers);
+			engine->SendChatServerMessage("Voting ends in " + std::to_string(voteTimeSecs - elapsed) + " seconds, current votes:", peers);
 
 			for (auto v : totals)
 				engine->SendChatServerMessage(v.first + " - " + std::to_string(v.second), peers);
@@ -73,7 +76,7 @@ namespace ChatCommands
 			lastTally = curTime;
 		}
 
-		if (elapsed < votingTimeSeconds)
+		if (elapsed < voteTimeSecs)
 			return;
 
 		std::string winner = "";
@@ -132,6 +135,9 @@ namespace ChatCommands
 
 	bool Voting::CommandVote(Blam::Network::Session *session, int peer, const std::string& body)
 	{
+		if (!votingCmds->VarRTVEnabled->ValueInt && !votingCmds->VarEnabled->ValueInt)
+			return false;
+
 		Server::Chat::PeerBitSet peers;
 		for (int i = 0; i < 17; i++)
 			peers[i] = 1;
@@ -219,6 +225,9 @@ namespace ChatCommands
 
 	bool Voting::CommandRTV(Blam::Network::Session *session, int peer)
 	{
+		if (!votingCmds->VarRTVEnabled->ValueInt)
+			return false;
+
 		if (voteTimeStarted != 0)
 		{
 			engine->SendChatDirectedServerMessage("Can't rtv, voting has already started or is over", peer);
@@ -257,7 +266,7 @@ namespace ChatCommands
 
 		engine->SendChatServerMessage(announcement, peers);
 
-		if (NumRemaining() == 0)
+		if (NumRemaining() <= 0)
 		{
 			engine->SendChatServerMessage("Rock the Vote passed! Starting map vote...", peers);
 
@@ -273,6 +282,9 @@ namespace ChatCommands
 	}
 	bool Voting::CommandUnRTV(Blam::Network::Session *session, int peer)
 	{
+		if (!votingCmds->VarRTVEnabled->ValueInt)
+			return false;
+
 		if (voteTimeStarted != 0)
 		{
 			engine->SendChatDirectedServerMessage("Can't unrtv, voting has already started or is over", peer);

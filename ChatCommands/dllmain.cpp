@@ -19,7 +19,7 @@ ElDoritoPluginInfo ourPluginInfo =
 };
 
 std::shared_ptr<ChatCommands::Voting> cmdVoting;
-
+std::shared_ptr<ChatCommands::VotingCommandProvider> cmdProvVoting;
 PLUGIN_API ElDoritoPluginInfo* __cdecl GetPluginInfo()
 {
 	return &ourPluginInfo;
@@ -29,12 +29,15 @@ PLUGIN_API bool __cdecl InitializePlugin(std::vector<std::shared_ptr<CommandProv
 {
 	int version = GetDoritoVersion();
 
-	cmdVoting = std::make_shared<ChatCommands::Voting>();
 	int retCode = 0;
 	IEngine* engine = reinterpret_cast<IEngine*>(CreateInterface(ENGINE_INTERFACE_LATEST, &retCode));
 	if (retCode != 0)
 		return false;
 
+	cmdProvVoting = std::make_shared<ChatCommands::VotingCommandProvider>();
+	commandProviders->push_back(cmdProvVoting);
+
+	cmdVoting = std::make_shared<ChatCommands::Voting>(cmdProvVoting);
 	engine->AddChatHandler(cmdVoting);
 
 	return true;
