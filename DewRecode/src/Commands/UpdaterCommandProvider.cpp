@@ -130,14 +130,14 @@ namespace Updater
 
 	void CallbackUpdate(const std::string& manifest, const std::string& branch)
 	{
-		//..	if (result.compare("Yes"))
-		//		return;
+		//if (result.compare("Yes"))
+		//    return;
 
-		// launch update helper, pointing to the json file
-
+		// launch update helper, pointing to the manifest json file
 		auto& dorito = ElDorito::Instance();
-		auto params = dorito.Utils.WidenString("-manifest \"" + manifest + "\" -branch \"" + branch + "\"");
-		dorito.Utils.ExecuteProcess(L"DewritoUpdateHelper.exe", params, 0);
+		std::string params = "-manifest \"" + manifest + "\" -branch \"" + branch + "\"";
+		dorito.Logger.Log(LogSeverity::Debug, "Updater", "Update available, running DewritoUpdateHelper.exe %s", params.c_str());
+		dorito.Utils.ExecuteProcess(L"DewritoUpdateHelper.exe", dorito.Utils.WidenString(params), 0);
 		std::exit(0);
 	}
 
