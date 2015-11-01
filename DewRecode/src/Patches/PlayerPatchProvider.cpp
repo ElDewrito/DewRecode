@@ -13,6 +13,31 @@ namespace
 
 	Pointer UidValidPtr = Pointer(0x19AB728); // true if the UID is set
 	Pointer UidPtr = Pointer(0x19AB730);      // The local player's UID
+
+	// Player properties packet extension to send player UID
+	class UidExtension : public Network::PlayerPropertiesExtension<uint64_t>
+	{
+	protected:
+		void BuildData(int playerIndex, uint64_t* out)
+		{
+			*out = playerPatches->GetUid();
+		}
+
+		void ApplyData(int playerIndex, void* session, const uint64_t& data)
+		{
+			*reinterpret_cast<uint64_t*>(static_cast<uint8_t*>(session)+0x50) = data;
+		}
+
+		void Serialize(Blam::BitStream* stream, const uint64_t& data)
+		{
+			stream->WriteUnsigned(data, 64);
+		}
+
+		void Deserialize(Blam::BitStream* stream, uint64_t* out)
+		{
+			*out = stream->ReadUnsigned<uint64_t>(64);
+		}
+	};
 }
 
 namespace Player
@@ -20,6 +45,7 @@ namespace Player
 	PlayerPatchProvider::PlayerPatchProvider()
 	{
 		playerPatches = this;
+		ElDorito::Instance().PlayerPropertiesExtender.Add(std::make_shared<UidExtension>());
 	}
 
 	PatchSet PlayerPatchProvider::GetPatches()
@@ -93,31 +119,6 @@ namespace Player
 
 namespace
 {
-	// Player properties packet extension to send player UID
-	class UidExtension : public Network::PlayerPropertiesExtension<uint64_t>
-	{
-	protected:
-		void BuildData(int playerIndex, uint64_t* out)
-		{
-			*out = playerPatches->GetUid();
-		}
-
-		void ApplyData(int playerIndex, void* session, const uint64_t& data)
-		{
-			*reinterpret_cast<uint64_t*>(static_cast<uint8_t*>(session)+0x50) = data;
-		}
-
-		void Serialize(Blam::BitStream* stream, const uint64_t& data)
-		{
-			stream->WriteUnsigned(data, 64);
-		}
-
-		void Deserialize(Blam::BitStream* stream, uint64_t* out)
-		{
-			*out = stream->ReadUnsigned<uint64_t>(64);
-		}
-	};
-
 	uint64_t GetPlayerUidHook(int unused)
 	{
 		return playerPatches->GetUid();

@@ -91,10 +91,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="RockTheVote.cpp" />
+    <ClCompile Include="Voting.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RockTheVote.hpp" />
+    <ClInclude Include="Voting.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

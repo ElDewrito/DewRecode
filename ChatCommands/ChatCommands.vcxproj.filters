@@ -18,12 +18,12 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RockTheVote.cpp">
+    <ClCompile Include="Voting.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RockTheVote.hpp">
+    <ClInclude Include="Voting.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

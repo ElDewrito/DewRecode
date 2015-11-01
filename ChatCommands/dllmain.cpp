@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <ElDorito/ElDorito.hpp>
-#include "RockTheVote.hpp"
+#include "Voting.hpp"
 
 #define PLUGIN_API extern "C" __declspec(dllexport)
 
@@ -18,7 +18,7 @@ ElDoritoPluginInfo ourPluginInfo =
 	"0.1"
 };
 
-std::shared_ptr<ChatCommands::RockTheVote> cmdRockTheVote;
+std::shared_ptr<ChatCommands::Voting> cmdVoting;
 
 PLUGIN_API ElDoritoPluginInfo* __cdecl GetPluginInfo()
 {
@@ -29,13 +29,13 @@ PLUGIN_API bool __cdecl InitializePlugin(std::vector<std::shared_ptr<CommandProv
 {
 	int version = GetDoritoVersion();
 
-	cmdRockTheVote = std::make_shared<ChatCommands::RockTheVote>();
+	cmdVoting = std::make_shared<ChatCommands::Voting>();
 	int retCode = 0;
 	IEngine* engine = reinterpret_cast<IEngine*>(CreateInterface(ENGINE_INTERFACE_LATEST, &retCode));
 	if (retCode != 0)
-		throw std::runtime_error("Failed to create engine interface");
+		return false;
 
-	engine->AddChatHandler(cmdRockTheVote);
+	engine->AddChatHandler(cmdVoting);
 
 	return true;
 }
