@@ -27,7 +27,8 @@ namespace Game
 			Command::CreateCommand("Game", "ForceLoad", "forceload", "Forces a map to load", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandForceLoad), { "mapname(string) The name of the map to load", "gametype(int) The gametype to load", "gamemode(int) The type of gamemode to play", }),
 			Command::CreateCommand("Game", "Map", "map", "Loads a map or map variant", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandMap), { "name(string) The internal name of the map or Forge map to load" }),
 			Command::CreateCommand("Game", "GameType", "gametype", "Loads a gametype", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandGameType), { "name(string) The internal name of the built-in gametype or custom gametype to load" }),
-			Command::CreateCommand("Game", "Start", "start", "Starts or restarts the game", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStart))
+			Command::CreateCommand("Game", "Start", "start", "Starts or restarts the game", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStart)),
+			Command::CreateCommand("Game", "Stop", "stop", "Stops the game and returns to lobby", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStop))
 		};
 
 		return commands;
@@ -391,6 +392,27 @@ namespace Game
 		// pointer, but it seems to work OK
 		return SetSessionMode(reinterpret_cast<void*>(0x1BF1B90), 2);
 	}
+
+	bool GameCommandProvider::CommandStop(const std::vector<std::string>& Arguments, CommandContext& context)
+	{
+		context.WriteOutput("Stopping game...");
+		auto ret = Stop();
+		if (!ret)
+			context.WriteOutput("Unable to stop the game!");
+		return ret;
+	}
+
+	bool GameCommandProvider::Stop()
+	{
+		typedef bool(__thiscall *SetSessionModePtr)(void* thisptr, int mode);
+		auto SetSessionMode = reinterpret_cast<SetSessionModePtr>(0x459A40);
+
+		// Note: this isn't necessarily a proper way of getting the this
+		// pointer, but it seems to work OK
+		return SetSessionMode(reinterpret_cast<void*>(0x1BF1B90), 1);
+	}
+
+
 }
 
 namespace

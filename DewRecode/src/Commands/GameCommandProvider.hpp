@@ -44,5 +44,8 @@ namespace Game
 
 		bool CommandStart(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool Start();
+
+		bool CommandStop(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool Stop();
 	};
 }
