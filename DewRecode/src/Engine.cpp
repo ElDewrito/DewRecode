@@ -2,6 +2,7 @@
 #include "ElDorito.hpp"
 #include <d3d9.h>
 #include <algorithm>
+#include "Packets/ServerChat.hpp"
 
 namespace
 {
@@ -475,6 +476,22 @@ Blam::Network::Session* Engine::GetActiveNetworkSession()
 	return networkSessionPtr.Read<Blam::Network::Session*>();
 }
 
+
+int Engine::GetNumPlayers()
+{
+	void* v2;
+
+	typedef char(__cdecl *sub_454F20Ptr)(void** a1);
+	auto sub_454F20 = reinterpret_cast<sub_454F20Ptr>(0x454F20);
+	if (!sub_454F20(&v2))
+		return 0;
+
+	typedef char*(__thiscall *sub_45C250Ptr)(void* thisPtr);
+	auto sub_45C250 = reinterpret_cast<sub_45C250Ptr>(0x45C250);
+
+	return *(DWORD*)(sub_45C250(v2) + 0x10A0);
+}
+
 /// <summary>
 /// Gets a pointer to the active packet table.
 /// Can be null!
@@ -652,4 +669,36 @@ CustomPacket* Engine::LookUpPacketType(Packets::PacketGuid guid)
 	if (it == customPackets.end())
 		return nullptr;
 	return &it->second;
+}
+
+/* CHAT COMMANDS */
+// Sends a message to every peer. Returns true if successful.
+bool Engine::SendChatGlobalMessage(const std::string &body)
+{
+	return Server::Chat::SendGlobalMessage(body);
+}
+
+// Sends a message to every player on the local player's team. Returns
+// true if successful.
+bool Engine::SendChatTeamMessage(const std::string &body)
+{
+	return Server::Chat::SendTeamMessage(body);
+}
+
+// Sends a server message to specific peers. Only works if you are
+// host. Returns true if successful.
+bool Engine::SendChatServerMessage(const std::string &body, Server::Chat::PeerBitSet peers)
+{
+	return Server::Chat::SendServerMessage(body, peers);
+}
+
+bool Engine::SendChatDirectedServerMessage(const std::string& body, int peer)
+{
+	return Server::Chat::SendDirectedServerMessage(body, peer);
+}
+
+// Registers a chat handler object.
+void Engine::AddChatHandler(std::shared_ptr<Server::Chat::ChatHandler> handler)
+{
+	Server::Chat::AddHandler(handler);
 }

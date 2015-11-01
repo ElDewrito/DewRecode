@@ -15,11 +15,6 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
-namespace
-{
-	int GetNumPlayers();
-}
-
 namespace Server
 {
 	std::vector<Command> ServerCommandProvider::GetCommands()
@@ -1219,7 +1214,7 @@ namespace Server
 					writer.Key("status");
 					writer.String(status.c_str());
 					writer.Key("numPlayers");
-					writer.Int(GetNumPlayers());
+					writer.Int(dorito.Engine.GetNumPlayers());
 
 					// TODO: find how to get actual max players from the game, since our variable might be wrong
 					writer.Key("maxPlayers");
@@ -1277,7 +1272,7 @@ namespace Server
 						uint32_t playerInfoBase = 0x2162E08;
 						uint32_t menuPlayerInfoBase = 0x1863B58;
 						uint32_t playerStatusBase = 0x2161808;
-						if (GetNumPlayers() > 0)
+						if (dorito.Engine.GetNumPlayers() > 0)
 							for (int i = 0; i < 16; i++)
 							{
 								uint16_t score = Pointer(playerScoresBase + (1080 * i)).Read<uint16_t>();
@@ -1357,23 +1352,5 @@ namespace Server
 			break;
 		}
 		return 1;
-	}
-}
-
-namespace
-{
-	int GetNumPlayers()
-	{
-		void* v2;
-
-		typedef char(__cdecl *sub_454F20Ptr)(void** a1);
-		auto sub_454F20 = reinterpret_cast<sub_454F20Ptr>(0x454F20);
-		if (!sub_454F20(&v2))
-			return 0;
-
-		typedef char*(__thiscall *sub_45C250Ptr)(void* thisPtr);
-		auto sub_45C250 = reinterpret_cast<sub_45C250Ptr>(0x45C250);
-
-		return *(DWORD*)(sub_45C250(v2) + 0x10A0);
 	}
 }

@@ -183,11 +183,15 @@ namespace
 		{
 			// message came from us and we're dedicated, copy our username over
 			memset(broadcastMessage.Sender, 0, sizeof(broadcastMessage.Sender));
-			wcsncpy(broadcastMessage.Sender, L"Server", sizeof(broadcastMessage.Sender) / sizeof(broadcastMessage.Sender[0]) - 1);
+			wcsncpy(broadcastMessage.Sender, L"<SERVER>", sizeof(broadcastMessage.Sender) / sizeof(broadcastMessage.Sender[0]) - 1);
 		}
 		else
 			if (!FillInSenderName(session, peer, &broadcastMessage))
 				return false;
+
+		for (auto &&handler : chatHandlers)
+			if (handler->HostMessageReceived(session, peer, message))
+				return true;
 
 		PeerBitSet targetPeers;
 		if (!GetMessagePeers(session, peer, message, &targetPeers))
@@ -256,6 +260,21 @@ namespace Server
 
 			ChatMessage message(ChatMessageType::Server, body);
 			return BroadcastMessage(session, session->MembershipInfo.LocalPeerIndex, &message, peers);
+		}
+
+		bool SendDirectedServerMessage(const std::string& body, int peer)
+		{
+			auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
+			if (!session || !session->IsEstablished() || !session->IsHost())
+				return false;
+
+			ChatMessage message(ChatMessageType::Server, body);
+
+			if (peer != session->MembershipInfo.LocalPeerIndex)
+				return SendMessagePacket(peer, message);
+
+			ClientReceivedMessage(message); // peer is us, handle it internally
+			return true;
 		}
 
 		void AddHandler(std::shared_ptr<ChatHandler> handler)

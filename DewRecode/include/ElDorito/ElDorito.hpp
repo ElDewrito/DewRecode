@@ -51,3 +51,4 @@ DORITO_API void* CreateInterface(const char* name, int* returnCode);
 #include "UI/UIWindow.hpp"
 #include "CommandProvider.hpp"
 #include "PatchProvider.hpp"
+#include "ServerChat.hpp"

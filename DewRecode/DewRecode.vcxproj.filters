@@ -389,6 +389,9 @@
     <ClInclude Include="src\Commands\IRCCommandProvider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ElDorito\ServerChat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\Resources.rc">

@@ -15,6 +15,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChatPlugin", "ChatPlugin\Ch
 		{A737B7B0-D18C-4625-9137-6DE99BE398AC} = {A737B7B0-D18C-4625-9137-6DE99BE398AC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChatCommands", "ChatCommands\ChatCommands.vcxproj", "{83621D81-E9FC-4C14-934E-C9071D71D362}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A737B7B0-D18C-4625-9137-6DE99BE398AC} = {A737B7B0-D18C-4625-9137-6DE99BE398AC}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +36,10 @@ Global
 		{42FC1BB2-5286-49AD-9114-0EDA1A87AE29}.Release|Win32.Build.0 = Release|Win32
 		{AD5AF798-EC8B-4F9E-A89C-43DBFF9C91FD}.Debug|Win32.ActiveCfg = Debug|Win32
 		{AD5AF798-EC8B-4F9E-A89C-43DBFF9C91FD}.Release|Win32.ActiveCfg = Release|Win32
+		{83621D81-E9FC-4C14-934E-C9071D71D362}.Debug|Win32.ActiveCfg = Debug|Win32
+		{83621D81-E9FC-4C14-934E-C9071D71D362}.Debug|Win32.Build.0 = Debug|Win32
+		{83621D81-E9FC-4C14-934E-C9071D71D362}.Release|Win32.ActiveCfg = Release|Win32
+		{83621D81-E9FC-4C14-934E-C9071D71D362}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

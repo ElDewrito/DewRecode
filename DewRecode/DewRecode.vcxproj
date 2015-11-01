@@ -148,6 +148,7 @@
     <ClInclude Include="include\ElDorito\Blam\Tags\Scenario.hpp" />
     <ClInclude Include="include\ElDorito\Blam\Tags\Tags.hpp" />
     <ClInclude Include="include\ElDorito\Blam\BlamTypes.hpp" />
+    <ClInclude Include="include\ElDorito\ServerChat.hpp" />
     <ClInclude Include="include\ElDorito\CustomPackets.hpp" />
     <ClInclude Include="include\ElDorito\ElDorito.hpp" />
     <ClInclude Include="include\ElDorito\CommandContext.hpp" />

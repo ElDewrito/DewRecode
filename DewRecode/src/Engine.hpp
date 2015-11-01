@@ -43,6 +43,7 @@ public:
 	std::string GetPlayerName();
 
 	Blam::Network::Session* GetActiveNetworkSession();
+	int GetNumPlayers();
 	Blam::Network::PacketTable* GetPacketTable();
 	void SetPacketTable(const Blam::Network::PacketTable* newTable);
 
@@ -56,6 +57,23 @@ public:
 
 	Packets::PacketGuid RegisterPacketImpl(const std::string &name, std::shared_ptr<Packets::RawPacketHandler> handler);
 	CustomPacket* LookUpPacketType(Packets::PacketGuid guid);
+
+	/* CHAT COMMANDS */
+	// Sends a message to every peer. Returns true if successful.
+	bool SendChatGlobalMessage(const std::string &body);
+
+	// Sends a message to every player on the local player's team. Returns
+	// true if successful.
+	bool SendChatTeamMessage(const std::string &body);
+
+	// Sends a server message to specific peers. Only works if you are
+	// host. Returns true if successful.
+	bool SendChatServerMessage(const std::string &body, Server::Chat::PeerBitSet peers);
+
+	bool SendChatDirectedServerMessage(const std::string& body, int peer);
+
+	// Registers a chat handler object.
+	void AddChatHandler(std::shared_ptr<Server::Chat::ChatHandler> handler);
 
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);

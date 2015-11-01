@@ -3,6 +3,7 @@
 #include <chrono>
 #include <functional>
 #include <vector>
+#include <bitset>
 
 namespace Blam
 {
@@ -12,6 +13,16 @@ namespace Blam
 	{
 		struct Session;
 		struct PacketTable;
+	}
+}
+
+namespace Server
+{
+	namespace Chat
+	{
+		typedef std::bitset<17> PeerBitSet;
+		struct ChatMessage;
+		class ChatHandler;
 	}
 }
 
@@ -275,6 +286,8 @@ public:
 	/// <returns>A pointer to the active network session.</returns>
 	virtual Blam::Network::Session* GetActiveNetworkSession() = 0;
 
+	virtual int GetNumPlayers() = 0;
+
 	/// <summary>
 	/// Gets a pointer to the active packet table.
 	/// Can be null!
@@ -334,6 +347,24 @@ public:
 	// GUID of the new packet type.
 	virtual Packets::PacketGuid RegisterPacketImpl(const std::string &name, std::shared_ptr<Packets::RawPacketHandler> handler) = 0;
 	virtual CustomPacket* LookUpPacketType(Packets::PacketGuid guid) = 0;
+
+	/* CHAT COMMANDS */
+
+	// Sends a message to every peer. Returns true if successful.
+	virtual bool SendChatGlobalMessage(const std::string &body) = 0;
+
+	// Sends a message to every player on the local player's team. Returns
+	// true if successful.
+	virtual bool SendChatTeamMessage(const std::string &body) = 0;
+
+	// Sends a server message to specific peers. Only works if you are
+	// host. Returns true if successful.
+	virtual bool SendChatServerMessage(const std::string &body, Server::Chat::PeerBitSet peers) = 0;
+
+	virtual bool SendChatDirectedServerMessage(const std::string &body, int peer) = 0;
+
+	// Registers a chat handler object.
+	virtual void AddChatHandler(std::shared_ptr<Server::Chat::ChatHandler> handler) = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"
