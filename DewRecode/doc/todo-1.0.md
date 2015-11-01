@@ -3,12 +3,15 @@
 - Plugin support (99% of main code is exported for plugins, modules can easily be swapped to and from the main DLL into a satellite plugin DLL)
 - Fixed H3 menus (menu options don't go superspeed anymore, pause menu can be closed, the main menu settings menu can be shown but probably isn't needed)
 - Dual-wielding, and semi-working equipment
+- "dedicated" server support (can be started with start_server.bat, requires DX9 graphics card atm!)
+- Built-in update checker, using a small exe to perform the actual update. Updates are now also signed to prevent tampering.
+- Updater now only verifies files when it's confirmed that an update is needed (verifying correct HO files are used will be done during install)
 
 # Soon(tm)
-- Port latest ElDorito additions (grenade fix, custom packets, VoIP disabling/muting...)
-- Improved code, seperating hooks from modules and allowing code to be reused much easier.
-- Built-in update checker using a small update exe to perform the actual update. Updates will also be signed to prevent people from tampering with updates.
-- No more launcher/file verification on start. Instead an installer will take the launchers responsibilites of verifying files and installing the latest DR files.
+- VoIP
+- Fade chat in/out when chat message is received (don't take away input from the game, just draw the chat)
+- Console commands to write to chat / console commands to set chat text (eg. UI.ShowChat !team would put !team in the chat box)
+- UI-less dedicated servers (no DX9 etc needed)
 - A proper menu built-in to DR instead of an overlay will allow us to fully utilize a new menu, events can be forwarded to and from the new menu directly via binded events/callbacks, making the menu actually feel part of the game properly.
 - Matchmaking: Master servers could create lobbies for users trying to find a game, with the masters also holding stats data a ranking system could also be implemented. Matchmaking games could have stats in a different area to "casual" stats too.
 
