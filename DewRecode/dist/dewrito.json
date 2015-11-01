@@ -24,42 +24,10 @@
         "game.cfg": "EF9771599CA2E6C4A33BA2D2828508D67E919058"
     },
 
-    "updateServiceUrl": "http://167.114.156.21:81/honline/update.json",
-    "updateChannelsUrl": "http://167.114.156.21:81/honline/channels.json",
-
     "masterServers": [{
-        "list": "http://samantha-master.halo.click/list",
-        "announce": "http://samantha-master.halo.click/announce",
-        "stats": "http://samantha-master.halo.click/stats"
-    },
-    {
-        "list": "http://192.99.124.162/list",
-        "announce": "http://192.99.124.162/announce",
-        "stats": "http://192.99.124.162/stats"
-    },
-    {
-        "list": "http://kyrluckechuck-dewrito-master-server-kyrluckechuck.c9.io/list",
-        "announce": "http://kyrluckechuck-dewrito-master-server-kyrluckechuck.c9.io/announce",
-        "stats": "http://kyrluckechuck-dewrito-master-server-kyrluckechuck.c9.io/stats"
-    },
-    {
-        "list": "http://eldewrito-masterserver-thetwist84.c9.io/list",
-        "announce": "http://eldewrito-masterserver-thetwist84.c9.io/announce",
-        "stats": "http://eldewrito-masterserver-thetwist84.c9.io/stats"
-    },
-    {
-        "list": "http://eldewrito-masterserver-1-thetwist84.c9.io/list",
-        "announce": "http://eldewrito-masterserver-1-thetwist84.c9.io/announce",
-        "stats": "http://eldewrito-masterserver-1-thetwist84.c9.io/stats"
-    },
-    {
-        "list": "http://nothing-michaeljohn21312.c9.io/list",
-        "announce": "http://nothing-michaeljohn21312.c9.io/announce",
-        "stats": "http://nothing-michaeljohn21312.c9.io/stats"
-    },
-    {
-        "list": "http://192.168.40.130/list",
-        "announce": "http://192.168.40.130/announce",
-        "stats": "http://192.168.40.130/stats"
+        "list": "http://80.240.130.4/list",
+        "announce": "http://80.240.130.4/announce",
+        "stats": "http://80.240.130.4/stats",
+        "update": "http://80.240.130.4/update"
     }]
 }
