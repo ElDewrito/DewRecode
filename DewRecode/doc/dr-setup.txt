@@ -1,0 +1,49 @@
+To start with you should have an installed & updated copy of ED, and a fresh copy of HO
+
+- Copy eldorado.exe and maps/tags.dat over from ED to your fresh HO
+- Copy mtndew.dll and the files from DewRecode/dist/ (dewrito_prefs.cfg etc) into your fresh HO's main folder
+- Run eldorado.exe, it should exit and bring up the update helper
+- Update through the update helper
+- Now replace mtndew.dll with the latest one (one you've built or downloaded prebuilt) 
+- Run eldorado.exe to play the game - no need for launchers etc!
+
+Launcher is planned to be removed with DR, instead an install wizard will install DR over a fresh HO install, verifying the HO files beforehand.
+This install is minimal - only copying DewritoUpdaterHelper.exe + dewrito.json to the HO folder. The update helper is then run with the update manifest URL as a parameter.
+The update helper will update the game data and patch files to be up to date with the latest released version of DR (these releases aren't kept up to date with the github though)
+
+When DR launches it checks for the latest version number from the update server, and compares this version to the one stored in version.json.
+If the server has a newer version, the game will close and open the update helper to update game data.
+
+So now instead of needing to hash game data to find what files need to be updated etc, we can just compare the version number in version.json.
+Integrity checks are still performed only on files it needs to be (eg files being patched).
+As we aren't checking anymore, the installer should have a utility to check game data integrity in case people have corrupt data.
+
+-----
+Dedicated server mode
+-----
+A faux-dedicated server mode can be used with the -dedicated exe parameter. This mode will only render menus and UI elements, also leaving networking and game logic working fine.
+You can use the menus/UI like normal in this mode, game console + chat will also show. Games can be started like a regular ED game.
+Alternatively you can use rcon to administer the server, rcon can now also be password protected for security (Server.RconPassword variable)
+
+Note that this dedicated server mode currently still requires a DX9 graphics card to operate.
+
+-----
+Voting
+-----
+A small voting system has been added to DR, with this system users will be able to:
+a) use the "/rtv" (rock the vote) command in chat to vote to start a map vote.
+b) vote for the next map near the end of the game (not implemented yet)
+
+a):
+After enough players wrote "/rtv" in chat everyone will be prompted to vote for a map using the "/vote" command, eg. "/vote riverworld"
+After ~30 seconds (can be changed with Voting.VotingTime variable) voting will end, and the map with the most votes will be chosen.
+After 5 seconds the map will change
+  if in lobby, the map will change and the game will start
+  if ingame, the game will stop/return to lobby, map will change and then game will start)
+
+If nobody voted then the rtv is cancelled.
+RTV can be enabled/disabled with the Voting.RTVEnabled variable.
+
+b):
+End-game map voting will work differently instead of the map force-switching 5 seconds after voting finishes.
+Instead the map won't change until the game is over and everyone is in the lobby, the map will then change and the game will start automatically.
