@@ -4,6 +4,7 @@
 
 namespace
 {
+	void FovHook();
 	int __cdecl DualWieldHook(unsigned short objectIndex);
 	int __cdecl GetEquipmentCountHook(uint16_t playerObjectIndex, uint16_t equipmentIndex);
 	void SprintInputHook();
@@ -46,19 +47,20 @@ namespace Core
 			// Fix random colored lighting
 			Patch("LightingFix", 0x18F2FFC, { 0x0, 0x0, 0x0, 0x0 }),
 
-			/* TODO: find out if one of these patches is breaking game prefs
-			// Remove preferences.dat hash check
-			Patch("PrefsDatHashCheck", 0x50C99A, 0x90, 6),
-
 			// Patch to allow spawning AI through effects
 			Patch("SpawnAIWithEffects", 0x1433321, 0x90, 2),
 
 			// Prevent FOV from being overridden when the game loads
 			Patch("FOVOverride1", 0x65FA79, 0x90, 10),
-			Patch("FOVOverride2", 0x65FA86, 0x90, 5)*/
+			Patch("FOVOverride2", 0x65FA86, 0x90, 5)
+
+			/* TODO: find out if one of these patches is breaking game prefs
+			// Remove preferences.dat hash check
+			Patch("PrefsDatHashCheck", 0x50C99A, 0x90, 6),
+			*/
 		},
 		{
-			/*Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp)*/
+			Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp),
 
 			Hook("DualWieldHook", 0xB61550, DualWieldHook, HookType::Jmp),
 			Hook("GetEquipmentCountHook", 0xB440F0, GetEquipmentCountHook, HookType::Jmp),
