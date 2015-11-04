@@ -10,6 +10,10 @@ namespace Chat
 		if (body.length() <= 0)
 			return false;
 
+		auto firstChar = body[0];
+		if (firstChar == '!' || firstChar == '/')
+			body = body.substr(1);
+
 		// split command name from the rest
 		auto cmdNameEndIdx = body.find_first_of(" ");
 		if (cmdNameEndIdx == std::string::npos)
@@ -28,7 +32,7 @@ namespace Chat
 		// execute it under a chat context
 		ChatCommandContext ctx(session, peer);
 
-		auto res = dorito.CommandManager.Execute(body, ctx);
+		auto res = dorito.CommandManager.Execute(body, ctx, false);
 		return res == CommandExecuteResult::Success; // if success then we return true so that the players input doesn't get forwarded to other players
 	}
 }

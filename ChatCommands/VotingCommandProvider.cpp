@@ -27,7 +27,12 @@ namespace ChatCommands
 		{
 			Command::CreateCommand("Voting", "RTV", "rtv", "Votes to Rock the Vote", eCommandFlagsChatCommand, BIND_COMMAND(this, &VotingCommandProvider::CommandRTV)),
 			Command::CreateCommand("Voting", "UnRTV", "unrtv", "Unvotes to Rock the Vote", eCommandFlagsChatCommand, BIND_COMMAND(this, &VotingCommandProvider::CommandUnRTV)),
-			Command::CreateCommand("Voting", "Vote", "vote", "Votes for a map", eCommandFlagsChatCommand, BIND_COMMAND(this, &VotingCommandProvider::CommandVote))
+			Command::CreateCommand("Voting", "Vote", "vote", "Votes for a map", eCommandFlagsChatCommand, BIND_COMMAND(this, &VotingCommandProvider::CommandVote)),
+
+			// todo: add eCommandFlagsChatCommand to Voting.Cancel
+			// if (eCommandFlagsChatCommand | eCommandFlagsMustBeHosting) then the command is treated as an admin command
+			// meaning the command will work in the console/rcon, and will also work in chat for authorized people
+			Command::CreateCommand("Voting", "Cancel", "cancelvote", "Cancels the current vote", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &VotingCommandProvider::CommandCancel)),
 		};
 
 		return commands;
@@ -35,7 +40,7 @@ namespace ChatCommands
 
 	void VotingCommandProvider::RegisterVariables(ICommandManager* manager)
 	{
-		VarEnabled = manager->Add(Command::CreateVariableInt("Voting", "Enabled", "voting_enabled", "End of game map voting", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsReplicated), 0));
+		VarEnabled = manager->Add(Command::CreateVariableInt("Voting", "Enabled", "voting_enabled", "End of game/in-lobby map voting", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsReplicated), 0));
 		VarEnabled->ValueIntMin = 0;
 		VarEnabled->ValueIntMax = 1;
 
@@ -58,6 +63,41 @@ namespace ChatCommands
 
 	void VotingCommandProvider::OnTick(const std::chrono::duration<double>& deltaTime)
 	{
+		if (engine->GetNumPlayers() <= 0)
+		{
+			votedDuringThisState = false; // no players on server, so reset this ready for the next player who joins
+			wantsVote.clear();
+			mapVotes.clear();
+			hasVoted.clear();
+			nextMap.clear();
+			lastTally = 0;
+			voteTimeStarted = 0;
+			return;
+		}
+
+		if (lifeCycleState == Blam::Network::LifeCycleState::PreGame && engine->GetNumPlayers() > 0 && (VarRTVEnabled->ValueInt || VarEnabled->ValueInt))
+		{
+			if (!nextMap.empty())
+			{
+				commands->Execute("Game.Map " + nextMap, commands->GetLogFileContext());
+				commands->Execute("Game.Start", commands->GetLogFileContext());
+				nextMap = "";
+			}
+			else if (VarEnabled->ValueInt && voteTimeStarted == 0 && !votedDuringThisState)
+			{
+				// we're in the lobby, voting is enabled and we have 1 or more players here, start the votes!
+				time(&voteTimeStarted);
+				lastTally = 0;
+				wantsVote.clear();
+				mapVotes.clear();
+				hasVoted.clear();
+				nextMap.clear();
+				votedDuringThisState = true;
+
+				SendVoteText(); // TODO: find out why this doesn't get sent if the player joins at the same moment
+			}
+		}
+
 		if (voteTimeStarted == 0)
 			return;
 
@@ -153,33 +193,8 @@ namespace ChatCommands
 	void VotingCommandProvider::CallbackLifeCycleStateChanged(void* param)
 	{
 		lifeCycleState = *(Blam::Network::LifeCycleState*)param;
-		if (lifeCycleState == Blam::Network::LifeCycleState::PreGame && !nextMap.empty())
-		{
-			commands->Execute("Game.Map " + nextMap, commands->GetLogFileContext());
-			commands->Execute("Game.Start", commands->GetLogFileContext());
-			nextMap = "";
-		}
+		votedDuringThisState = false;
 	}
-
-	/*bool VotingCommandProvider::HostMessageReceived(Blam::Network::Session *session, int peer, const Chat::ChatMessage &message)
-	{
-		std::string body = std::string(message.Body);
-		if ((body.length() >= 3 && body.substr(0, 3) == "rtv") ||
-			(body.length() >= 4 && body.substr(1, 3) == "rtv") ||
-			(body.length() >= 11 && body.substr(body.length() - 11, 11) == "rockthevote"))
-			return CommandRTV(session, peer);
-
-		else if ((body.length() >= 5 && body.substr(0, 5) == "unrtv") ||
-			(body.length() >= 6 && body.substr(1, 5) == "unrtv") ||
-			(body.length() >= 13 && body.substr(body.length() - 13, 13) == "unrockthevote"))
-			return CommandUnRTV(session, peer);
-
-		else if ((body.length() >= 4 && body.substr(0, 4) == "vote") ||
-			(body.length() >= 5 && body.substr(1, 4) == "vote"))
-			return CommandVote(session, peer, body);
-
-		return false;
-	}*/
 
 	void VotingCommandProvider::SendVoteText()
 	{
@@ -281,6 +296,24 @@ namespace ChatCommands
 
 		time(&lastTally);
 
+		return true;
+	}
+
+	bool VotingCommandProvider::CommandCancel(const std::vector<std::string>& Arguments, CommandContext& context)
+	{
+		if (!voteTimeStarted)
+		{
+			context.WriteOutput("There is currently no vote in progress.");
+			return true;
+		}
+
+		voteTimeStarted = 0;
+		context.WriteOutput("Cancelled vote.");
+		Chat::PeerBitSet peers;
+		for (int i = 0; i < 17; i++)
+			peers[i] = 1;
+
+		engine->SendChatServerMessage("Voting has been cancelled by the admin.", peers);
 		return true;
 	}
 

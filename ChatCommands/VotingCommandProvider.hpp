@@ -14,6 +14,7 @@ namespace ChatCommands
 		time_t lastTally = 0;
 		//bool inGame = false;
 		Blam::Network::LifeCycleState lifeCycleState;
+		bool votedDuringThisState = false;
 
 		IEngine* engine;
 		IUtils* utils;
@@ -45,5 +46,6 @@ namespace ChatCommands
 		bool CommandRTV(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool CommandUnRTV(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool CommandVote(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool CommandCancel(const std::vector<std::string>& Arguments, CommandContext& context);
 	};
 }
