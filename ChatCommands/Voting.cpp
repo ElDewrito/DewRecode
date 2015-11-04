@@ -30,7 +30,7 @@ namespace ChatCommands
 		if (voteTimeStarted == 0)
 			return;
 
-		Server::Chat::PeerBitSet peers;
+		Chat::PeerBitSet peers;
 		for (int i = 0; i < 17; i++)
 			peers[i] = 1;
 
@@ -130,7 +130,7 @@ namespace ChatCommands
 		}
 	}
 
-	bool Voting::HostMessageReceived(Blam::Network::Session *session, int peer, const Server::Chat::ChatMessage &message)
+	bool Voting::HostMessageReceived(Blam::Network::Session *session, int peer, const Chat::ChatMessage &message)
 	{
 		std::string body = std::string(message.Body);
 		if ((body.length() >= 3 && body.substr(0, 3) == "rtv") ||
@@ -152,7 +152,7 @@ namespace ChatCommands
 
 	void Voting::SendVoteText()
 	{
-		Server::Chat::PeerBitSet peers;
+		Chat::PeerBitSet peers;
 		for (int i = 0; i < 17; i++)
 			peers[i] = 1;
 
@@ -166,7 +166,7 @@ namespace ChatCommands
 		if (!votingCmds->VarRTVEnabled->ValueInt && !votingCmds->VarEnabled->ValueInt)
 			return false;
 
-		Server::Chat::PeerBitSet peers;
+		Chat::PeerBitSet peers;
 		for (int i = 0; i < 17; i++)
 			peers[i] = 1;
 
@@ -288,7 +288,7 @@ namespace ChatCommands
 
 		std::string announcement = playerName + " wants to rock the vote (" + std::to_string(NumVoted()) + " votes, " + std::to_string(NumNeeded()) + " required)";
 
-		Server::Chat::PeerBitSet peers;
+		Chat::PeerBitSet peers;
 		for (int i = 0; i < 17; i++)
 			peers[i] = 1;
 

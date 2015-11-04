@@ -24,7 +24,7 @@ public:
 	bool RegisterInterface(const std::string& interfaceName, void* ptrToInterface);
 	void* CreateInterface(const std::string& interfaceName, int* returnCode);
 
-	bool HasMainMenuShown() { return mainMenuHasShown; }
+	bool HasMainMenuShown() { return hasMainMenuShown; }
 	bool IsDedicated();
 
 	HWND GetGameHWND() { return Pointer(0x199C014).Read<HWND>(); }
@@ -68,12 +68,12 @@ public:
 
 	// Sends a server message to specific peers. Only works if you are
 	// host. Returns true if successful.
-	bool SendChatServerMessage(const std::string &body, Server::Chat::PeerBitSet peers);
+	bool SendChatServerMessage(const std::string &body, Chat::PeerBitSet peers);
 
 	bool SendChatDirectedServerMessage(const std::string& body, int peer);
 
 	// Registers a chat handler object.
-	void AddChatHandler(std::shared_ptr<Server::Chat::ChatHandler> handler);
+	void AddChatHandler(std::shared_ptr<Chat::ChatHandler> handler);
 
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);
@@ -83,7 +83,7 @@ public:
 	Engine();
 	~Engine();
 private:
-	bool mainMenuHasShown = false;
+	bool hasMainMenuShown = false;
 	bool hasFirstTickTocked = false;
 	std::vector<TickCallback> tickCallbacks;
 	std::vector<EventCallback> endSceneCallbacks;

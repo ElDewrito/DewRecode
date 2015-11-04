@@ -5,7 +5,7 @@
 
 namespace
 {
-	using namespace Server::Chat;
+	using namespace Chat;
 
 	typedef Packets::Packet<ChatMessage> ChatMessagePacket;
 	typedef Packets::PacketSender<ChatMessage> ChatMessagePacketSender;
@@ -221,72 +221,69 @@ namespace
 	}
 }
 
-namespace Server
+namespace Chat
 {
-	namespace Chat
+	void Initialize()
 	{
-		void Initialize()
-		{
-			// Register custom packet type
-			auto handler = std::make_shared<ChatMessagePacketHandler>();
-			PacketSender = Packets::RegisterPacket<ChatMessage>("eldewrito-text-chat", handler);
-		}
+		// Register custom packet type
+		auto handler = std::make_shared<ChatMessagePacketHandler>();
+		PacketSender = Packets::RegisterPacket<ChatMessage>("eldewrito-text-chat", handler);
+	}
 
-		bool SendGlobalMessage(const std::string &body)
-		{
-			auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
-			if (!session || !session->IsEstablished())
-				return false;
+	bool SendGlobalMessage(const std::string &body)
+	{
+		auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
+		if (!session || !session->IsEstablished())
+			return false;
 
-			ChatMessage message(ChatMessageType::Global, body);
-			return SendClientMessage(session, message);
-		}
+		ChatMessage message(ChatMessageType::Global, body);
+		return SendClientMessage(session, message);
+	}
 
-		bool SendTeamMessage(const std::string &body)
-		{
-			auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
-			if (!session || !session->IsEstablished() || !session->HasTeams())
-				return false;
+	bool SendTeamMessage(const std::string &body)
+	{
+		auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
+		if (!session || !session->IsEstablished() || !session->HasTeams())
+			return false;
 
-			ChatMessage message(ChatMessageType::Team, body);
-			return SendClientMessage(session, message);
-		}
+		ChatMessage message(ChatMessageType::Team, body);
+		return SendClientMessage(session, message);
+	}
 
-		bool SendServerMessage(const std::string &body, PeerBitSet peers)
-		{
-			auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
-			if (!session || !session->IsEstablished() || !session->IsHost())
-				return false;
+	bool SendServerMessage(const std::string &body, PeerBitSet peers)
+	{
+		auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
+		if (!session || !session->IsEstablished() || !session->IsHost())
+			return false;
 
-			ChatMessage message(ChatMessageType::Server, body);
-			return BroadcastMessage(session, session->MembershipInfo.LocalPeerIndex, &message, peers);
-		}
+		ChatMessage message(ChatMessageType::Server, body);
+		return BroadcastMessage(session, session->MembershipInfo.LocalPeerIndex, &message, peers);
+	}
 
-		bool SendDirectedServerMessage(const std::string& body, int peer)
-		{
-			auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
-			if (!session || !session->IsEstablished() || !session->IsHost())
-				return false;
+	bool SendDirectedServerMessage(const std::string& body, int peer)
+	{
+		auto session = ElDorito::Instance().Engine.GetActiveNetworkSession();
+		if (!session || !session->IsEstablished() || !session->IsHost())
+			return false;
 
-			ChatMessage message(ChatMessageType::Server, body);
+		ChatMessage message(ChatMessageType::Server, body);
 
-			if (peer != session->MembershipInfo.LocalPeerIndex)
-				return SendMessagePacket(peer, message);
+		if (peer != session->MembershipInfo.LocalPeerIndex)
+			return SendMessagePacket(peer, message);
 
-			ClientReceivedMessage(message); // peer is us, handle it internally
-			return true;
-		}
+		ClientReceivedMessage(message); // peer is us, handle it internally
+		return true;
+	}
 
-		void AddHandler(std::shared_ptr<ChatHandler> handler)
-		{
-			chatHandlers.push_back(handler);
-		}
+	void AddHandler(std::shared_ptr<ChatHandler> handler)
+	{
+		chatHandlers.push_back(handler);
+	}
 
-		ChatMessage::ChatMessage(ChatMessageType type, const std::string &body)
-		{
-			memset(this, 0, sizeof(*this));
-			Type = type;
-			strncpy(Body, body.c_str(), sizeof(Body) / sizeof(Body[0]) - 1);
-		}
+	ChatMessage::ChatMessage(ChatMessageType type, const std::string &body)
+	{
+		memset(this, 0, sizeof(*this));
+		Type = type;
+		strncpy(Body, body.c_str(), sizeof(Body) / sizeof(Body[0]) - 1);
 	}
 }

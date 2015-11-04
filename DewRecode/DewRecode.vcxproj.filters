@@ -141,9 +141,6 @@
     <ClCompile Include="src\UI\UserInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Packets\ServerChat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\UI\Windows\ChatWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -154,6 +151,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Commands\IRCCommandProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Chat\ServerChat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -374,9 +374,6 @@
     <ClInclude Include="include\ElDorito\InputContext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Packets\ServerChat.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\UI\Windows\ChatWindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -390,6 +387,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ElDorito\ServerChat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chat\ServerChat.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

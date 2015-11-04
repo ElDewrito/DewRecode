@@ -1,10 +1,10 @@
 #include "ChatWindow.hpp"
 #include "../../ElDorito.hpp"
-#include "../../Packets/ServerChat.hpp"
+#include "../../Chat/ServerChat.hpp"
 
 namespace UI
 {
-	class GameChatHandler : public Server::Chat::ChatHandler
+	class GameChatHandler : public Chat::ChatHandler
 	{
 	public:
 		explicit GameChatHandler(ChatWindow* chatWindow)
@@ -12,23 +12,23 @@ namespace UI
 		{
 		}
 
-		virtual void MessageSent(int senderPeer, Server::Chat::ChatMessage *message, bool *ignore) override
+		virtual void MessageSent(int senderPeer, Chat::ChatMessage *message, bool *ignore) override
 		{
 			Censor(message, "dodger"); // ayyyyy
 		}
 
-		virtual void MessageReceived(const Server::Chat::ChatMessage &message) override
+		virtual void MessageReceived(const Chat::ChatMessage &message) override
 		{
 			auto& dorito = ElDorito::Instance();
 
 			std::string sender;
-			if (message.Type == Server::Chat::ChatMessageType::Server)
+			if (message.Type == Chat::ChatMessageType::Server)
 				sender = "SERVER";
 			else
 				sender = dorito.Utils.ThinString(message.Sender);
 
 			std::string line;
-			if (message.Type == Server::Chat::ChatMessageType::Team)
+			if (message.Type == Chat::ChatMessageType::Team)
 				line += "(TEAM) ";
 			line += "<" + sender + "> " + dorito.Utils.Trim(std::string(message.Body));
 			dorito.Utils.RemoveCharsFromString(line, "\t\r\n");
@@ -36,7 +36,7 @@ namespace UI
 		}
 
 	private:
-		void Censor(Server::Chat::ChatMessage *message, const std::string &str)
+		void Censor(Chat::ChatMessage *message, const std::string &str)
 		{
 			std::string body = message->Body;
 			ElDorito::Instance().Utils.ReplaceString(body, str, "BLAM!");
@@ -61,7 +61,7 @@ namespace UI
 		historyPos = -1;
 		ZeroMemory(inputBuf, IM_ARRAYSIZE(inputBuf));
 
-		Server::Chat::AddHandler(std::make_shared<GameChatHandler>(this));
+		Chat::AddHandler(std::make_shared<GameChatHandler>(this));
 	}
 
 	void ChatWindow::AddToChat(const std::string& text, ChatWindowTab tab)
@@ -151,13 +151,13 @@ namespace UI
 					if (input.substr(0, 3) == "!t " || input.substr(0, 6) == "!team ")
 					{
 						input = dorito.Utils.Trim(input.substr(input.find(' ') + 1));
-						if (input.length() && !Server::Chat::SendTeamMessage(input))
+						if (input.length() && !Chat::SendTeamMessage(input))
 							AddToChat("(Failed to send message! Are you in a game with teams enabled?)", selectedTab);
 					}
 					else
 					{
 						input = dorito.Utils.Trim(input);
-						if (input.length() && !Server::Chat::SendGlobalMessage(input))
+						if (input.length() && !Chat::SendGlobalMessage(input))
 							AddToChat("(Failed to send message! Are you in a game?)", selectedTab);
 					}
 				}

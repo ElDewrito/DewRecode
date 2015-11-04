@@ -4,7 +4,7 @@
 #include "VotingCommandProvider.hpp"
 namespace ChatCommands
 {
-	class Voting : public Server::Chat::ChatHandler
+	class Voting : public Chat::ChatHandler
 	{
 		std::vector<uint64_t> wantsVote;
 		std::map<uint64_t, std::string> mapVotes;
@@ -38,6 +38,6 @@ namespace ChatCommands
 		bool CommandUnRTV(Blam::Network::Session *session, int peer);
 		bool CommandVote(Blam::Network::Session *session, int peer, const std::string& body);
 
-		virtual bool HostMessageReceived(Blam::Network::Session *session, int peer, const Server::Chat::ChatMessage &message) override;
+		virtual bool HostMessageReceived(Blam::Network::Session *session, int peer, const Chat::ChatMessage &message) override;
 	};
 }

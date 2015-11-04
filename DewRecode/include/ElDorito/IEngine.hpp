@@ -16,14 +16,12 @@ namespace Blam
 	}
 }
 
-namespace Server
+
+namespace Chat
 {
-	namespace Chat
-	{
-		typedef std::bitset<17> PeerBitSet;
-		struct ChatMessage;
-		class ChatHandler;
-	}
+	typedef std::bitset<17> PeerBitSet; // TODO: make this use Blam::Network::MaxPeers instead
+	struct ChatMessage;
+	class ChatHandler;
 }
 
 namespace Packets
@@ -359,12 +357,12 @@ public:
 
 	// Sends a server message to specific peers. Only works if you are
 	// host. Returns true if successful.
-	virtual bool SendChatServerMessage(const std::string &body, Server::Chat::PeerBitSet peers) = 0;
+	virtual bool SendChatServerMessage(const std::string &body, Chat::PeerBitSet peers) = 0;
 
 	virtual bool SendChatDirectedServerMessage(const std::string &body, int peer) = 0;
 
 	// Registers a chat handler object.
-	virtual void AddChatHandler(std::shared_ptr<Server::Chat::ChatHandler> handler) = 0;
+	virtual void AddChatHandler(std::shared_ptr<Chat::ChatHandler> handler) = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

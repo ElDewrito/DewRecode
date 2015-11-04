@@ -2,7 +2,7 @@
 #include "ElDorito.hpp"
 #include <d3d9.h>
 #include <algorithm>
-#include "Packets/ServerChat.hpp"
+#include "Chat/ServerChat.hpp"
 
 namespace
 {
@@ -360,9 +360,9 @@ void Engine::Event(const std::string& eventNamespace, const std::string& eventNa
 
 	if (!eventId.compare("Core.Engine.MainMenuShown"))
 	{
-		if (this->mainMenuHasShown)
+		if (this->hasMainMenuShown)
 			return; // this event should only occur once during the lifecycle of the game
-		this->mainMenuHasShown = true;
+		this->hasMainMenuShown = true;
 	}
 
 	auto it = eventCallbacks.find(eventId);
@@ -675,30 +675,30 @@ CustomPacket* Engine::LookUpPacketType(Packets::PacketGuid guid)
 // Sends a message to every peer. Returns true if successful.
 bool Engine::SendChatGlobalMessage(const std::string &body)
 {
-	return Server::Chat::SendGlobalMessage(body);
+	return Chat::SendGlobalMessage(body);
 }
 
 // Sends a message to every player on the local player's team. Returns
 // true if successful.
 bool Engine::SendChatTeamMessage(const std::string &body)
 {
-	return Server::Chat::SendTeamMessage(body);
+	return Chat::SendTeamMessage(body);
 }
 
 // Sends a server message to specific peers. Only works if you are
 // host. Returns true if successful.
-bool Engine::SendChatServerMessage(const std::string &body, Server::Chat::PeerBitSet peers)
+bool Engine::SendChatServerMessage(const std::string &body, Chat::PeerBitSet peers)
 {
-	return Server::Chat::SendServerMessage(body, peers);
+	return Chat::SendServerMessage(body, peers);
 }
 
 bool Engine::SendChatDirectedServerMessage(const std::string& body, int peer)
 {
-	return Server::Chat::SendDirectedServerMessage(body, peer);
+	return Chat::SendDirectedServerMessage(body, peer);
 }
 
 // Registers a chat handler object.
-void Engine::AddChatHandler(std::shared_ptr<Server::Chat::ChatHandler> handler)
+void Engine::AddChatHandler(std::shared_ptr<Chat::ChatHandler> handler)
 {
-	Server::Chat::AddHandler(handler);
+	Chat::AddHandler(handler);
 }

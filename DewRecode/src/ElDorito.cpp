@@ -15,7 +15,7 @@
 #include "Patches/UIPatchProvider.hpp"
 #include "Patches/VirtualKeyboardPatchProvider.hpp"
 
-#include "Packets/ServerChat.hpp"
+#include "Chat/ServerChat.hpp"
 
 ElDorito::ElDorito()
 {
@@ -138,7 +138,7 @@ void ElDorito::Initialize()
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Console.FinishAddCommands()...");
 	CommandManager.FinishAdd(); // call this so that the default values can be applied to the game
 
-	Server::Chat::Initialize();
+	Chat::Initialize();
 	
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Executing dewrito_prefs.cfg...");
 	ElDewritoCommands->Execute("dewrito_prefs.cfg", CommandManager.NullContext);

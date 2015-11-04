@@ -100,7 +100,7 @@
     <ClCompile Include="src\Commands\GameRulesCommandProvider.cpp" />
     <ClCompile Include="src\Commands\IRCCommandProvider.cpp" />
     <ClCompile Include="src\Commands\UpdaterCommandProvider.cpp" />
-    <ClCompile Include="src\Packets\ServerChat.cpp" />
+    <ClCompile Include="src\Chat\ServerChat.cpp" />
     <ClCompile Include="src\Patches\CameraPatchProvider.cpp" />
     <ClCompile Include="src\Commands\DebugCommandProvider.cpp" />
     <ClCompile Include="src\Patches\DebugPatchProvider.cpp" />
@@ -170,7 +170,7 @@
     <ClInclude Include="src\Commands\GameRulesCommandProvider.hpp" />
     <ClInclude Include="src\Commands\IRCCommandProvider.hpp" />
     <ClInclude Include="src\Commands\UpdaterCommandProvider.hpp" />
-    <ClInclude Include="src\Packets\ServerChat.hpp" />
+    <ClInclude Include="src\Chat\ServerChat.hpp" />
     <ClInclude Include="src\Patches\CameraPatchProvider.hpp" />
     <ClInclude Include="src\Commands\DebugCommandProvider.hpp" />
     <ClInclude Include="src\Patches\DebugPatchProvider.hpp" />
