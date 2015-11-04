@@ -16,6 +16,7 @@
 #include "Patches/VirtualKeyboardPatchProvider.hpp"
 
 #include "Chat/ServerChat.hpp"
+#include "Chat/ChatCommandManager.hpp"
 
 ElDorito::ElDorito()
 {
@@ -138,8 +139,10 @@ void ElDorito::Initialize()
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Console.FinishAddCommands()...");
 	CommandManager.FinishAdd(); // call this so that the default values can be applied to the game
 
+	ChatCommandManager = std::make_shared<Chat::ChatCommandManager>();
 	Chat::Initialize();
-	
+	Chat::AddHandler(ChatCommandManager);
+
 	Logger.Log(LogSeverity::Debug, "ElDorito", "Executing dewrito_prefs.cfg...");
 	ElDewritoCommands->Execute("dewrito_prefs.cfg", CommandManager.NullContext);
 

@@ -39,7 +39,7 @@ public:
 	const std::deque<Command>& GetList() { return List; }
 
 	CommandExecuteResult Execute(const std::vector<std::string>& command, CommandContext& context);
-	CommandExecuteResult Execute(const std::string& command, CommandContext& context);
+	CommandExecuteResult Execute(const std::string& command, CommandContext& context, bool writeResultString = true);
 	bool ExecuteList(const std::string& commands, CommandContext& context);
 	bool ExecuteQueue(CommandContext& context);
 

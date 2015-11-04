@@ -32,6 +32,7 @@ class PatchProvider;
 #include "Commands/UpdaterCommandProvider.hpp"
 
 #include "UI/UserInterface.hpp"
+#include "Chat/ChatCommandManager.hpp"
 
 class ElDorito
 {
@@ -53,6 +54,8 @@ public:
 	Engine Engine;
 	Network::PlayerPropertiesExtender PlayerPropertiesExtender;
 	UI::UserInterface UserInterface;
+
+	std::shared_ptr<Chat::ChatCommandManager> ChatCommandManager;
 
 	std::vector<std::shared_ptr<PatchProvider>> Patches;
 	std::shared_ptr<Input::InputPatchProvider> InputPatches;

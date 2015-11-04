@@ -11,14 +11,14 @@ public:
 	SOCKET ClientSocket;
 
 	RemoteConsoleContext(SOCKET socket);
+	void Disconnect();
 
 	void HandleInput(const std::string& input);
 	void WriteOutput(const std::string& output);
 
-	bool IsInternal()
-	{
-		return false;
-	}
+	bool IsInternal() { return false; }
+	bool IsChat() { return false; }
 
-	void Disconnect();
+	int GetPeerIdx() { return 0; }
+	Blam::Network::Session* GetSession() { return 0; }
 };

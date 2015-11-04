@@ -138,25 +138,30 @@ CommandExecuteResult CommandManager::Execute(const std::vector<std::string>& com
 /// <param name="command">The command string.</param>
 /// <param name="isUserInput">Whether the command came from the user or internally.</param>
 /// <returns>The output of the executed command.</returns>
-CommandExecuteResult CommandManager::Execute(const std::string& command, CommandContext& context)
+CommandExecuteResult CommandManager::Execute(const std::string& command, CommandContext& context, bool writeResultString)
 {
 	int numArgs = 0;
 	auto args = CommandLineToArgvA((char*)command.c_str(), &numArgs);
 
 	if (numArgs <= 0)
 	{
-		context.WriteOutput("Invalid input");
+		if (writeResultString)
+			context.WriteOutput("Invalid input");
 		return CommandExecuteResult::InvalidInput;
 	}
 
 	auto cmd = Find(args[0]);
-	if (!cmd || (!context.IsInternal() && cmd->Flags & eCommandFlagsInternal && !(cmd->Flags & eCommandFlagsArchived)))
+	if (!cmd || 
+		(!context.IsInternal() && cmd->Flags & eCommandFlagsInternal && !(cmd->Flags & eCommandFlagsArchived)) ||  // trying to run internal command under non-internal context, and the command also isn't archived
+	    (!context.IsChat() && cmd->Flags & eCommandFlagsChatCommand) || // trying to run a chat command under non-chat context
+	    (context.IsChat() && !(cmd->Flags & eCommandFlagsChatCommand))) // trying to run a non-chat command under chat context
 	{
 #ifdef _DEBUG
 		if (!cmd || numArgs > 1 || cmd->Type == CommandType::Command)
 		{
 #endif
-			context.WriteOutput("Command/variable not found");
+			if (writeResultString)
+				context.WriteOutput("Command/variable not found");
 			return CommandExecuteResult::NotFound;
 #ifdef _DEBUG
 		}
@@ -168,7 +173,8 @@ CommandExecuteResult CommandManager::Execute(const std::string& command, Command
 	if ((cmd->Flags & eCommandFlagsRunOnMainMenu) && !dorito.Engine.HasMainMenuShown())
 	{
 		queuedCommands.push_back(command);
-		context.WriteOutput("Command/variable queued until mainmenu shows");
+		if (writeResultString)
+			context.WriteOutput("Command/variable queued until mainmenu shows");
 		return CommandExecuteResult::Queued;
 	}
 
@@ -177,12 +183,14 @@ CommandExecuteResult CommandManager::Execute(const std::string& command, Command
 		if (!dorito.ServerCommands || !dorito.ServerCommands->VarCheats)
 		{
 			queuedCommands.push_back(command);
-			context.WriteOutput("Command/variable queued until mainmenu shows");
+			if (writeResultString)
+				context.WriteOutput("Command/variable queued until mainmenu shows");
 			return CommandExecuteResult::Queued;
 		}
 		if (!dorito.ServerCommands->VarCheats->ValueInt && (numArgs > 1 || cmd->Type == CommandType::Command))
 		{
-			context.WriteOutput("Command/variable cannot be used unless Server.Cheats is set to 1");
+			if (writeResultString)
+				context.WriteOutput("Command/variable cannot be used unless Server.Cheats is set to 1");
 			return CommandExecuteResult::CheatCommand;
 		}
 	}
@@ -194,7 +202,8 @@ CommandExecuteResult CommandManager::Execute(const std::string& command, Command
 		{
 			if (numArgs > 1 || cmd->Type == CommandType::Command)
 			{
-				context.WriteOutput("You must be hosting a game to use this command/variable");
+				if (writeResultString)
+					context.WriteOutput("You must be hosting a game to use this command/variable");
 				return CommandExecuteResult::MustBeHost;
 			}
 		}
@@ -204,7 +213,8 @@ CommandExecuteResult CommandManager::Execute(const std::string& command, Command
 		{
 			if (numArgs > 1 || cmd->Type == CommandType::Command)
 			{
-				context.WriteOutput("You must be at the main menu or hosting a game to use this command/variable");
+				if (writeResultString)
+					context.WriteOutput("You must be at the main menu or hosting a game to use this command/variable");
 				return CommandExecuteResult::MustBeHostOrMainMenu;
 			}
 		}
@@ -222,27 +232,34 @@ CommandExecuteResult CommandManager::Execute(const std::string& command, Command
 
 	switch (updateRet)
 	{
-	case VariableSetReturnValue::Error:
-	{
-		context.WriteOutput("Command/variable not found");
-		return CommandExecuteResult::NotFound;
-	}
-	case VariableSetReturnValue::InvalidArgument:
-	{
-		context.WriteOutput("Invalid value");
-		return CommandExecuteResult::InvalidValue;
-	}
-	case VariableSetReturnValue::OutOfRange:
-		if (cmd->Type == CommandType::VariableInt)
-			context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueIntMin) + ".." + std::to_string(cmd->ValueIntMax) + "]");
-		else if (cmd->Type == CommandType::VariableInt64)
-			context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueInt64Min) + ".." + std::to_string(cmd->ValueInt64Max) + "]");
-		else if (cmd->Type == CommandType::VariableFloat)
-			context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueFloatMin) + ".." + std::to_string(cmd->ValueFloatMax) + "]");
-		else
-			context.WriteOutput("Value " + argsVect[0] + " out of range [this shouldn't be happening!]");
+		case VariableSetReturnValue::Error:
+		{
+			if (writeResultString)
+				context.WriteOutput("Command/variable not found");
+			return CommandExecuteResult::NotFound;
+		}
+		case VariableSetReturnValue::InvalidArgument:
+		{
+			if (writeResultString)
+				context.WriteOutput("Invalid value");
+			return CommandExecuteResult::InvalidValue;
+		}
+		case VariableSetReturnValue::OutOfRange:
+		{
+			if (writeResultString)
+			{
+				if (cmd->Type == CommandType::VariableInt)
+					context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueIntMin) + ".." + std::to_string(cmd->ValueIntMax) + "]");
+				else if (cmd->Type == CommandType::VariableInt64)
+					context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueInt64Min) + ".." + std::to_string(cmd->ValueInt64Max) + "]");
+				else if (cmd->Type == CommandType::VariableFloat)
+					context.WriteOutput("Value " + argsVect[0] + " out of range [" + std::to_string(cmd->ValueFloatMin) + ".." + std::to_string(cmd->ValueFloatMax) + "]");
+				else
+					context.WriteOutput("Value " + argsVect[0] + " out of range [this shouldn't be happening!]");
+			}
 
-		return CommandExecuteResult::OutOfRange;
+			return CommandExecuteResult::OutOfRange;
+		}
 	}
 
 	// special case for blanking strings
@@ -251,13 +268,15 @@ CommandExecuteResult CommandManager::Execute(const std::string& command, Command
 
 	if (numArgs <= 1)
 	{
-		context.WriteOutput(previousValue);
+		if (writeResultString)
+			context.WriteOutput(previousValue);
 		return CommandExecuteResult::Success;
 	}
 
 	if (!cmd->UpdateEvent)
 	{
-		context.WriteOutput(previousValue + " -> " + cmd->ValueString); // no update event, so we'll just return with what we set the value to
+		if (writeResultString)
+			context.WriteOutput(previousValue + " -> " + cmd->ValueString); // no update event, so we'll just return with what we set the value to
 		return CommandExecuteResult::Success;
 	}
 
@@ -266,7 +285,8 @@ CommandExecuteResult CommandManager::Execute(const std::string& command, Command
 	if (!ret) // error, revert the variable
 		this->SetVariable(cmd, previousValue, std::string());
 
-	context.WriteOutput(previousValue + " -> " + cmd->ValueString); // TODO: don't write this if the updateevent has written something
+	if (writeResultString)
+		context.WriteOutput(previousValue + " -> " + cmd->ValueString); // TODO: don't write this if the updateevent has written something
 
 	return CommandExecuteResult::Success;
 }

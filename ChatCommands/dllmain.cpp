@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <ElDorito/ElDorito.hpp>
-#include "Voting.hpp"
+#include "VotingCommandProvider.hpp"
 
 #define PLUGIN_API extern "C" __declspec(dllexport)
 
@@ -18,7 +18,6 @@ ElDoritoPluginInfo ourPluginInfo =
 	"0.1"
 };
 
-std::shared_ptr<ChatCommands::Voting> cmdVoting;
 std::shared_ptr<ChatCommands::VotingCommandProvider> cmdProvVoting;
 PLUGIN_API ElDoritoPluginInfo* __cdecl GetPluginInfo()
 {
@@ -36,9 +35,6 @@ PLUGIN_API bool __cdecl InitializePlugin(std::vector<std::shared_ptr<CommandProv
 
 	cmdProvVoting = std::make_shared<ChatCommands::VotingCommandProvider>();
 	commandProviders->push_back(cmdProvVoting);
-
-	cmdVoting = std::make_shared<ChatCommands::Voting>(cmdProvVoting);
-	engine->AddChatHandler(cmdVoting);
 
 	return true;
 }

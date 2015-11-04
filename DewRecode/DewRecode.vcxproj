@@ -92,6 +92,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\CommandContexts\ChatCommandContext.cpp" />
+    <ClCompile Include="src\Chat\ChatCommandManager.cpp" />
     <ClCompile Include="src\CommandContexts\ConsoleContext.cpp" />
     <ClCompile Include="src\CommandContexts\LogFileContext.cpp" />
     <ClCompile Include="src\CommandContexts\NullContext.cpp" />
@@ -163,6 +165,8 @@
     <ClInclude Include="include\ElDorito\Pointer.hpp" />
     <ClInclude Include="include\ElDorito\UI\IUserInterface.hpp" />
     <ClInclude Include="include\ElDorito\UI\UIWindow.hpp" />
+    <ClInclude Include="src\CommandContexts\ChatCommandContext.hpp" />
+    <ClInclude Include="src\Chat\ChatCommandManager.hpp" />
     <ClInclude Include="src\CommandContexts\ConsoleContext.hpp" />
     <ClInclude Include="src\CommandContexts\LogFileContext.hpp" />
     <ClInclude Include="src\CommandContexts\RemoteConsoleContext.hpp" />

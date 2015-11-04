@@ -53,6 +53,7 @@ enum CommandFlags
 	eCommandFlagsMustBeHosting = 1 << 6,		// only execute the command if the user is host
 	eCommandFlagsOmitValueInList = 1 << 7,		// omit the variables value in help listing
 	eCommandFlagsInternal = 1 << 8,				// disallow the user from using this command, only internal ExecuteCommand calls can use it
+	eCommandFlagsChatCommand = 1 << 9,			// command is a chat command
 };
 
 enum class CommandExecuteResult
@@ -149,7 +150,7 @@ public:
 	/// <param name="command">The command string.</param>
 	/// <param name="isUserInput">Whether the command came from the user or internally.</param>
 	/// <returns>Whether the command executed successfully.</returns>
-	virtual CommandExecuteResult Execute(const std::string& command, CommandContext& context) = 0;
+	virtual CommandExecuteResult Execute(const std::string& command, CommandContext& context, bool writeResultString = true) = 0;
 
 	/// <summary>
 	/// Executes a list of commands, seperated by new lines
