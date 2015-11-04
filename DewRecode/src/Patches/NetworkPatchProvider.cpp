@@ -39,6 +39,21 @@ namespace Network
 			Patch("SyslinkPatch3", 0x45A8BB, { 0xEB }),
 			Patch("UICrashPatch", 0x109C5E0, { 0xC2, 0x08, 0x00 })
 		});
+
+		// TODO: move this somewhere else
+		PatchDisableD3D = patches.AddPatchSet("PatchDisableD3D", {
+			// forces the game to use a null d3d device
+			Patch("D3DUseNullDevice", 0x42EBBB, { 0x1 }),
+
+			// fixes an exception that happens with null d3d
+			Patch("D3DExceptCall", 0xA75E30, { 0xC3 }),
+
+			// fixes the game being stuck in some d3d-related while loop
+			Patch("D3DFreeze", 0xA22290, { 0xC3 }),
+
+			// stops D3DDevice->EndScene from being called
+			Patch("D3DEndScene", 0xA21796, 0x90, 6) // TODO: set eax?
+		});
 	}
 	PatchSet NetworkPatchProvider::GetPatches()
 	{
@@ -80,6 +95,17 @@ namespace Network
 	bool NetworkPatchProvider::GetDedicatedServerMode()
 	{
 		return PatchDedicatedServer->Enabled;
+	}
+
+	bool NetworkPatchProvider::SetD3DDisabled(bool isDisabled)
+	{
+		ElDorito::Instance().PatchManager.EnablePatchSet(PatchDisableD3D, isDisabled);
+		return isDisabled;
+	}
+
+	bool NetworkPatchProvider::GetD3DDisabled()
+	{
+		return PatchDisableD3D->Enabled;
 	}
 }
 

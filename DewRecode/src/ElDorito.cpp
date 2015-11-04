@@ -160,7 +160,7 @@ void ElDorito::Initialize()
 
 	int numArgs = 0;
 	LPWSTR* szArgList = CommandLineToArgvW(GetCommandLineW(), &numArgs);
-	bool skipKill = false;
+	bool nod3d = false;
 	bool dedicated = false;
 
 	if (szArgList && numArgs > 1)
@@ -174,14 +174,10 @@ void ElDorito::Initialize()
 				continue;
 
 			if (arg.compare(L"-dedicated") == 0)
-			{
 				dedicated = true;
-			}
 
-			if (arg.compare(L"-multiInstance") == 0)
-			{
-				skipKill = true;
-			}
+			if (arg.compare(L"-nod3d") == 0)
+				nod3d = true;
 
 			size_t pos = arg.find(L"=");
 			if (pos == std::wstring::npos || arg.length() <= pos + 1) // if it doesn't contain an =, or there's nothing after the =
@@ -193,11 +189,21 @@ void ElDorito::Initialize()
 			CommandManager.Execute(argname + " \"" + argvalue + "\"", CommandManager.ConsoleContext);
 		}
 	}
+	std::string text = "ElDewrito initialized!";
 
 	if (dedicated)
+	{
 		NetworkPatches->SetDedicatedServerMode(true);
+		text += " (dedicated)";
+	}
 
-	Logger.Log(LogSeverity::Info, "ElDorito", "ElDewrito initialized!");
+	if (nod3d)
+	{
+		NetworkPatches->SetD3DDisabled(true);
+		text += " (d3d disabled)";
+	}
+
+	Logger.Log(LogSeverity::Info, "ElDorito", text);
 	this->inited = true;
 }
 
