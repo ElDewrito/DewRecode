@@ -2,6 +2,7 @@
 #include "../ElDorito.hpp"
 #include <sstream>
 #include <fstream>
+#include <ElDorito/Blam/Tags/Tags.hpp>
 
 namespace
 {
@@ -28,7 +29,8 @@ namespace Game
 			Command::CreateCommand("Game", "Map", "map", "Loads a map or map variant", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandMap), { "name(string) The internal name of the map or Forge map to load" }),
 			Command::CreateCommand("Game", "GameType", "gametype", "Loads a gametype", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandGameType), { "name(string) The internal name of the built-in gametype or custom gametype to load" }),
 			Command::CreateCommand("Game", "Start", "start", "Starts or restarts the game", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStart)),
-			Command::CreateCommand("Game", "Stop", "stop", "Stops the game and returns to lobby", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStop))
+			Command::CreateCommand("Game", "Stop", "stop", "Stops the game and returns to lobby", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStop)),
+			Command::CreateCommand("Game", "TagAddress", "tag", "Gets the address of a tag in memory", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandTagAddress))
 		};
 
 		return commands;
@@ -39,6 +41,32 @@ namespace Game
 		VarLanguageID = manager->Add(Command::CreateVariableInt("Game", "LanguageID", "languageid", "The index of the language to use", eCommandFlagsArchived, 0));
 		VarLanguageID->ValueIntMin = 0;
 		VarLanguageID->ValueIntMax = 11;
+	}
+
+	bool GameCommandProvider::CommandTagAddress(const std::vector<std::string>& Arguments, CommandContext& context)
+	{
+		if (Arguments.size() <= 0)
+		{
+			context.WriteOutput("You must specify a tag index!");
+			return false;
+		}
+
+		int tagIndex = 0;
+		try
+		{
+			tagIndex = std::stoi(Arguments[0], 0, 0);
+		}
+		catch (std::invalid_argument)
+		{
+			context.WriteOutput("Invalid argument given.");
+			return false;
+		}
+
+		void* address = Blam::Tags::GetTagAddress(tagIndex);
+		std::stringstream ss;
+		ss << "Tag 0x" << std::hex << tagIndex << " is located at 0x" << std::hex << (int)address;
+		context.WriteOutput(ss.str());
+		return true;
 	}
 
 	bool GameCommandProvider::CommandExit(const std::vector<std::string>& Arguments, CommandContext& context)
@@ -79,9 +107,14 @@ namespace Game
 		ss << "Command line args: " << (ArgList.empty() ? "(null)" : ArgList) << std::endl;
 		ss << "Local secure key: " << (LocalSecureKey.empty() ? "(null)" : LocalSecureKey) << std::endl;
 
+		ss << "Networking: ";
 		auto* session = dorito.Engine.GetActiveNetworkSession();
 		if (session && (session->IsEstablished() || session->IsHost()))
 		{
+			ss << session->IsEstablished() ? "established " : "";
+			ss << session->IsHost() ? "hosting " : "";
+			ss << "on network slot " << session->AddressIndex << std::endl;
+
 			auto managedBase = Pointer(0x2247450);
 			Blam::Network::ManagedSession* managedSession = managedBase(session->AddressIndex * 0x608);
 
@@ -92,6 +125,9 @@ namespace Game
 			ss << "XNKID: " << xnkid << std::endl;
 			ss << "XNAddr: " << xnaddr << std::endl;
 		}
+		else
+			ss << "inactive" << std::endl;
+
 		ss << "Game server port: " << std::dec << Pointer(0x1860454).Read<uint32_t>() << std::endl;
 		ss << "Info server running: " << (dorito.ServerCommands->IsInfoServerRunning() ? "true" : "false") << std::endl;
 		ss << "Info server port: " << std::dec << dorito.ServerCommands->VarPort->ValueInt << std::endl;

@@ -178,10 +178,7 @@ namespace
 
 		uint32_t index = *(uint32_t*)GetObjectDataAddress(objectIndex);
 
-		typedef char* (*GetTagAddressPtr)(int groupTag, uint32_t index);
-		auto GetTagAddress = reinterpret_cast<GetTagAddressPtr>(0x503370);
-
-		char* tagAddr = GetTagAddress(0x70616577, index);
+		char* tagAddr = (char*)Blam::Tags::GetTagAddress(index);
 
 		return ((*(uint32_t*)(tagAddr + 0x1D4) >> 22) & 1) == 1;
 	}

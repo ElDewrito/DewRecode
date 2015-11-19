@@ -1232,8 +1232,8 @@ namespace Server
 
 					if (authenticated)
 					{
-						std::string xnkid;
-						std::string xnaddr;
+						std::string xnkid = "N/A";
+						std::string xnaddr = "N/A";
 
 						auto* session = dorito.Engine.GetActiveNetworkSession();
 						if (session && (session->IsEstablished() || session->IsHost()))

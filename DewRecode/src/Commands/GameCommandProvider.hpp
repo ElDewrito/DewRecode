@@ -47,5 +47,7 @@ namespace Game
 
 		bool CommandStop(const std::vector<std::string>& Arguments, CommandContext& context);
 		bool Stop();
+
+		bool CommandTagAddress(const std::vector<std::string>& Arguments, CommandContext& context);
 	};
 }

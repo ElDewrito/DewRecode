@@ -36,6 +36,24 @@ struct CustomPacket
 	std::shared_ptr<Packets::RawPacketHandler> Handler;
 };
 
+#define EDEVENT_ENGINE_FIRSTTICK "Engine.FirstTick"
+#define EDEVENT_ENGINE_MAINMENUSHOWN "Engine.MainMenuShown"
+#define EDEVENT_ENGINE_TAGSLOADED "Engine.TagsLoaded"
+#define EDEVENT_INPUT_KEYBOARDUPDATE "Input.KeyboardUpdate"
+
+#define EDEVENT_SERVER_START "Server.Start"
+#define EDEVENT_SERVER_STOP "Server.Stop"
+#define EDEVENT_SERVER_PLAYERKICK "Server.PlayerKick"
+#define EDEVENT_SERVER_LIFECYCLESTATECHANGED "Server.LifeCycleStateChanged"
+#define EDEVENT_SERVER_PONGRECEIVED "Server.PongReceived"
+
+#define EDEVENT_GAME_JOINING "Game.Joining"
+#define EDEVENT_GAME_LEAVE "Game.Leave"
+#define EDEVENT_GAME_END "Game.End"
+
+#define EDEVENT_DIRECT3D_INIT "Direct3D.Init"
+
+#define EDEVENT_PLAYER_CHANGENAME "Player.ChangeName"
 /* 
 List of events registered by ED (eventNamespace/eventName seperated by a period, parameter in parens):
 	Core.Engine.FirstTick - signalled when the game engine loop starts ticking, only signals once
@@ -53,8 +71,6 @@ List of events registered by ED (eventNamespace/eventName seperated by a period,
 	Core.Game.Leave - when the user leaves a game
 	Core.Game.End - when a game has finished
 
-	Core.Direct3D.EndScene - when the game is about to call D3DDevice::EndScene
-
 	Core.Player.ChangeName - when the user successfully changes their name
 
 (soon):
@@ -64,8 +80,7 @@ List of events registered by ED (eventNamespace/eventName seperated by a period,
 	Core.Game.Join - when the user has joined a game successfully
 	Core.Game.Start - when a game has started
 	Core.Player.Join(PlayerInfo) - when a user joins the game (signals for all users, not just host)
-	Core.Player.Leave(PlayerInfo) - when a user leaves the game (signals for all users, not just host) (ez)
-	Fore.Twenty - when the kush hits you
+	Core.Player.Leave(PlayerInfo) - when a user leaves the game (signals for all users, not just host)
 
 later:
 	Core.Lobby.ChangeMap

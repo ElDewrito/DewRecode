@@ -90,7 +90,7 @@ namespace Blam
 
 		// Gets a tag by index.
 		template<class TagType>
-		TagType* GetTag(uint32_t index)
+		inline TagType* GetTag(uint32_t index)
 		{
 			static_assert(IsTagType<TagType>::Value, "Cannot call GetTag() on a non-tag type");
 			if (index != 0xFFFFFFFF)
@@ -100,6 +100,13 @@ namespace Blam
 				return GetTagAddress(TagType::GroupTag, index);
 			}
 			return nullptr;
+		}
+
+		inline void* GetTagAddress(uint32_t index)
+		{
+			typedef void* (*GetTagAddressPtr)(int groupTag, uint32_t index);
+			auto GetTagAddress = reinterpret_cast<GetTagAddressPtr>(0x503370);
+			return GetTagAddress(0, index);
 		}
 	}
 }
