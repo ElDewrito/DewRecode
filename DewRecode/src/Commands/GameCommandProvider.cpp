@@ -111,8 +111,8 @@ namespace Game
 		auto* session = dorito.Engine.GetActiveNetworkSession();
 		if (session && (session->IsEstablished() || session->IsHost()))
 		{
-			ss << session->IsEstablished() ? "established " : "";
-			ss << session->IsHost() ? "hosting " : "";
+			ss << (session->IsEstablished() ? "established " : "");
+			ss << (session->IsHost() ? "hosting " : "");
 			ss << "on network slot " << session->AddressIndex << std::endl;
 
 			auto managedBase = Pointer(0x2247450);
