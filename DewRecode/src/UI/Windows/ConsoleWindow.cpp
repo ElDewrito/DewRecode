@@ -31,6 +31,36 @@ namespace UI
 
 	int ConsoleWindow::TextEditCallback(ImGuiTextEditCallbackData* data)
 	{
+		switch (data->EventFlag)
+		{
+			//TODO: ImGuiInputTextFlags_CallbackCompletion
+			case ImGuiInputTextFlags_CallbackHistory:
+			{
+				// Example of HISTORY
+				const int prev_history_pos = historyPos;
+				if (data->EventKey == ImGuiKey_UpArrow)
+				{
+					if (historyPos == -1)
+						historyPos = history.size() - 1;
+					else if (historyPos > 0)
+						historyPos--;
+				}
+				else if (data->EventKey == ImGuiKey_DownArrow)
+				{
+					if (historyPos != -1)
+						if (++historyPos >= (int)history.size())
+							historyPos = -1;
+				}
+
+				// A better implementation would preserve the data on the current input line along with cursor position.
+				if (prev_history_pos != historyPos)
+				{
+					sprintf_s(data->Buf, data->BufSize, "%s", (historyPos >= 0) ? history[historyPos].c_str() : "");
+					data->BufDirty = true;
+					data->CursorPos = data->SelectionStart = data->SelectionEnd = (int)strlen(data->Buf);
+				}
+			}
+		}
 		return 0;
 	}
 
@@ -84,6 +114,18 @@ namespace UI
 			{
 				std::string input = std::string(inputBuf);
 				AddToLog(">" + input);
+				historyPos = -1;
+
+				// search history for the string, if theres an exact match remove the existing entry
+				for (int i = history.size() - 1; i >= 0; i--)
+					if (_stricmp(history[i].c_str(), input.c_str()) == 0)
+					{
+						history.erase(history.begin() + i);
+						break;
+					}
+
+				history.push_back(input);
+
 				context.HandleInput(input);
 				ZeroMemory(inputBuf, 256);
 				scrollToBottom = true;
