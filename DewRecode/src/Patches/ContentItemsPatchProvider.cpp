@@ -154,7 +154,11 @@ namespace
 		else
 			swprintf_s(dest, MaxCount, L"%ls\\mods\\variants\\%ls\\", currentDir, variantName);
 
-		SHCreateDirectoryExW(NULL, dest, NULL);
+		int res = SHCreateDirectoryExW(NULL, dest, NULL);
+		auto& dorito = ElDorito::Instance();
+
+		auto destFriendly = dorito.Utils.ThinString(std::wstring(dest));
+		dorito.Logger.Log(LogSeverity::Debug, "ContentItems", "GetFilePathForItem: SHCreateDirectoryExW(%s): %d", destFriendly.c_str(), res);
 
 		if (variantType == 10)
 			swprintf_s(dest, MaxCount, L"%ls\\mods\\maps\\%ls\\sandbox.map", currentDir, variantName);
@@ -166,7 +170,6 @@ namespace
 
 			swprintf_s(dest, MaxCount, L"%ls\\mods\\variants\\%ls\\%ls", currentDir, variantName, fileName);
 		}
-		auto& dorito = ElDorito::Instance();
 
 		auto path = dorito.Utils.ThinString(variantName);
 		auto result = dorito.Utils.ThinString(dest);
@@ -308,7 +311,12 @@ namespace
 
 		swprintf_s(destPtr, size, L"%ls\\mods\\temp\\", currentDir);
 
-		SHCreateDirectoryExW(NULL, destPtr, NULL);
+		int res = SHCreateDirectoryExW(NULL, destPtr, NULL);
+		auto& dorito = ElDorito::Instance();
+
+		auto destFriendly = dorito.Utils.ThinString(std::wstring(destPtr));
+		dorito.Logger.Log(LogSeverity::Debug, "ContentItems", "GetContentMountPathHook: SHCreateDirectoryExW(%s): %d", destFriendly.c_str(), res);
+
 		return destPtr;
 	}
 
