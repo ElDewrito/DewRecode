@@ -86,6 +86,11 @@ namespace
 
 	bool AddContentItem(wchar_t* itemPath)
 	{
+		auto& dorito = ElDorito::Instance();
+
+		auto path = dorito.Utils.ThinString(std::wstring(itemPath));
+		dorito.Logger.Log(LogSeverity::Debug, "ContentItems", "Adding content item from %s...", path.c_str());
+
 		uint8_t fileData[0xF0];
 
 		FILE* file;
@@ -114,6 +119,8 @@ namespace
 		fseek(file, 0x40, SEEK_SET);
 		fread(fileData, 1, 0xF0, file);
 		fclose(file);
+
+		dorito.Logger.Log(LogSeverity::Debug, "ContentItems", "Content item checks passed, adding entry to content items global!");
 
 		auto dataPtr = contentItemsGlobal->AddEntry();
 		if (dataPtr == nullptr)
@@ -159,11 +166,16 @@ namespace
 
 			swprintf_s(dest, MaxCount, L"%ls\\mods\\variants\\%ls\\%ls", currentDir, variantName, fileName);
 		}
+		auto& dorito = ElDorito::Instance();
+
+		auto path = dorito.Utils.ThinString(variantName);
+		auto result = dorito.Utils.ThinString(dest);
+		dorito.Logger.Log(LogSeverity::Debug, "ContentItems", "GetFilePathForItem(%s, %d): %s", path.c_str(), variantType, result.c_str());
 	}
 
 	void AddAllBLFContentItems(const std::string& path)
 	{
-		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "Loading BLF files (dir: %s)", path.c_str());
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "Loading BLF files from %s...", path.c_str());
 
 		for (std::tr2::sys::directory_iterator itr(path); itr != std::tr2::sys::directory_iterator(); ++itr)
 		{
@@ -201,6 +213,7 @@ namespace
 	{
 		wchar_t* variantName = (wchar_t*)(contentItem + 0x18);
 		uint32_t variantType = *(uint32_t*)(contentItem + 0xC8);
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "GetFilePathForContentItem called:");
 
 		GetFilePathForItem(dest, MaxCount, variantName, variantType);
 	}
@@ -208,6 +221,8 @@ namespace
 
 	char __fastcall Game_SetFlagAfterCopyBLFDataHook(uint8_t* flag, void* unused, char flagIdx, char set)
 	{
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "Game_SetFlagAfterCopyBLFDataHook(%d, %d)", (int)flagIdx, (int)set);
+
 		typedef char(__fastcall *Game_SetFlagPtr)(uint8_t* flag, void* unused, char flagIdx, char set);
 		auto Game_SetFlag = reinterpret_cast<Game_SetFlagPtr>(0x52BD40);
 		char ret = Game_SetFlag(flag, unused, flagIdx, set);
@@ -227,6 +242,8 @@ namespace
 
 	char __fastcall FS_GetFiloForContentItemHook(uint8_t* contentItem, void* unused, void* filo)
 	{
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "FS_GetFiloForContentItemHook");
+
 		typedef void*(__cdecl *FSCallsSetupFiloStruct2Ptr)(void* destFilo, wchar_t* Src, char unk);
 		auto fsCallsSetupFiloStruct2 = reinterpret_cast<FSCallsSetupFiloStruct2Ptr>(0x5285B0);
 		fsCallsSetupFiloStruct2(filo, (wchar_t*)(contentItem + 0x100), 0);
@@ -236,6 +253,8 @@ namespace
 
 	char __fastcall FS_GetFiloForContentItemHook1(uint8_t* contentItem, void* unused, void* filo)
 	{
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "FS_GetFiloForContentItemHook1");
+
 		typedef void*(__cdecl *FSCallsSetupFiloStruct2Ptr)(void* destFilo, wchar_t* Src, char unk);
 		auto fsCallsSetupFiloStruct2 = reinterpret_cast<FSCallsSetupFiloStruct2Ptr>(0x5285B0);
 		fsCallsSetupFiloStruct2(filo, (wchar_t*)(contentItem + 0x100), 1);
@@ -245,6 +264,8 @@ namespace
 
 	wchar_t* __fastcall FS_GetFilePathForContentItemHook(uint8_t* contentItem, void* unused, wchar_t* dest, size_t MaxCount)
 	{
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "FS_GetFilePathForContentItemHook");
+
 		// copy the path we put in the unused XCONTENT_DATA field in the content item global
 		wcscpy_s(dest, MaxCount, (wchar_t*)(contentItem + 0x100));
 		return dest;
@@ -256,6 +277,8 @@ namespace
 
 		wchar_t* variantName = (wchar_t*)(blfStart + 0x48); // when saving forge maps we only get the variant name, not the blf data :s
 		int variantType = *(uint32_t*)(blfStart + 0xF8);
+		auto nameStr = ElDorito::Instance().Utils.ThinString(std::wstring(variantName));
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "SaveFileGetNameHook(%s, %d)", nameStr.c_str(), variantType);
 
 		GetFilePathForItem(Src, MaxCount, variantName, variantType);
 
@@ -264,16 +287,20 @@ namespace
 
 	char __stdcall PackageCreateHook(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 	{
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "PackageCreateHook returning 1");
 		return 1;
 	}
 
 	char __stdcall PackageMountHook(int a1, int a2, int a3, int a4)
 	{
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "PackageMountHook returning 1");
 		return 1;
 	}
 
 	wchar_t* __stdcall GetContentMountPathHook(wchar_t* destPtr, int size, int unk)
 	{
+		ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "GetContentMountPathHook");
+
 		// TODO: move this to temp folder, or find a way to disable it (game uses path returned by this func to create a 0 byte sandbox.map)
 		wchar_t currentDir[256];
 		memset(currentDir, 0, 256 * sizeof(wchar_t));
@@ -295,6 +322,8 @@ namespace
 
 		if (Src == (char*)0x165B170) // "content items"
 		{
+			ElDorito::Instance().Logger.Log(LogSeverity::Debug, "ContentItems", "AllocateGameGlobalMemory2Hook: allocating content items global");
+
 			// set some bytes thats needed in the contentfile related funcs
 			*(uint8_t*)(retData + 0x29) = 1;
 			*(uint32_t*)(retData + 0x40) = 1;
