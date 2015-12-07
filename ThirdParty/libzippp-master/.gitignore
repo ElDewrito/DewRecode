@@ -1,0 +1,7 @@
+nbproject
+libzippp-Makefile.mk
+obj
+test_static
+test_shared
+*.a
+*.so
