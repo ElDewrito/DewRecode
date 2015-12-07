@@ -24,6 +24,7 @@ class PatchProvider;
 #include "Commands/ForgeCommandProvider.hpp"
 #include "Commands/GameCommandProvider.hpp"
 #include "Commands/GameRulesCommandProvider.hpp"
+#include "Commands/GraphicsCommandProvider.hpp"
 #include "Commands/InputCommandProvider.hpp"
 #include "Commands/IRCCommandProvider.hpp"
 #include "Commands/PlayerCommandProvider.hpp"
@@ -34,19 +35,27 @@ class PatchProvider;
 #include "UI/UserInterface.hpp"
 #include "Chat/ChatCommandManager.hpp"
 
+#include "ModPacks/ModPackage.hpp"
+
 class ElDorito
 {
 private:
 	bool inited = false;
-	std::map<std::string, HMODULE> plugins;
 
 	void loadPlugins();
+	void loadModPackages();
 
 	void initClasses();
 	void initPatchProviders();
 	void initCommandProvider(std::shared_ptr<CommandProvider> command);
 
+	void onTagsLoaded(void* param);
+
 public:
+	std::map<std::string, HMODULE> Plugins;
+	std::vector<ModPackage*> ModPackages;
+	std::vector<std::string> DisabledModIds;
+
 	DebugLog Logger;
 	PatchManager PatchManager;
 	CommandManager CommandManager;
@@ -67,6 +76,7 @@ public:
 	std::shared_ptr<Forge::ForgeCommandProvider> ForgeCommands;
 	std::shared_ptr<Game::GameCommandProvider> GameCommands;
 	std::shared_ptr<GameRules::GameRulesCommandProvider> GameRulesCommands;
+	std::shared_ptr<Graphics::GraphicsCommandProvider> GraphicsCommands;
 	std::shared_ptr<Input::InputCommandProvider> InputCommands;
 	std::shared_ptr<IRC::IRCCommandProvider> IRCCommands;
 	std::shared_ptr<Player::PlayerCommandProvider> PlayerCommands;

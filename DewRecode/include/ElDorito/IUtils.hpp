@@ -116,6 +116,8 @@ public:
 	/// <param name="secondsToWait">How many seconds to wait for the process to exit.</param>
 	/// <returns>The return value of the process.</returns>
 	virtual size_t ExecuteProcess(const std::wstring& fullPathToExe, std::wstring& parameters, size_t secondsToWait) = 0;
+
+	virtual std::string ColorToHex(float col[3]) = 0;
 };
 
 #define UTILS_INTERFACE_VERSION001 "Utils001"

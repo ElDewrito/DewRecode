@@ -57,7 +57,7 @@ namespace Player
 		};
 
 		srand((unsigned int)time(0));
-		manager->SetVariable(VarName, std::string(defaultNames[rand() % 41]), std::string());
+		manager->SetVariable(VarName, std::string(defaultNames[rand() % 41]), std::string(), true);
 	}
 
 	bool PlayerCommandProvider::CommandPrintUid(const std::vector<std::string>& Arguments, CommandContext& context)
@@ -89,7 +89,7 @@ namespace Player
 		auto* session = dorito.Engine.GetActiveNetworkSession();
 		if (session && session->IsEstablished())
 		{
-			context.WriteOutput("You can only change your name when you're disconnected.");
+			context.WriteOutput("You can only change your name while disconnected.");
 			return false;
 		}
 

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<modPack dewritoVersion="0.5">
+  <id>b269cfe6-8d14-4612-80e9-c39abb090be9</id>
+  <build>1</build>
+  <name>LODMod</name>
+  <description>Edits LOD variables to reduce pop-in/pop-out, thanks to Phantasm for finding these</description>
+  <author>emoose</author>
+  <version>1.0</version>
+  
+  <mod id="1" selector="class" className="hlmt" name="Edit hlmt LOD values">
+    <field id="1" type="float" offset="0x40" name="L1">10000</field>
+    <field id="2" type="float" offset="0x44" name="L2">0</field>
+    <field id="3" type="float" offset="0x48" name="L3">0</field>
+    <field id="4" type="float" offset="0x4C" name="L4">0</field>
+    <field id="5" type="float" offset="0x50" name="L5">0</field>
+  </mod>
+  
+  <mod id="2" selector="class" className="dctr" name="Edit dctr LOD values">
+    <field id="1" type="float" offset="0x64" name="Lower">0</field>
+    <field id="2" type="float" offset="0x68" name="Upper">10000</field>
+  </mod>
+</modPack>

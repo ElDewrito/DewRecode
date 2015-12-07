@@ -803,6 +803,18 @@ size_t PublicUtils::ExecuteProcess(const std::wstring& fullPathToExe, std::wstri
 	return iReturnVal;
 }
 
+std::string PublicUtils::ColorToHex(float col[3])
+{
+	std::stringstream stream;
+	stream << "#";
+	for (int i = 0; i < 3; i++)
+	{
+		int val = (int)(255.f * col[i]);
+		stream << std::setfill('0') << std::setw(2) << std::hex << val;
+	}
+	return stream.str();
+}
+
 PublicUtils::PublicUtils()
 {
 	WSADATA wsaData;

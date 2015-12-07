@@ -76,12 +76,12 @@ namespace Server
 
 	void ServerCommandProvider::RegisterCallbacks(IEngine* engine)
 	{
-		engine->OnEvent("Core", "Game.End", BIND_CALLBACK(this, &ServerCommandProvider::CallbackEndGame));
-		engine->OnEvent("Core", "Server.Start", BIND_CALLBACK(this, &ServerCommandProvider::CallbackInfoServerStart));
-		engine->OnEvent("Core", "Server.Stop", BIND_CALLBACK(this, &ServerCommandProvider::CallbackInfoServerStop));
-		engine->OnEvent("Core", "Engine.FirstTick", BIND_CALLBACK(this, &ServerCommandProvider::CallbackRemoteConsoleStart));
-		engine->OnEvent("Core", "Server.PongReceived", BIND_CALLBACK(this, &ServerCommandProvider::CallbackPongReceived));
-		engine->OnEvent("Core", "Server.LifeCycleStateChanged", BIND_CALLBACK(this, &ServerCommandProvider::CallbackLifeCycleStateChanged));
+		engine->OnEvent("Core", EDEVENT_GAME_END, BIND_CALLBACK(this, &ServerCommandProvider::CallbackEndGame));
+		engine->OnEvent("Core", EDEVENT_SERVER_START, BIND_CALLBACK(this, &ServerCommandProvider::CallbackInfoServerStart));
+		engine->OnEvent("Core", EDEVENT_SERVER_STOP, BIND_CALLBACK(this, &ServerCommandProvider::CallbackInfoServerStop));
+		engine->OnEvent("Core", EDEVENT_ENGINE_FIRSTTICK, BIND_CALLBACK(this, &ServerCommandProvider::CallbackRemoteConsoleStart));
+		engine->OnEvent("Core", EDEVENT_SERVER_PONGRECEIVED, BIND_CALLBACK(this, &ServerCommandProvider::CallbackPongReceived));
+		engine->OnEvent("Core", EDEVENT_SERVER_LIFECYCLESTATECHANGED, BIND_CALLBACK(this, &ServerCommandProvider::CallbackLifeCycleStateChanged));
 
 		engine->OnWndProc(BIND_WNDPROC(this, &ServerCommandProvider::WndProc));
 	}

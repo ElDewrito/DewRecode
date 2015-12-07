@@ -404,13 +404,13 @@ bool CommandManager::GetVariableString(const std::string& name, std::string& val
 /// <param name="value">The value to set.</param>
 /// <param name="previousValue">The previous value of the variable.</param>
 /// <returns>VariableSetReturnValue</returns>
-VariableSetReturnValue CommandManager::SetVariable(const std::string& name, const std::string& value, std::string& previousValue)
+VariableSetReturnValue CommandManager::SetVariable(const std::string& name, const std::string& value, std::string& previousValue, bool callUpdateEvent)
 {
 	auto command = Find(name);
 	if (!command)
 		return VariableSetReturnValue::Error;
 
-	return SetVariable(command, value, previousValue);
+	return SetVariable(command, value, previousValue, callUpdateEvent);
 }
 
 /// <summary>
@@ -420,7 +420,7 @@ VariableSetReturnValue CommandManager::SetVariable(const std::string& name, cons
 /// <param name="value">The value to set.</param>
 /// <param name="previousValue">The previous value of the variable.</param>
 /// <returns>VariableSetReturnValue</returns>
-VariableSetReturnValue CommandManager::SetVariable(Command* command, const std::string& value, std::string& previousValue)
+VariableSetReturnValue CommandManager::SetVariable(Command* command, const std::string& value, std::string& previousValue, bool callUpdateEvent)
 {
 	try {
 		switch (command->Type)
@@ -476,6 +476,9 @@ VariableSetReturnValue CommandManager::SetVariable(Command* command, const std::
 	{
 		return VariableSetReturnValue::InvalidArgument;
 	}
+
+	if (callUpdateEvent)
+		command->UpdateEvent({ command->ValueString }, LogFileContext);
 
 	return VariableSetReturnValue::Success;
 }
@@ -601,6 +604,10 @@ std::string CommandManager::SaveVariables()
 		ss << "Input.Bind " << bind.key << " " << bind.command;
 		ss << std::endl;
 	}
+	ss << std::endl;
+	for (auto id : ElDorito::Instance().DisabledModIds)
+		ss << "Mods disableID " << id << std::endl;
+
 	return ss.str();
 }
 

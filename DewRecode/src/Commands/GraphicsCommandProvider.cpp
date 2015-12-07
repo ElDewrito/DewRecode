@@ -3,6 +3,11 @@
 
 namespace Graphics
 {
+	GraphicsCommandProvider::GraphicsCommandProvider(std::shared_ptr<GraphicsPatchProvider> graphicsPatches)
+	{
+		this->graphicsPatches = graphicsPatches;
+	}
+
 	void GraphicsCommandProvider::RegisterVariables(ICommandManager* manager)
 	{
 		VarSaturation = manager->Add(Command::CreateVariableFloat("Graphics", "Saturation", "saturation", "The saturation", static_cast<CommandFlags>(eCommandFlagsArchived | eCommandFlagsDontUpdateInitial), 1.0f, BIND_COMMAND(this, &GraphicsCommandProvider::VariableSaturationUpdate)));
@@ -34,6 +39,22 @@ namespace Graphics
 		VarLetterbox = manager->Add(Command::CreateVariableInt("Graphics", "Letterbox", "letterbox", "A cinematic letterbox.", eCommandFlagsDontUpdateInitial, 0, BIND_COMMAND(this, &GraphicsCommandProvider::VariableLetterboxUpdate)));
 		VarLetterbox->ValueIntMin = 0;
 		VarLetterbox->ValueIntMax = 1;
+
+		VarSSAO = manager->Add(Command::CreateVariableInt("Graphics", "SSAO", "ssao", "SSAO enabled", eCommandFlagsNone, 0, BIND_COMMAND(this, &GraphicsCommandProvider::VariableSSAOUpdate)));
+		VarSSAO->ValueIntMin = 0;
+		VarSSAO->ValueIntMax = 1;
+
+		VarSSAOArg1 = manager->Add(Command::CreateVariableFloat("Graphics", "SSAOArg1", "ssao_1", "SSAO arg1", eCommandFlagsNone, 1.f, BIND_COMMAND(this, &GraphicsCommandProvider::VariableSSAOArg1Update)));
+		VarSSAOArg1->ValueFloatMin = -100;
+		VarSSAOArg1->ValueFloatMax = 100;
+
+		VarSSAOArg2 = manager->Add(Command::CreateVariableFloat("Graphics", "SSAOArg2", "ssao_2", "SSAO arg2", eCommandFlagsNone, 0.75f, BIND_COMMAND(this, &GraphicsCommandProvider::VariableSSAOArg2Update)));
+		VarSSAOArg2->ValueFloatMin = -100;
+		VarSSAOArg2->ValueFloatMax = 100;
+
+		VarSSAOArg3 = manager->Add(Command::CreateVariableFloat("Graphics", "SSAOArg3", "ssao_3", "SSAO arg3", eCommandFlagsNone, 0.6f, BIND_COMMAND(this, &GraphicsCommandProvider::VariableSSAOArg3Update)));
+		VarSSAOArg3->ValueFloatMin = -100;
+		VarSSAOArg3->ValueFloatMax = 100;
 	}
 
 	bool GraphicsCommandProvider::VariableSaturationUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
@@ -116,6 +137,46 @@ namespace Graphics
 		cinematicGlobals(GameGlobals::Cinematic::LetterboxIndex).Write(enabled);
 
 		context.WriteOutput(std::string(enabled ? "Enabled" : "Disabled") + " letterbox");
+		return true;
+	}
+
+	bool GraphicsCommandProvider::VariableSSAOUpdate(const std::vector<std::string>& Arguments, CommandContext& context)
+	{
+		auto enabled = VarSSAO->ValueInt == 1;
+
+		graphicsPatches->SetSSAOEnabled(enabled);
+
+		context.WriteOutput(std::string(enabled ? "Enabled" : "Disabled") + " SSAO");
+		return true;
+	}
+
+	bool GraphicsCommandProvider::VariableSSAOArg1Update(const std::vector<std::string>& Arguments, CommandContext& context)
+	{
+		auto value = VarSSAOArg1->ValueFloat;
+
+		Pointer(0x1917D58).Write<float>(value);
+
+		context.WriteOutput("Set SSAO arg1 to " + std::to_string(value));
+		return true;
+	}
+
+	bool GraphicsCommandProvider::VariableSSAOArg2Update(const std::vector<std::string>& Arguments, CommandContext& context)
+	{
+		auto value = VarSSAOArg2->ValueFloat;
+
+		Pointer(0x1917D54).Write<float>(value);
+
+		context.WriteOutput("Set SSAO arg2 to " + std::to_string(value));
+		return true;
+	}
+
+	bool GraphicsCommandProvider::VariableSSAOArg3Update(const std::vector<std::string>& Arguments, CommandContext& context)
+	{
+		auto value = VarSSAOArg3->ValueFloat;
+
+		Pointer(0x1917D5C).Write<float>(value);
+
+		context.WriteOutput("Set SSAO arg3 to " + std::to_string(value));
 		return true;
 	}
 }

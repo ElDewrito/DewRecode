@@ -30,7 +30,8 @@ namespace Game
 			Command::CreateCommand("Game", "GameType", "gametype", "Loads a gametype", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandGameType), { "name(string) The internal name of the built-in gametype or custom gametype to load" }),
 			Command::CreateCommand("Game", "Start", "start", "Starts or restarts the game", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStart)),
 			Command::CreateCommand("Game", "Stop", "stop", "Stops the game and returns to lobby", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &GameCommandProvider::CommandStop)),
-			Command::CreateCommand("Game", "TagAddress", "tag", "Gets the address of a tag in memory", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandTagAddress))
+			Command::CreateCommand("Game", "TagAddress", "tag", "Gets the address of a tag in memory", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandTagAddress)),
+			Command::CreateCommand("Game", "TagHdrAddress", "taghdr", "Gets the address of a tags header in memory", eCommandFlagsNone, BIND_COMMAND(this, &GameCommandProvider::CommandTagHdrAddress)),
 		};
 
 		return commands;
@@ -63,6 +64,32 @@ namespace Game
 		}
 
 		void* address = Blam::Tags::GetTagAddress(tagIndex);
+		std::stringstream ss;
+		ss << "Tag 0x" << std::hex << tagIndex << " is located at 0x" << std::hex << (int)address;
+		context.WriteOutput(ss.str());
+		return true;
+	}
+	
+	bool GameCommandProvider::CommandTagHdrAddress(const std::vector<std::string>& Arguments, CommandContext& context)
+	{
+		if (Arguments.size() <= 0)
+		{
+			context.WriteOutput("You must specify a tag index!");
+			return false;
+		}
+
+		int tagIndex = 0;
+		try
+		{
+			tagIndex = std::stoi(Arguments[0], 0, 0);
+		}
+		catch (std::invalid_argument)
+		{
+			context.WriteOutput("Invalid argument given.");
+			return false;
+		}
+
+		void* address = Blam::Tags::GetTagHdrAddress(tagIndex);
 		std::stringstream ss;
 		ss << "Tag 0x" << std::hex << tagIndex << " is located at 0x" << std::hex << (int)address;
 		context.WriteOutput(ss.str());

@@ -75,6 +75,9 @@ public:
 	// Registers a chat handler object.
 	void AddChatHandler(std::shared_ptr<Chat::ChatHandler> handler);
 
+	bool SetModEnabled(const std::string& guid, bool enabled);
+	bool GetModEnabled(const std::string& guid);
+
 	// functions that aren't exposed over IEngine interface
 	void Tick(const std::chrono::duration<double>& deltaTime);
 	void EndScene(void* d3dDevice);

@@ -197,7 +197,6 @@ namespace
 			return 1;
 
 		// TODO: change this to use unicode instead of ASCII
-
 		auto variantPath = std::tr2::sys::current_path<std::tr2::sys::path>();
 		variantPath /= "mods";
 

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <utility>
+#include "../../Pointer.hpp"
 
 // Asserts that a tag structure is the correct size.
 #define TAG_STRUCT_SIZE_ASSERT(type, size)           \
@@ -107,6 +108,41 @@ namespace Blam
 			typedef void* (*GetTagAddressPtr)(int groupTag, uint32_t index);
 			auto GetTagAddress = reinterpret_cast<GetTagAddressPtr>(0x503370);
 			return GetTagAddress(0, index);
+		}
+
+		inline void* GetTagHdrAddress(uint32_t index)
+		{
+			auto* addr = Pointer(0x22AAFFC).Read<BYTE*>();
+			int v2 = *(addr + (index * 4));
+			if (v2 == -1)
+				return 0;
+			auto* addr2 = Pointer(0x22AAFF8).Read<BYTE*>();
+			return (void*)*(addr2 + (v2 * 4));
+		}
+
+		inline uint32_t GetTagClass(uint32_t index)
+		{
+			typedef uint32_t(*GetTagClassPtr)(uint32_t index);
+			auto GetTagClass = reinterpret_cast<GetTagClassPtr>(0x5033A0);
+			return GetTagClass(index);
+		}
+
+		inline std::vector<int> GetTagsOfClass(uint32_t className)
+		{
+			auto numTags = Pointer(0x22AB008).Read<uint32_t>();
+			std::vector<int> retVal;
+			for (uint32_t i = 0; i < numTags; i++)
+			{
+				void* addr = GetTagAddress(i);
+				if (!addr)
+					continue;
+
+				auto tagClass = GetTagClass(i);
+				if (tagClass != className)
+					continue;
+				retVal.push_back(i);
+			}
+			return retVal;
 		}
 	}
 }

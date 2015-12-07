@@ -21,6 +21,9 @@ namespace UI
 		bool CommandShowConsole(const std::vector<std::string>& Arguments, CommandContext& context);
 		void ShowConsole(bool show);
 
+		bool CommandPlayerSettings(const std::vector<std::string>& Arguments, CommandContext& context);
+		void ShowPlayerSettings(bool show);
+
 		bool CommandShowH3UI(const std::vector<std::string>& Arguments, CommandContext& context);
 		void ShowH3UI(uint32_t stringId, int32_t arg1, int32_t flags, uint32_t parentStringId);
 

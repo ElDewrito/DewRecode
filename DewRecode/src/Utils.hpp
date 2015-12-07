@@ -41,6 +41,8 @@ public:
 	
 	size_t ExecuteProcess(const std::wstring& fullPathToExe, std::wstring& parameters, size_t secondsToWait);
 
+	std::string ColorToHex(float col[3]);
+
 	PublicUtils();
 	~PublicUtils();
 private:

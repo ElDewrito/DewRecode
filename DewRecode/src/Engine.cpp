@@ -142,7 +142,7 @@ namespace
 
 	void LifeCycleStateChangedHookImpl(Blam::Network::LifeCycleState newState)
 	{
-		ElDorito::Instance().Engine.Event("Core", "Server.LifeCycleStateChanged", (void*)&newState);
+		ElDorito::Instance().Engine.Event("Core", EDEVENT_SERVER_LIFECYCLESTATECHANGED, (void*)&newState);
 	}
 
 	__declspec(naked) void LifeCycleStateChangedHook()
@@ -701,4 +701,43 @@ bool Engine::SendChatDirectedServerMessage(const std::string& body, int peer)
 void Engine::AddChatHandler(std::shared_ptr<Chat::ChatHandler> handler)
 {
 	Chat::AddHandler(handler);
+}
+
+bool Engine::SetModEnabled(const std::string& guid, bool enabled)
+{
+	auto& dorito = ElDorito::Instance();
+	bool exists = false;
+	auto it = dorito.DisabledModIds.begin();
+	for (; it != dorito.DisabledModIds.end(); ++it)
+	{
+		if (guid == *it)
+		{
+			exists = true;
+			break;
+		}
+	}
+
+	if (!enabled && !exists)
+		dorito.DisabledModIds.push_back(guid);
+
+	else if (enabled && exists)
+		dorito.DisabledModIds.erase(it);
+
+	return enabled;
+}
+
+bool Engine::GetModEnabled(const std::string& guid)
+{
+	bool exists = false;
+
+	for (auto id : ElDorito::Instance().DisabledModIds)
+	{
+		if (guid == id)
+		{
+			exists = true;
+			break;
+		}
+	}
+
+	return !exists;
 }

@@ -85,11 +85,14 @@ void DebugLog::Log(LogSeverity severity, const std::string& module, std::string 
 
 	std::string outFileName = "logs\\" + startTime + "_" + debugCommands->VarLogName->ValueString;
 
+	auto outStr = outBuff.str();
+	OutputDebugStringA(outStr.c_str());
+
 	std::ofstream outfile;
 	outfile.open(outFileName, std::ios_base::app);
 	if (outfile.fail())
 		return; // TODO: give output if the log stuff failed
 
-	outfile << outBuff.str();
+	outfile << outStr;
 	outfile.close();
 }

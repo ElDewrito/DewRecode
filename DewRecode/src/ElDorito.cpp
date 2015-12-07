@@ -8,6 +8,7 @@
 #include "Patches/ContentItemsPatchProvider.hpp"
 #include "Patches/CorePatchProvider.hpp"
 #include "Patches/ForgePatchProvider.hpp"
+#include "Patches/GraphicsPatchProvider.hpp"
 #include "Patches/InputPatchProvider.hpp"
 #include "Patches/NetworkPatchProvider.hpp"
 #include "Patches/PlayerPatchProvider.hpp"
@@ -65,6 +66,7 @@ void ElDorito::initClasses()
 	auto corePatchProvider = std::make_shared<Core::CorePatchProvider>();
 	auto forgePatchProvider = std::make_shared<Forge::ForgePatchProvider>();
 	auto gameRulesPatchProvider = std::make_shared<GameRules::GameRulesPatchProvider>();
+	auto graphicsPatchProvider = std::make_shared<Graphics::GraphicsPatchProvider>();
 	InputPatches = std::make_shared<Input::InputPatchProvider>();
 	NetworkPatches = std::make_shared<Network::NetworkPatchProvider>();
 	auto playerPatchProvider = std::make_shared<Player::PlayerPatchProvider>();
@@ -78,6 +80,7 @@ void ElDorito::initClasses()
 	Patches.push_back(corePatchProvider);
 	Patches.push_back(forgePatchProvider);
 	Patches.push_back(gameRulesPatchProvider);
+	Patches.push_back(graphicsPatchProvider);
 	Patches.push_back(InputPatches);
 	Patches.push_back(NetworkPatches);
 	Patches.push_back(playerPatchProvider);
@@ -100,6 +103,9 @@ void ElDorito::initClasses()
 	GameRulesCommands = std::make_shared<GameRules::GameRulesCommandProvider>(gameRulesPatchProvider);
 	initCommandProvider(GameRulesCommands);
 
+	GraphicsCommands = std::make_shared<Graphics::GraphicsCommandProvider>(graphicsPatchProvider);
+	initCommandProvider(GraphicsCommands);
+
 	InputCommands = std::make_shared<Input::InputCommandProvider>(InputPatches);
 	initCommandProvider(InputCommands);
 
@@ -119,6 +125,7 @@ void ElDorito::initClasses()
 	initCommandProvider(UpdaterCommands);
 
 	loadPlugins();
+	loadModPackages();
 
 	initPatchProviders();
 
@@ -203,8 +210,19 @@ void ElDorito::Initialize()
 		text += " (d3d disabled)";
 	}
 
+	Engine.OnEvent("Core", EDEVENT_ENGINE_TAGSLOADED, BIND_CALLBACK(this, &ElDorito::onTagsLoaded));
+
 	Logger.Log(LogSeverity::Info, "ElDorito", text);
 	this->inited = true;
+}
+
+void ElDorito::onTagsLoaded(void* param)
+{
+	for (auto patch : Patches)
+		patch->PatchTags(0x1337);
+
+	for (auto mod : ModPackages)
+		mod->onTagsLoaded();
 }
 
 /// <summary>
@@ -217,57 +235,129 @@ void ElDorito::loadPlugins()
 	pluginPath /= "plugins";
 	Logger.Log(LogSeverity::Info, "ElDorito", "Loading plugins (plugin dir: %s)", pluginPath.string().c_str());
 
-	for (std::tr2::sys::directory_iterator itr(pluginPath); itr != std::tr2::sys::directory_iterator(); ++itr)
+	WIN32_FIND_DATAA ffd;
+	HANDLE hFind = FindFirstFileA((pluginPath.string() + "\\*.dll").c_str(), &ffd);
+	if (hFind == INVALID_HANDLE_VALUE)
+		return;
+
+	do
 	{
-		if (std::tr2::sys::is_directory(itr->status()) || itr->path().extension() != ".dll")
-			continue;
-
-		auto& path = itr->path().string();
-		this->Utils.ReplaceCharacters(path, '/', '\\');
-		Logger.Log(LogSeverity::Debug, "Plugins", "Loading plugin from %s...", path.c_str());
-
-		auto dllHandle = LoadLibraryA(path.c_str());
-		if (!dllHandle)
+		if (strcmp(ffd.cFileName, ".") != 0 && strcmp(ffd.cFileName, "..") != 0)
 		{
-			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: LoadLibrary failed (code: %d)", path.c_str(), GetLastError());
-			continue;
+			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				continue;
+
+			std::string fname = pluginPath.string() + "\\" + ffd.cFileName;
+			if (fname.length() < 3 || fname.substr(fname.length() - 3, 3) != "dll")
+				continue;
+
+			this->Utils.ReplaceCharacters(fname, '/', '\\');
+			Logger.Log(LogSeverity::Debug, "Plugins", "Loading plugin from %s...", fname.c_str());
+
+			auto dllHandle = LoadLibraryA(fname.c_str());
+			if (!dllHandle)
+			{
+				Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: LoadLibrary failed (code: %d)", fname.c_str(), GetLastError());
+				continue;
+			}
+
+			auto GetPluginInfo = reinterpret_cast<GetPluginInfoPtr>(GetProcAddress(dllHandle, "GetPluginInfo"));
+			auto InitializePlugin = reinterpret_cast<InitializePluginPtr>(GetProcAddress(dllHandle, "InitializePlugin"));
+
+			if (!GetPluginInfo || !InitializePlugin)
+			{
+				Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Couldn't find exports!", fname.c_str());
+				FreeLibrary(dllHandle);
+				continue;
+			}
+
+			auto* info = GetPluginInfo();
+			if (!info)
+			{
+				Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Plugin info invalid!", fname.c_str());
+				FreeLibrary(dllHandle);
+				continue;
+			}
+
+			Logger.Log(LogSeverity::Debug, "Plugins", "Initing \"%s\"", info->Name);
+			std::vector<std::shared_ptr<CommandProvider>> cmdProviders;
+			std::vector<std::shared_ptr<PatchProvider>> patchProviders;
+			if (!InitializePlugin(&cmdProviders, &patchProviders))
+			{
+				Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Initialization failed!", fname.c_str());
+				FreeLibrary(dllHandle);
+				continue;
+			}
+
+			for (auto cmd : cmdProviders)
+				initCommandProvider(cmd);
+
+			for (auto patch : patchProviders)
+				Patches.push_back(patch);
+
+			Plugins.insert(std::pair<std::string, HMODULE>(fname, dllHandle));
+			Logger.Log(LogSeverity::Info, "Plugins", "Loaded \"%s\" v%s by %s", info->Name, info->FriendlyVersion, info->Author);
 		}
-
-		auto GetPluginInfo = reinterpret_cast<GetPluginInfoPtr>(GetProcAddress(dllHandle, "GetPluginInfo"));
-		auto InitializePlugin = reinterpret_cast<InitializePluginPtr>(GetProcAddress(dllHandle, "InitializePlugin"));
-
-		if (!GetPluginInfo || !InitializePlugin)
-		{
-			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Couldn't find exports!", path.c_str());
-			FreeLibrary(dllHandle);
-			continue;
-		}
-
-		auto* info = GetPluginInfo();
-		if (!info)
-		{
-			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Plugin info invalid!", path.c_str());
-			FreeLibrary(dllHandle);
-			continue;
-		}
-
-		Logger.Log(LogSeverity::Debug, "Plugins", "Initing \"%s\"", info->Name);
-		std::vector<std::shared_ptr<CommandProvider>> cmdProviders;
-		std::vector<std::shared_ptr<PatchProvider>> patchProviders;
-		if (!InitializePlugin(&cmdProviders, &patchProviders))
-		{
-			Logger.Log(LogSeverity::Error, "Plugins", "Failed to load plugin library %s: Initialization failed!", path.c_str());
-			FreeLibrary(dllHandle);
-			continue;
-		}
-
-		for (auto cmd : cmdProviders)
-			initCommandProvider(cmd);
-
-		for (auto patch : patchProviders)
-			Patches.push_back(patch);
-
-		plugins.insert(std::pair<std::string, HMODULE>(path, dllHandle));
-		Logger.Log(LogSeverity::Info, "Plugins", "Loaded \"%s\" v%s by %s", info->Name, info->FriendlyVersion, info->Author);
 	}
+	while (FindNextFileA(hFind, &ffd) != 0);
+
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+	{
+		FindClose(hFind);
+		return;
+	}
+
+	FindClose(hFind);
+	hFind = INVALID_HANDLE_VALUE;
+}
+
+/// <summary>
+/// Loads and initializes mod packages from the mods/packages folder.
+/// </summary>
+void ElDorito::loadModPackages()
+{
+	auto packagePath = std::tr2::sys::current_path<std::tr2::sys::path>();
+	packagePath /= "mods";
+	packagePath /= "packages";
+	Logger.Log(LogSeverity::Info, "ElDorito", "Loading mod packages (package dir: %s)", packagePath.string().c_str());
+
+	WIN32_FIND_DATAA ffd;
+	HANDLE hFind = FindFirstFileA((packagePath.string() + "\\*").c_str(), &ffd);
+	if (hFind == INVALID_HANDLE_VALUE)
+		return;
+
+	do
+	{
+		if (strcmp(ffd.cFileName, ".") != 0 && strcmp(ffd.cFileName, "..") != 0)
+		{
+			std::string fname = packagePath.string() + "\\" + ffd.cFileName;
+
+			if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+				if (fname.length() < 3 || fname.substr(fname.length() - 3, 3) != "zip")
+					continue;
+
+			this->Utils.ReplaceCharacters(fname, '/', '\\');
+
+			ModPackage* mod = nullptr;
+
+			if (fname.find(".zip") != std::string::npos)
+				mod = new ModPackage(new libzippp::ZipArchive(fname), std::string(ffd.cFileName));
+			else
+				mod = new ModPackage(fname);
+
+			if (mod->load())
+				ModPackages.push_back(mod);
+
+			mod->Enabled = Engine.GetModEnabled(mod->ID);
+		}
+	} while (FindNextFileA(hFind, &ffd) != 0);
+
+	if (GetLastError() != ERROR_NO_MORE_FILES)
+	{
+		FindClose(hFind);
+		return;
+	}
+
+	FindClose(hFind);
+	hFind = INVALID_HANDLE_VALUE;
 }

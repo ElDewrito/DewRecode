@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<modPack dewritoVersion="0.5">
+  <id>a75816b9-5845-41c4-8eff-9ab1176c5648</id>
+  <build>1</build>
+  <name>PerfMod</name>
+  <description>Edits performance values to increase graphics quality</description>
+  <author>emoose</author>
+  <version>1.0</version>
+  
+  <mod id="1" selector="class" className="perf" name="Edit performance values">
+    <reflexive offset="0" entrySize="0x38" selector="all">
+      <field id="1" type="int32" offset="0" name="Flags">0</field>
+      <field id="2" type="float" offset="0x4" name="Water">1</field>
+      <field id="3" type="float" offset="0x8" name="Decorators">1</field>
+      <field id="4" type="float" offset="0xC" name="Effects">1</field>
+      <field id="5" type="float" offset="0x10" name="Instanced Geometry">1</field>
+      <field id="6" type="float" offset="0x14" name="Object Fade">1</field>
+      <field id="7" type="float" offset="0x18" name="Object LOD">1</field>
+      <field id="8" type="float" offset="0x1C" name="Decals">1</field>
+      <field id="9" type="int32" offset="0x20" name="CPU Light Count">2</field>
+      <field id="10" type="float" offset="0x24" name="CPU Light Quality">1</field>
+      <field id="11" type="int32" offset="0x28" name="GPU Light Count">6</field>
+      <field id="12" type="float" offset="0x2C" name="GPU Light Quality">1</field>
+      <field id="13" type="int32" offset="0x30" name="Shadow Count">10</field>
+      <field id="14" type="float" offset="0x34" name="Shadow Quality">1</field>
+    </reflexive>
+  </mod>
+</modPack>

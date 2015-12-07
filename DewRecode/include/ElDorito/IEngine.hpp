@@ -378,6 +378,9 @@ public:
 
 	// Registers a chat handler object.
 	virtual void AddChatHandler(std::shared_ptr<Chat::ChatHandler> handler) = 0;
+
+	virtual bool SetModEnabled(const std::string& guid, bool enabled) = 0;
+	virtual bool GetModEnabled(const std::string& guid) = 0;
 };
 
 #define ENGINE_INTERFACE_VERSION001 "Engine001"

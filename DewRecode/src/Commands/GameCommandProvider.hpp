@@ -49,5 +49,6 @@ namespace Game
 		bool Stop();
 
 		bool CommandTagAddress(const std::vector<std::string>& Arguments, CommandContext& context);
+		bool CommandTagHdrAddress(const std::vector<std::string>& Arguments, CommandContext& context);
 	};
 }

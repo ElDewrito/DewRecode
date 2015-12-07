@@ -48,8 +48,8 @@ public:
 	bool GetVariableFloat(const std::string& name, float& value);
 	bool GetVariableString(const std::string& name, std::string& value);
 
-	VariableSetReturnValue SetVariable(const std::string& name, const std::string& value, std::string& previousValue);
-	VariableSetReturnValue SetVariable(Command* command, const std::string& value, std::string& previousValue);
+	VariableSetReturnValue SetVariable(const std::string& name, const std::string& value, std::string& previousValue, bool callUpdateEvent = false);
+	VariableSetReturnValue SetVariable(Command* command, const std::string& value, std::string& previousValue, bool callUpdateEvent = false);
 
 	std::string GenerateHelpText(const std::string& moduleFilter = "");
 	std::string GenerateHelpText(const Command& command);

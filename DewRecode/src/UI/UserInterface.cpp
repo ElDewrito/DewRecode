@@ -1,6 +1,4 @@
 #include "UserInterface.hpp"
-#include "Windows/ConsoleWindow.hpp"
-#include "Windows/MessageBoxWindow.hpp"
 #include "../ElDorito.hpp"
 #include <mutex>
 
@@ -304,7 +302,10 @@ namespace UI
 
 	void UserInterface::EndScene(void* param)
 	{
-		if (!uiShown || (windows.size() <= 0 && !console->GetVisible() && !chat->GetVisible()))
+		if (ElDorito::Instance().NetworkPatches->GetD3DDisabled())
+			return;
+
+		if (!uiShown || (windows.size() <= 0 && !console->GetVisible() && !chat->GetVisible() && !playerSettings->GetVisible()))
 		{
 			ShowUI(false);
 			return;
@@ -336,6 +337,8 @@ namespace UI
 			console->Draw();
 		if (chat)
 			chat->Draw();
+		if (playerSettings)
+			playerSettings->Draw();
 
 		ImGui::Render();
 	}
@@ -343,6 +346,9 @@ namespace UI
 
 	void UserInterface::Init(void* param)
 	{
+		if (ElDorito::Instance().NetworkPatches->GetD3DDisabled())
+			return;
+
 		this->hwnd = ElDorito::Instance().Engine.GetGameHWND();
 		this->device = Pointer(0x50DADDC).Read<IDirect3DDevice9*>();
 
@@ -377,12 +383,14 @@ namespace UI
 
 		this->chat = std::make_shared<ChatWindow>();
 		this->console = std::make_shared<ConsoleWindow>(ElDorito::Instance().CommandManager.ConsoleContext);
-
-		//ShowMessageBox("TestMsg", "This is a test message brought to you by Leon", { "Ayy", "Lmao" }, BIND_CALLBACK2(this, &UserInterface::TestCallback));
+		this->playerSettings = std::make_shared<PlayerSettingsWindow>();
 	}
 
 	bool UserInterface::ShowChat(bool show)
 	{
+		if (!chat)
+			return false;
+
 		chat->SetVisible(show);
 		if (show)
 			ShowUI(true);
@@ -391,19 +399,42 @@ namespace UI
 
 	ChatWindowTab UserInterface::SwitchToTab(ChatWindowTab tab)
 	{
+		if (!chat)
+			return ChatWindowTab::GlobalChat;
+
 		return chat->SwitchToTab(tab);
 	}
 
 	bool UserInterface::ShowConsole(bool show)
 	{
+		if (!console)
+			return false;
+
 		console->SetVisible(show);
 		if (show)
 			ShowUI(true);
 		return show;
 	}
 
+	bool UserInterface::ShowPlayerSettings(bool show)
+	{
+		if (!playerSettings)
+			return false;
+
+		if (show)
+			playerSettings->SetUsername(ElDorito::Instance().PlayerCommands->VarName->ValueString);
+
+		playerSettings->SetVisible(show);
+		if (show)
+			ShowUI(true);
+		return show;
+	}
+
+
 	void UserInterface::Shutdown()
 	{
+		if (ElDorito::Instance().NetworkPatches->GetD3DDisabled())
+			return;
 		invalidateDeviceObjects();
 		ImGui::Shutdown();
 		device = NULL;
@@ -412,6 +443,9 @@ namespace UI
 
 	bool UserInterface::ShowMessageBox(const std::string& title, const std::string& message, const std::string& tag, std::vector<std::string> choices, MsgBoxCallback callback)
 	{
+		if (ElDorito::Instance().NetworkPatches->GetD3DDisabled())
+			return true;
+
 		auto msgBox = std::make_shared<MessageBoxWindow>(title, message, tag, choices, callback);
 
 		std::lock_guard<std::mutex> lock(m);
@@ -435,6 +469,9 @@ namespace UI
 
 	bool UserInterface::ShowUI(bool show)
 	{
+		if (ElDorito::Instance().NetworkPatches->GetD3DDisabled())
+			return false;
+
 		if (show != uiShown)
 		{
 			ImGuiIO& io = ImGui::GetIO();

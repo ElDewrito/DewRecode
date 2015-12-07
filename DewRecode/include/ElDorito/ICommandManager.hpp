@@ -205,7 +205,7 @@ public:
 	/// <param name="value">The value to set.</param>
 	/// <param name="previousValue">The previous value of the variable.</param>
 	/// <returns>VariableSetReturnValue</returns>
-	virtual VariableSetReturnValue SetVariable(const std::string& name, const std::string& value, std::string& previousValue) = 0;
+	virtual VariableSetReturnValue SetVariable(const std::string& name, const std::string& value, std::string& previousValue, bool callUpdateEvent = false) = 0;
 
 	/// <summary>
 	/// Sets a variable from a string, string is converted to the proper variable type.
@@ -214,7 +214,7 @@ public:
 	/// <param name="value">The value to set.</param>
 	/// <param name="previousValue">The previous value of the variable.</param>
 	/// <returns>VariableSetReturnValue</returns>
-	virtual VariableSetReturnValue SetVariable(Command* command, const std::string& value, std::string& previousValue) = 0;
+	virtual VariableSetReturnValue SetVariable(Command* command, const std::string& value, std::string& previousValue, bool callUpdateEvent = false) = 0;
 
 	/// <summary>
 	/// Generates help text.

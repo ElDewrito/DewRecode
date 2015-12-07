@@ -58,7 +58,7 @@ namespace ChatCommands
 	void VotingCommandProvider::RegisterCallbacks(IEngine* engine)
 	{
 		engine->OnTick(BIND_CALLBACK(this, &VotingCommandProvider::OnTick));
-		engine->OnEvent("Core", "Server.LifeCycleStateChanged", BIND_CALLBACK(this, &VotingCommandProvider::CallbackLifeCycleStateChanged));
+		engine->OnEvent("Core", EDEVENT_SERVER_LIFECYCLESTATECHANGED, BIND_CALLBACK(this, &VotingCommandProvider::CallbackLifeCycleStateChanged));
 	}
 
 	void VotingCommandProvider::OnTick(const std::chrono::duration<double>& deltaTime)
