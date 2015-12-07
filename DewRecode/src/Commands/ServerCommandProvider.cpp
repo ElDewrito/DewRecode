@@ -25,7 +25,7 @@ namespace Server
 			Command::CreateCommand("Server", "Unannounce", "unannounce", "Notifies the master servers to remove this server", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandUnannounce)),
 			Command::CreateCommand("Server", "AnnounceStats", "announcestats", "Announces the players stats to the masters at the end of the game", eCommandFlagsNone, BIND_COMMAND(this, &ServerCommandProvider::CommandAnnounceStats)),
 			Command::CreateCommand("Server", "Connect", "connect", "Begins establishing a connection to a server", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &ServerCommandProvider::CommandConnect), { "host:port The server info to connect to", "password(string) The password for the server" }),
-			Command::CreateCommand("Server", "KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandKickPlayer), { "playername/UID The name or UID of the player to kick" }),
+			Command::CreateCommand("Server", "KickPlayer", "kick", "Kicks a player from the game (host only)", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandKickPlayer), { "playername/playerid/UID The name, id or UID of the player to kick" }),
 			Command::CreateCommand("Server", "ListPlayers", "list", "Lists players in the game (currently host only)", eCommandFlagsMustBeHosting, BIND_COMMAND(this, &ServerCommandProvider::CommandListPlayers)),
 			Command::CreateCommand("Server", "Ping", "ping", "Pings a server", eCommandFlagsRunOnMainMenu, BIND_COMMAND(this, &ServerCommandProvider::CommandPing), { "host:port The host to ping" })
 		};
@@ -788,7 +788,7 @@ namespace Server
 			uidStream << std::hex << player->Uid;
 			auto uidString = uidStream.str();
 
-			if (!dorito.Utils.Trim(dorito.Utils.ThinString(player->DisplayName)).compare(playerName) || !uidString.compare(playerName))
+			if (!playerName.compare(std::to_string(playerIdx)) || !dorito.Utils.Trim(dorito.Utils.ThinString(player->DisplayName)).compare(playerName) || !uidString.compare(playerName))
 			{
 				auto retVal = KickPlayer(peerIdx);
 				if (retVal)
