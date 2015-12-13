@@ -10,6 +10,19 @@ namespace UI
 
 		char username[256];
 
+		std::vector<const char*> armorNames;
+		int helmetCurrent;
+		int chestCurrent;
+		int shouldersCurrent;
+		int armsCurrent;
+		int legsCurrent;
+
+		float* primary;
+		float* secondary;
+		float* visor;
+		float* lights;
+		float* holo;
+
 	public:
 		PlayerSettingsWindow();
 
@@ -17,6 +30,6 @@ namespace UI
 		bool SetVisible(bool visible) { isVisible = visible; return visible; }
 		bool GetVisible() { return isVisible; }
 
-		void SetUsername(const std::string& name) { ZeroMemory(username, 256); strcpy_s(username, 256, name.c_str()); }
+		void SetPlayerData();
 	};
 }

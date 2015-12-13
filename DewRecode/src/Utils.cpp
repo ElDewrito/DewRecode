@@ -815,6 +815,19 @@ std::string PublicUtils::ColorToHex(float col[3])
 	return stream.str();
 }
 
+float* PublicUtils::HexToColor(std::string hexColor)
+{
+	//Trim leading #
+	if (hexColor.at(0) == '#')
+		hexColor = hexColor.erase(0, 1);
+	int hex = std::stoi(hexColor, 0, 16);
+	float* color = new float[3];
+	color[0] = ((hex >> 16) & 0xFF) / 255.0;
+	color[1] = ((hex >> 8) & 0xFF) / 255.0;
+	color[2] = ((hex) & 0xFF) / 255.0;
+	return color;
+}
+
 PublicUtils::PublicUtils()
 {
 	WSADATA wsaData;

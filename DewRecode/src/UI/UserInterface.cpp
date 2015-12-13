@@ -422,7 +422,7 @@ namespace UI
 			return false;
 
 		if (show)
-			playerSettings->SetUsername(ElDorito::Instance().PlayerCommands->VarName->ValueString);
+			playerSettings->SetPlayerData();
 
 		playerSettings->SetVisible(show);
 		if (show)

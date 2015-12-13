@@ -50,29 +50,15 @@ namespace UI
 
 		ImGui::InputText("player name", username, IM_ARRAYSIZE(username));
 
-		std::vector<const char*> armorNames;
-		for (auto kvp : armors)
-			armorNames.push_back(kvp.first);
-
-		static int helmetCurrent = 0;
 		ImGui::Combo("helmet", &helmetCurrent, &armorNames[0], armorNames.size(), 4);
-		static int chestCurrent = 0;
 		ImGui::Combo("chest", &chestCurrent, &armorNames[0], armorNames.size(), 4);
-		static int shouldersCurrent = 0;
 		ImGui::Combo("shoulders", &shouldersCurrent, &armorNames[0], armorNames.size(), 4);
-		static int armsCurrent = 0;
 		ImGui::Combo("arms", &armsCurrent, &armorNames[0], armorNames.size(), 4);
-		static int legsCurrent = 0;
 		ImGui::Combo("legs", &legsCurrent, &armorNames[0], armorNames.size(), 4);
-		static float primary[3] = { 1.0f, 0.0f, 0.2f };
 		ImGui::ColorEdit3("primary color", primary);
-		static float secondary[3] = { 1.0f, 0.0f, 0.2f };
 		ImGui::ColorEdit3("secondary color", secondary);
-		static float visor[3] = { 1.0f, 0.0f, 0.2f };
 		ImGui::ColorEdit3("visor color", visor);
-		static float lights[3] = { 1.0f, 0.0f, 0.2f };
 		ImGui::ColorEdit3("lights color", lights);
-		static float holo[3] = { 1.0f, 0.0f, 0.2f };
 		ImGui::ColorEdit3("holo color", holo);
 
 		if (ImGui::Button("Save"))
@@ -153,5 +139,39 @@ namespace UI
 		}
 
 		ImGui::End();
+	}
+
+	void PlayerSettingsWindow::SetPlayerData() {
+		auto& dorito = ElDorito::Instance();
+		//Store username
+		ZeroMemory(username, 256);
+		strcpy_s(username, 256, dorito.PlayerCommands->VarName->ValueString.c_str());
+
+		//Store armor information
+		for (auto kvp = armors.begin(); kvp != armors.end(); ++kvp) {
+			armorNames.push_back(kvp->first);
+
+			if (!dorito.PlayerCommands->VarArmorHelmet->ValueString.compare(kvp->second))
+				helmetCurrent = std::distance(armors.begin(), kvp);
+
+			if (!dorito.PlayerCommands->VarArmorChest->ValueString.compare(kvp->second))
+				chestCurrent = std::distance(armors.begin(), kvp);
+
+			if (!dorito.PlayerCommands->VarArmorShoulders->ValueString.compare(kvp->second))
+				shouldersCurrent = std::distance(armors.begin(), kvp);
+
+			if (!dorito.PlayerCommands->VarArmorArms->ValueString.compare(kvp->second))
+				armsCurrent = std::distance(armors.begin(), kvp);
+
+			if (!dorito.PlayerCommands->VarArmorLegs->ValueString.compare(kvp->second))
+				legsCurrent = std::distance(armors.begin(), kvp);
+		}
+
+		//Armor color information
+		primary = dorito.Utils.HexToColor(dorito.PlayerCommands->VarColorsPrimary->ValueString);
+		secondary = dorito.Utils.HexToColor(dorito.PlayerCommands->VarColorsSecondary->ValueString);
+		visor = dorito.Utils.HexToColor(dorito.PlayerCommands->VarColorsVisor->ValueString);
+		lights = dorito.Utils.HexToColor(dorito.PlayerCommands->VarColorsLights->ValueString);
+		holo = dorito.Utils.HexToColor(dorito.PlayerCommands->VarColorsHolo->ValueString);
 	}
 }
